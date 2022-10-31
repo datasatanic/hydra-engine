@@ -5,11 +5,15 @@ description = ""
 authors = ["I.Ogolikhin <43723188+datasatanic@users.noreply.github.com>"]
 license = "Apache v2"
 readme = "README.md"
-packages = [{include = "hydra"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+fastapi = "^0.85.1"
+hypercorn = "^0.14.3"
 
+
+[tool.poetry.group.dev.dependencies]
+uvicorn = { version = "^0.19.0", extras = ["standard"] }
 
 [build-system]
 requires = ["poetry-core"]
