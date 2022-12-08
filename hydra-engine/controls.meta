@@ -1,0 +1,18 @@
+constr:
+  description: "Connection strings"
+
+constr/infras:
+  description: "Connection strings for infrastructions services"
+
+constr/service:
+  description: "Connection strings for logical services"
+
+constr/service/mobicash:
+  description: "Connection strings for logical services"
+
+constr/service/ccfa:
+  description: "Connection strings for logical services"
+
+
+test:
+  description: ""
