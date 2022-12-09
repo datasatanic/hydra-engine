@@ -1,18 +1,13 @@
-constr:
+root:
+
+root/constr:
   description: "Connection strings"
 
-constr/infras:
+root/constr/infras:
   description: "Connection strings for infrastructions services"
 
-constr/service:
+root/constr/service:
   description: "Connection strings for logical services"
 
-constr/service/mobicash:
-  description: "Connection strings for logical services"
-
-constr/service/ccfa:
-  description: "Connection strings for logical services"
-
-
-test:
+root/test:
   description: ""
