@@ -1,4 +1,6 @@
-from schemas import add_node, tree, add_additional_fields
+import copy
+
+from schemas import add_node, tree, add_additional_fields, Group
 from fastapi.encoders import jsonable_encoder
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
@@ -45,11 +47,24 @@ def filter_tree(all_tree):
     return tree_filter
 
 
+def find_groups(name, all_tree):
+    if name in all_tree:
+        return all_tree[name]
+    for value in all_tree.values():
+        return find_groups(name, value.child)
+
+
 @app.get("/tree")
-def get_tree(file_name: str):
+def get_forms():
     try:
-        read_file(file_name)
-        forms = filter_tree(tree)
+        read_file("controls.meta")
+        forms = filter_tree(copy.deepcopy(tree))
         return JSONResponse(content=jsonable_encoder(forms), status_code=200)
     except FileNotFoundError:
         return JSONResponse(content={"detail": "File or directory not found"}, status_code=400)
+
+
+@app.get("/tree/{name}")
+def get_groups(name: str):
+    groups = find_groups(name, copy.deepcopy(tree))
+    return JSONResponse(content=jsonable_encoder(groups), status_code=200)

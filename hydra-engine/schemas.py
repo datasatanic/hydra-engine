@@ -15,6 +15,11 @@ class Node(BaseModel):
         extra = Extra.allow
 
 
+class Group(BaseModel):
+    form_name: str = ""
+    node: Node
+
+
 def add_node(_list):
     level = len(_list)
     if level == 1:
@@ -55,3 +60,6 @@ def find_node(node_list):
         find = subtree[node] if node in subtree else find
         subtree = find.child
     return find
+
+
+
