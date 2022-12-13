@@ -49,6 +49,13 @@ def filter_tree(all_tree):
 
 def find_groups(name, all_tree):
     if name in all_tree:
+        keys = list(all_tree[name].child)
+        for key in keys:
+            if len(all_tree[name].child[key].child) > 0:
+                all_tree[name].child[key].type = "form"
+                all_tree[name].child[key].child.clear()
+            else:
+                all_tree[name].child[key].type = "group"
         return all_tree[name]
     for value in all_tree.values():
         return find_groups(name, value.child)
