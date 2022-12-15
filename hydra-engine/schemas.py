@@ -15,6 +15,7 @@ class ElemInfo(BaseModel):
     control: str
     constraints: List = []
 
+
 class Node(BaseModel):
     child: dict = {}
     elem: List = []
@@ -108,7 +109,7 @@ def get_element_info(input_url):
     render_dict = element["render"]
     elem_info = ElemInfo(type=element["type"], description=element["description"],
                          sub_type=element["sub_type"],
-                         readOnly=True if element["readonly"] == "true" else False,
+                         readOnly=element["readonly"],
                          display_name=render_dict["display_name"], control=render_dict["??? control"],
                          constraints=render_dict["constraints"])
     return elem_info

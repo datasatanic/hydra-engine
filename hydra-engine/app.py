@@ -57,7 +57,7 @@ def find_groups(name, all_tree):
                 all_tree[name].child[key].child.clear()
             else:
                 all_tree[name].child[key].type = "group"
-        return all_tree[name]
+        return {name:all_tree[name]}
     for value in all_tree.values():
         return find_groups(name, value.child)
 

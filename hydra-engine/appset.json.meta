@@ -28,6 +28,8 @@ PARAMS:
         additional: # specified info
   - ConnectionStrings/CONSUL_ADDR: # Input_URL
       type: string
+      readonly: True
+      sub_type: # optional for array
       description: "connection string"
       output_url: "root/constr/service"
       render:
