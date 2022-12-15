@@ -1,6 +1,7 @@
 import copy
-
-from schemas import add_node, tree, add_additional_fields, Group
+import yaml
+import io
+from schemas import add_node, tree, add_additional_fields, get_element_info
 from fastapi.encoders import jsonable_encoder
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
@@ -75,3 +76,8 @@ def get_forms():
 def get_groups(name: str):
     groups = find_groups(name, copy.deepcopy(tree))
     return JSONResponse(content=jsonable_encoder(groups), status_code=200)
+
+
+@app.get("/elements/info")
+def get_element(input_url: str):
+    return JSONResponse(get_element_info(input_url).__dict__)

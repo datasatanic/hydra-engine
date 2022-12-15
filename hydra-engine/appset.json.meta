@@ -1,0 +1,43 @@
+# .meta
+# comment files
+
+# File metadata
+
+FILE:
+  type: 'json'
+  path: 'appset.json' # Optional/ default: path w/o .meta
+
+PARAMS:
+  - ConnectionStrings/Rex: # Input_URL
+      type: string
+      sub_type: # optional for array
+      readonly: True
+      description: "REx connection string"
+      output_url: "root/constr/service"
+      render:
+        ??? control: input_control
+        display_name: "rex conn url"
+        constraints:
+          - cons1:
+              args:
+                -
+          - cons2:
+              args:
+                -
+                -
+        additional: # specified info
+  - ConnectionStrings/CONSUL_ADDR: # Input_URL
+      type: string
+      description: "connection string"
+      output_url: "root/constr/service"
+      render:
+        ??? control: input_control
+        display_name: "consul conn url"
+        constraints:
+          - cons1:
+              args:
+                -
+          - cons2:
+              args:
+                -
+                -
