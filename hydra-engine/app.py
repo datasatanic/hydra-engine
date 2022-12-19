@@ -48,18 +48,22 @@ def filter_tree(all_tree):
     return tree_filter
 
 
-def find_groups(name, all_tree):
+def find_groups(path, all_tree):
+    name = path[0]
     if name in all_tree:
         keys = list(all_tree[name].child)
         for key in keys:
             if len(all_tree[name].child[key].child) > 0:
                 all_tree[name].child[key].type = "form"
-                all_tree[name].child[key].child.clear()
+                if len(path) == 1:
+                    all_tree[name].child[key].child.clear()
             else:
                 all_tree[name].child[key].type = "group"
-        return {name:all_tree[name]}
-    for value in all_tree.values():
-        return find_groups(name, value.child)
+        if len(path) > 1:
+            path.remove(name)
+            return find_groups(path, all_tree[name].child)
+        else:
+            return {name: all_tree[name]}
 
 
 @app.get("/tree")
@@ -72,9 +76,9 @@ def get_forms():
         return JSONResponse(content={"detail": "File or directory not found"}, status_code=400)
 
 
-@app.get("/tree/{name}")
+@app.get("/tree/{name:path}")
 def get_groups(name: str):
-    groups = find_groups(name, copy.deepcopy(tree))
+    groups = find_groups(name.split("/"), copy.deepcopy(tree))
     return JSONResponse(content=jsonable_encoder(groups), status_code=200)
 
 
