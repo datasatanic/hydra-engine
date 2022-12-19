@@ -66,10 +66,14 @@ def find_groups(path, all_tree):
             return {name: all_tree[name]}
 
 
+@app.on_event("startup")
+async def startup_event():
+    read_file("controls.meta")
+
+
 @app.get("/tree")
 def get_forms():
     try:
-        read_file("controls.meta")
         forms = filter_tree(copy.deepcopy(tree))
         return JSONResponse(content=jsonable_encoder(forms), status_code=200)
     except FileNotFoundError:
