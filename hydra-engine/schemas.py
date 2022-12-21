@@ -2,6 +2,8 @@ from typing import List
 import json
 import yaml
 from pydantic import BaseModel, validator, Extra, parse_obj_as
+from parser import elements_yaml, elements_json,elements_files_info
+import os
 
 tree = {}
 
@@ -45,8 +47,6 @@ def add_node_subtree(subtree, j, _list):
                 node = Node(elem=[], child={})
                 node.elem = get_elements("/".join(_list))
                 d = {_list[j]: node}
-                if len([x for x in subtree if _list[j] in x]):
-                    raise ValueError("Not valid file")
                 subtree.update(d)
                 return
             add_node_subtree(subtree, j, _list)
@@ -70,51 +70,36 @@ def find_node(node_list):
 
 def get_elements(output_url):
     elem_list = []
-    for item in elements_yaml:
-        keys = list(item)
-        for key in keys:
-            if item[key]["output_url"] == output_url:
-                elem_list.append({key: get_value(key)})
+    for elements in elements_yaml:
+        for item in elements:
+            keys = list(item)
+            for key in keys:
+                if item[key]["output_url"] == output_url:
+                    file_path = elements_files_info[elements_yaml.index(elements)]["path"]
+                    elem_list.append({key: get_value(key, file_path), "path": file_path})
     return elem_list
 
 
-def parse_yaml():
-    with open("appset.json.meta", 'r') as stream:
-        data_loaded = yaml.safe_load(stream)
-        _elements = data_loaded["PARAMS"]
-        return _elements
-
-
-def parse_json():
-    with open("appset.json", 'r') as stream:
-        data_loaded = json.load(stream)
-        return data_loaded
-
-
-def get_value(input_url: str):
+def get_value(input_url: str, file_path: str):
     input_url_list = input_url.split("/")
     d = {}
     for key in input_url_list:
-        d = elements_json[key] if key in elements_json else d
-    return d[input_url_list[-1]]
+        for elements in elements_json:
+            d = elements[key] if key in elements and elements["path"] == file_path else d
+        return d[input_url_list[-1]]
 
 
-def get_element_info(input_url):
-    element = {}
-    for item in elements_yaml:
-        if input_url in item:
-            element = item[input_url]
-    if len(element) == 0:
-        return None
-    render_dict = element["render"]
-    elem_info = ElemInfo(type=element["type"], description=element["description"],
-                         sub_type=element["sub_type"],
-                         readOnly=element["readonly"],
-                         display_name=render_dict["display_name"], control=render_dict["??? control"],
-                         constraints=render_dict["constraints"])
-    return elem_info
-
-
-elements_yaml = parse_yaml()
-
-elements_json = parse_json()
+def get_element_info(input_url, file_path: str):
+    for elements in elements_yaml:
+        for item in elements:
+            if input_url in item and elements_files_info[elements_yaml.index(elements)]["path"] == file_path:
+                element = item[input_url]
+                if len(element) == 0:
+                    return None
+                render_dict = element["render"]
+                elem_info = ElemInfo(type=element["type"], description=element["description"],
+                                     sub_type=element["sub_type"],
+                                     readOnly=element["readonly"],
+                                     display_name=render_dict["display_name"], control=render_dict["??? control"],
+                                     constraints=render_dict["constraints"])
+                return elem_info

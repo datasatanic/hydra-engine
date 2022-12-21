@@ -23,3 +23,14 @@ root/test/TEST1:
 
 root/test/TEST2:
   description: ""
+
+root1:
+
+root1/constr:
+  description: "Connection strings"
+
+root1/constr/infras:
+  description: "Connection strings for infrastructions services"
+
+root1/constr/service:
+  description: "Connection strings for logical services"

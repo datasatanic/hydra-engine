@@ -86,6 +86,6 @@ def get_groups(name: str):
     return JSONResponse(content=jsonable_encoder(groups), status_code=200)
 
 
-@app.get("/elements/info")
-def get_element(input_url: str):
-    return JSONResponse(get_element_info(input_url).__dict__)
+@app.get("/elements/info/{input_url:path}")
+def get_element(input_url: str, file_path):
+    return JSONResponse(get_element_info(input_url, file_path).__dict__)
