@@ -1,7 +1,7 @@
 import copy
 import yaml
 import io
-from schemas import add_node, tree, add_additional_fields, get_element_info
+from schemas import add_node, tree, add_additional_fields, get_element_info, set_value, get_value
 from fastapi.encoders import jsonable_encoder
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
@@ -89,3 +89,13 @@ def get_groups(name: str):
 @app.get("/elements/info/{input_url:path}")
 def get_element(input_url: str, file_path):
     return JSONResponse(get_element_info(input_url, file_path).__dict__)
+
+
+@app.get("/element/value/{file}/{input_url:path}")
+def get_element_value(input_url: str, file: str):
+    return get_value(input_url, file)
+
+
+@app.post("/elements/values/{file:str}")
+def set_values(file: str, content: dict):
+    set_value(content["Key"], file, content["Value"])

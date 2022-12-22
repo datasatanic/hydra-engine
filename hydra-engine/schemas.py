@@ -1,8 +1,9 @@
+import copy
 from typing import List
 import json
 import yaml
 from pydantic import BaseModel, validator, Extra, parse_obj_as
-from parser import elements_yaml, elements_json,elements_files_info
+from parser import elements_yaml, elements_json, elements_files_info, write_file
 import os
 
 tree = {}
@@ -76,17 +77,33 @@ def get_elements(output_url):
             for key in keys:
                 if item[key]["output_url"] == output_url:
                     file_path = elements_files_info[elements_yaml.index(elements)]["path"]
-                    elem_list.append({key: get_value(key, file_path), "path": file_path})
+                    elem_list.append({key: file_path})
     return elem_list
 
 
 def get_value(input_url: str, file_path: str):
     input_url_list = input_url.split("/")
-    d = {}
-    for key in input_url_list:
-        for elements in elements_json:
-            d = elements[key] if key in elements and elements["path"] == file_path else d
-        return d[input_url_list[-1]]
+    key = input_url_list[0]
+    input_url_list.pop(0)
+    for elements in elements_json:
+        if key in elements and elements.get("path", "") == file_path or "path" not in elements:
+            if len(input_url_list) > 1:
+                get_value("/".join(input_url_list), file_path)
+            else:
+                return elements[key] if len(input_url_list) == 0 else elements[key][input_url_list[0]]
+
+
+def set_value(input_url: str, file_path: str, value: str):
+    input_url_list = input_url.split("/")
+    key = input_url_list[0]
+    input_url_list.pop(0)
+    for elements in elements_json:
+        if key in elements and elements.get("path", "") == file_path or "path" not in elements:
+            if len(input_url_list) != 1:
+                set_value("/".join(input_url_list), file_path, value)
+            else:
+                elements[key][input_url_list[0]] = value
+                return write_file(copy.deepcopy(elements), file_path)
 
 
 def get_element_info(input_url, file_path: str):

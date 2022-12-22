@@ -36,6 +36,12 @@ def parse_json():
     return elements
 
 
+def write_file(json_text, file_path):
+    json_text.pop("path")
+    with open(os.path.join("files", file_path), 'w') as file:
+        file.write(json.dumps(json_text))
+
+
 elements_yaml = parse_meta_params()
 elements_files_info = parse_elements_fileinfo()
 elements_json = parse_json()
