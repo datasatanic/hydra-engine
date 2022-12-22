@@ -3,7 +3,7 @@ from typing import List
 import json
 import yaml
 from pydantic import BaseModel, validator, Extra, parse_obj_as
-from parser import elements_yaml, elements_json, elements_files_info, write_file
+from parser import elements_yaml, elements_files_info, write_file, elements_json
 import os
 
 tree = {}
@@ -84,26 +84,32 @@ def get_elements(output_url):
 def get_value(input_url: str, file_path: str):
     input_url_list = input_url.split("/")
     key = input_url_list[0]
-    input_url_list.pop(0)
     for elements in elements_json:
-        if key in elements and elements.get("path", "") == file_path or "path" not in elements:
-            if len(input_url_list) > 1:
-                get_value("/".join(input_url_list), file_path)
-            else:
-                return elements[key] if len(input_url_list) == 0 else elements[key][input_url_list[0]]
+        if key in elements.values and elements.path == file_path:
+            return find_value_in_dict(elements.values, input_url_list)
+
+
+def find_value_in_dict(elements, input_url_list):
+    while len(input_url_list) > 0:
+        elements = elements[input_url_list[0]]
+        input_url_list.pop(0)
+    return elements
+
+
+def set_value_in_dict(elements, value, input_url_list):
+    while len(input_url_list) > 1:
+        elements = elements[input_url_list[0]]
+        input_url_list.pop(0)
+    elements[input_url_list[0]] = value
 
 
 def set_value(input_url: str, file_path: str, value: str):
     input_url_list = input_url.split("/")
     key = input_url_list[0]
-    input_url_list.pop(0)
     for elements in elements_json:
-        if key in elements and elements.get("path", "") == file_path or "path" not in elements:
-            if len(input_url_list) != 1:
-                set_value("/".join(input_url_list), file_path, value)
-            else:
-                elements[key][input_url_list[0]] = value
-                return write_file(copy.deepcopy(elements), file_path)
+        if key in elements.values and elements.path == file_path:
+            set_value_in_dict(elements.values, value, input_url_list)
+            return write_file(elements.values, file_path)
 
 
 def get_element_info(input_url, file_path: str):

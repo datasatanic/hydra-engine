@@ -1,6 +1,4 @@
 import copy
-import yaml
-import io
 from schemas import add_node, tree, add_additional_fields, get_element_info, set_value, get_value
 from fastapi.encoders import jsonable_encoder
 from fastapi import FastAPI

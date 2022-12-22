@@ -3,6 +3,17 @@ import yaml
 import os
 
 
+class ValuesInstance:
+    type: str
+    path: str
+    values: dict = {}
+
+    def __init__(self, _type, _path, _values):
+        self.type = _type
+        self.path = _path
+        self.values = _values
+
+
 def parse_meta_params():
     elements = []
     for filename in os.listdir("files"):
@@ -31,13 +42,12 @@ def parse_json():
         if file["type"] == "json":
             with open(os.path.join("files", file["path"]), 'r') as stream:
                 data_loaded = json.load(stream)
-                data_loaded["path"] = file["path"]
-                elements.append(data_loaded)
+                value_instance = ValuesInstance(file["type"], file["path"], data_loaded)
+                elements.append(value_instance)
     return elements
 
 
 def write_file(json_text, file_path):
-    json_text.pop("path")
     with open(os.path.join("files", file_path), 'w') as file:
         file.write(json.dumps(json_text))
 

@@ -40,3 +40,20 @@ PARAMS:
               args:
                 -
                 -
+  - Logging/LogLevel/Default: # Input_URL
+      type: string
+      readonly: True
+      sub_type: # optional for array
+      description: "default logging info"
+      output_url: "root1/constr/infras"
+      render:
+        ??? control: input_control
+        display_name: "default logging"
+        constraints:
+          - cons1:
+              args:
+                -
+          - cons2:
+              args:
+                -
+                -
