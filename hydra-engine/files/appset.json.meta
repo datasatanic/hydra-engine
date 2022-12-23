@@ -30,7 +30,7 @@ PARAMS:
       type: string
       readonly: True
       sub_type: # optional for array
-      description: "connection string"
+      description: "Consul connection string"
       output_url: "root/constr/service"
       render:
         ??? control: input_control
@@ -61,3 +61,21 @@ PARAMS:
                 -
                 -
         additional: # specified info
+
+  - Auth/RequireHttpsMetadata: # Input_URL
+      type: bool
+      readonly: False
+      sub_type: # optional for array
+      description: "auth info"
+      output_url: "root/constr"
+      render:
+        ??? control: checkbox_control
+        display_name: "auth require https Metadata"
+        constraints:
+          - cons1:
+              args:
+                -
+          - cons2:
+              args:
+                -
+                -

@@ -3,17 +3,17 @@ root:
 root/constr:
   description: "Connection strings"
 
-root/constr/infras:
-  description: "Connection strings for infrastructions services"
-
-root/constr/service:
-  description: "Connection strings for logical services"
-
 root/constr/form:
   description: "Eagle master"
 
 root/constr/form/group:
   description: "Kalash s venkami"
+
+root/constr/infras:
+  description: "Connection strings for infrastructions services"
+
+root/constr/service:
+  description: "Connection strings for logical services"
 
 root/test:
   description: ""
