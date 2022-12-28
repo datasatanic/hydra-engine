@@ -31,7 +31,7 @@ PARAMS:
       readonly: True
       sub_type: # optional for array
       description: "Consul connection string"
-      output_url: "root/constr/service"
+      output_url: "root1/constr/service"
       render:
         ??? control: input_control
         display_name: "consul conn url"

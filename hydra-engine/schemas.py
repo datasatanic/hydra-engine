@@ -1,15 +1,18 @@
 import copy
+import datetime
 from typing import List
 import json
 import yaml
 from pydantic import BaseModel, validator, Extra, parse_obj_as
 from parser import elements_yaml, elements_files_info, write_file, elements_json
+import uuid
 import os
 
 tree = {}
 
 
 class ElemInfo(BaseModel):
+    value: object
     type: str
     description: str = None
     sub_type: str = None
@@ -17,6 +20,35 @@ class ElemInfo(BaseModel):
     display_name: str
     control: str
     constraints: List = []
+
+    @validator("type")
+    def check_type(cls, value_type, values, **kwargs):
+        if value_type == "string":
+            return True
+        elif value_type == "int":
+            try:
+                int(values["value"])
+                return value_type
+            except TypeError:
+                return ValueError("Not integer type")
+        elif value_type == "bool":
+            if values["value"] == "True" or values["value"] == "False":
+                return value_type
+            return ValueError("Not boolean type")
+        elif value_type == "double":
+            try:
+                float(values["value"])
+                return value_type
+            except TypeError:
+                return ValueError("Not double type")
+        elif value_type == "datetime":
+            try:
+                datetime.datetime.strptime(values["value"], '%b %d %Y %I:%M%p')
+                return value_type
+            except TypeError:
+                return ValueError("Not datetime type")
+        elif value_type == "array":
+            return value_type
 
 
 class Node(BaseModel):
@@ -124,7 +156,5 @@ def get_element_info(input_url, file_path: str):
                                      sub_type=element["sub_type"],
                                      readOnly=element["readonly"],
                                      display_name=render_dict["display_name"], control=render_dict["??? control"],
-                                     constraints=render_dict["constraints"])
+                                     constraints=render_dict["constraints"], value=get_value(input_url, file_path))
                 return elem_info
-
-
