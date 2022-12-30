@@ -21,7 +21,7 @@ app.add_middleware(
 )
 
 
-def read_file(file_name: str):
+def read_controls_file(file_name: str):
     tree.clear()
     path = ""
     f = open(file_name)
@@ -66,7 +66,7 @@ def find_groups(path, all_tree):
 
 @app.on_event("startup")
 async def startup_event():
-    read_file("controls.meta")
+    read_controls_file("controls.meta")
 
 
 @app.get("/tree")
@@ -89,11 +89,11 @@ def get_element(input_url: str, file_path):
     return JSONResponse(get_element_info(input_url, file_path).__dict__)
 
 
-@app.get("/element/value/{file}/{input_url:path}")
-def get_element_value(input_url: str, file: str):
-    return get_value(input_url, file)
+@app.get("/element/value/{file_id}/{input_url:path}")
+def get_element_value(input_url: str, file_id: str):
+    return get_value(input_url, file_id)
 
 
-@app.post("/elements/values/{file:str}")
-def set_values(file: str, content: dict):
-    set_value(content["Key"], file, content["Value"])
+@app.post("/elements/values/{file_id:str}")
+def set_values(file_id: str, content: dict):
+    set_value(content["Key"], file_id, content["Value"])

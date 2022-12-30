@@ -108,16 +108,16 @@ def get_elements(output_url):
             keys = list(item)
             for key in keys:
                 if item[key]["output_url"] == output_url:
-                    file_path = elements_files_info[elements_yaml.index(elements)]["path"]
-                    elem_list.append({key: file_path})
+                    uid = elements_files_info[elements_yaml.index(elements)]["uid"]
+                    elem_list.append({key: uid})
     return elem_list
 
 
-def get_value(input_url: str, file_path: str):
+def get_value(input_url: str, uid: str):
     input_url_list = input_url.split("/")
     key = input_url_list[0]
     for elements in elements_json:
-        if key in elements.values and elements.path == file_path:
+        if key in elements.values and elements.uid == uid:
             return find_value_in_dict(elements.values, input_url_list)
 
 
@@ -135,19 +135,20 @@ def set_value_in_dict(elements, value, input_url_list):
     elements[input_url_list[0]] = value
 
 
-def set_value(input_url: str, file_path: str, value: str):
+def set_value(input_url: str, uid: str, value: str):
     input_url_list = input_url.split("/")
     key = input_url_list[0]
     for elements in elements_json:
-        if key in elements.values and elements.path == file_path:
+        if key in elements.values and elements.uid == uid:
             set_value_in_dict(elements.values, value, input_url_list)
-            return write_file(elements.values, file_path)
+            return write_file(elements.values, elements.path)
 
 
-def get_element_info(input_url, file_path: str):
+def get_element_info(input_url, uid: str):
+    print("-----", uid)
     for elements in elements_yaml:
         for item in elements:
-            if input_url in item and elements_files_info[elements_yaml.index(elements)]["path"] == file_path:
+            if input_url in item and elements_files_info[elements_yaml.index(elements)]["uid"] == uid:
                 element = item[input_url]
                 if len(element) == 0:
                     return None
@@ -156,5 +157,5 @@ def get_element_info(input_url, file_path: str):
                                      sub_type=element["sub_type"],
                                      readOnly=element["readonly"],
                                      display_name=render_dict["display_name"], control=render_dict["??? control"],
-                                     constraints=render_dict["constraints"], value=get_value(input_url, file_path))
+                                     constraints=render_dict["constraints"], value=get_value(input_url, uid))
                 return elem_info
