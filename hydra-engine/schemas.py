@@ -1,12 +1,7 @@
-import copy
 import datetime
 from typing import List
-import json
-import yaml
 from pydantic import BaseModel, validator, Extra, parse_obj_as
 from parser import elements_yaml, elements_files_info, write_file, elements_json
-import uuid
-import os
 
 tree = {}
 
@@ -32,7 +27,7 @@ class ElemInfo(BaseModel):
             except TypeError:
                 return ValueError("Not integer type")
         elif value_type == "bool":
-            if values["value"] == "True" or values["value"] == "False":
+            if values["value"] is True or values["value"] is False:
                 return value_type
             return ValueError("Not boolean type")
         elif value_type == "double":
@@ -141,11 +136,10 @@ def set_value(input_url: str, uid: str, value: str):
     for elements in elements_json:
         if key in elements.values and elements.uid == uid:
             set_value_in_dict(elements.values, value, input_url_list)
-            return write_file(elements.values, elements.path)
+            return write_file(elements.values, elements.path, elements.type)
 
 
 def get_element_info(input_url, uid: str):
-    print("-----", uid)
     for elements in elements_yaml:
         for item in elements:
             if input_url in item and elements_files_info[elements_yaml.index(elements)]["uid"] == uid:

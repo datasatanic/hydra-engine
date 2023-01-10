@@ -46,11 +46,11 @@ PARAMS:
   - AllowedHosts: # Input_URL
       type: array
       sub_type: string
-      readonly: False
+      readonly: True
       description: "Allowed hosts in infras"
       output_url: "root/constr/infras"
       render:
-        ??? control: label_control
+        ??? control: input_control
         display_name: "allowed hosts"
         constraints:
           - cons1:
