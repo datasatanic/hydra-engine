@@ -18,32 +18,71 @@ class ElemInfo(BaseModel):
 
     @validator("type")
     def check_type(cls, value_type, values, **kwargs):
+        if value_type is None:
+            raise ValueError("Type can't be empty")
         if value_type == "string":
-            return True
-        elif value_type == "int":
+            return value_type
+        if value_type == "int":
             try:
                 int(values["value"])
                 return value_type
             except TypeError:
                 raise ValueError("Not integer type")
-        elif value_type == "bool":
+        if value_type == "bool":
             if values["value"] is True or values["value"] is False:
                 return value_type
             raise ValueError("Not boolean type")
-        elif value_type == "double":
+        if value_type == "double":
             try:
                 float(values["value"])
                 return value_type
             except TypeError:
                 raise ValueError("Not double type")
-        elif value_type == "datetime":
+        if value_type == "datetime":
             try:
                 datetime.datetime.strptime(values["value"], '%b %d %Y %I:%M%p')
                 return value_type
             except TypeError:
                 raise ValueError("Not datetime type")
-        elif value_type == "array":
+        if value_type == "array":
             return value_type
+
+    @validator("sub_type")
+    def check_sub_type(cls, sub_type, values, **kwargs):
+        if values["type"] != "array" and sub_type is not None:
+            raise ValueError("sub_type can be not empty only when type is array")
+        if values["type"] == "array" and sub_type is None:
+            raise ValueError("sub_type can't be empty in array")
+        if sub_type == "string":
+            return sub_type
+        if sub_type == "int":
+            for item in values["value"]:
+                try:
+                    int(item)
+                except TypeError:
+                    raise ValueError(f"item {item} in array is not integer")
+            return sub_type
+        if sub_type == "bool":
+            for item in values["value"]:
+                try:
+                    bool(item)
+                except TypeError:
+                    raise ValueError(f"item {item} in array is not boolean")
+            return sub_type
+        if sub_type == "double":
+            for item in values["value"]:
+                try:
+                    float(item)
+                except TypeError:
+                    raise ValueError(f"item {item} in array is not double")
+            return sub_type
+        if sub_type == "datetime":
+            for item in values["value"]:
+                try:
+                    datetime.datetime.strptime(item, '%b %d %Y %I:%M%p')
+                except TypeError:
+                    raise ValueError(f"item {item} in array is not datetime")
+            return sub_type
 
 
 class Node(BaseModel):
