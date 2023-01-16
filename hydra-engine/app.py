@@ -1,5 +1,6 @@
 import copy
 from schemas import add_node, tree, add_additional_fields, get_element_info, set_value, get_value
+from parser import parse_config_files
 from fastapi.encoders import jsonable_encoder
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
@@ -66,6 +67,7 @@ def find_groups(path, all_tree):
 
 @app.on_event("startup")
 async def startup_event():
+    parse_config_files()
     read_controls_file("controls.meta")
 
 
@@ -97,3 +99,10 @@ def get_element_value(input_url: str, file_id: str):
 @app.post("/elements/values/{file_id:str}")
 def set_values(file_id: str, content: dict):
     set_value(content["Key"], file_id, content["Value"])
+
+
+@app.get("/update/data")
+def update_data():
+    parse_config_files()
+    read_controls_file("controls.meta")
+    return {"message": "ok"}

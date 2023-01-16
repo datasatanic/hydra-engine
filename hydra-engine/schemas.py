@@ -1,7 +1,7 @@
 import datetime
 from typing import List
 from pydantic import BaseModel, validator, Extra, parse_obj_as
-from parser import elements_yaml, elements_files_info, write_file, elements_json
+from parser import write_file, elements_json, elements_yaml, elements_files_info
 
 tree = {}
 
@@ -25,23 +25,23 @@ class ElemInfo(BaseModel):
                 int(values["value"])
                 return value_type
             except TypeError:
-                return ValueError("Not integer type")
+                raise ValueError("Not integer type")
         elif value_type == "bool":
             if values["value"] is True or values["value"] is False:
                 return value_type
-            return ValueError("Not boolean type")
+            raise ValueError("Not boolean type")
         elif value_type == "double":
             try:
                 float(values["value"])
                 return value_type
             except TypeError:
-                return ValueError("Not double type")
+                raise ValueError("Not double type")
         elif value_type == "datetime":
             try:
                 datetime.datetime.strptime(values["value"], '%b %d %Y %I:%M%p')
                 return value_type
             except TypeError:
-                return ValueError("Not datetime type")
+                raise ValueError("Not datetime type")
         elif value_type == "array":
             return value_type
 
