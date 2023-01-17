@@ -20,9 +20,9 @@ class ValuesInstance:
 
 def parse_meta_params():
     elements_yaml.clear()
-    for filename in os.listdir("files"):
+    for filename in os.listdir("files/config_files"):
         if "meta" in filename:
-            with open(os.path.join("files", filename), 'r') as stream:
+            with open(os.path.join("files/config_files", filename), 'r') as stream:
                 data_loaded = yaml.safe_load(stream)
                 _elements = data_loaded["PARAMS"]
                 for element in elements_json:
@@ -34,9 +34,9 @@ def parse_meta_params():
 
 def parse_elements_fileinfo():
     elements_files_info.clear()
-    for filename in os.listdir("files"):
+    for filename in os.listdir("files/config_files"):
         if "meta" in filename:
-            with open(os.path.join("files", filename), 'r') as stream:
+            with open(os.path.join("files/config_files", filename), 'r') as stream:
                 data_loaded = yaml.safe_load(stream)
                 _elements = data_loaded["FILE"]
                 elements_files_info.append(_elements)
@@ -46,19 +46,19 @@ def parse_value_files():
     elements_json.clear()
     for file in elements_files_info:
         if file["type"] == "json":
-            with open(os.path.join("files", file["path"]), 'r') as stream:
+            with open(os.path.join("files/config_files", file["path"]), 'r') as stream:
                 data_loaded = json.load(stream)
                 value_instance = ValuesInstance(file["type"], file["path"], uuid.uuid4().hex, data_loaded)
                 elements_json.append(value_instance)
         if file["type"] == "yaml":
-            with open(os.path.join("files", file["path"]), 'r') as stream:
+            with open(os.path.join("files/config_files", file["path"]), 'r') as stream:
                 data_loaded = yaml.safe_load(stream)
                 value_instance = ValuesInstance(file["type"], file["path"], uuid.uuid4().hex, data_loaded)
                 elements_json.append(value_instance)
 
 
 def write_file(data, file_path, file_type):
-    with open(os.path.join("files", file_path), 'w') as file:
+    with open(os.path.join("files/config_files", file_path), 'w') as file:
         if file_type == "json":
             file.write(json.dumps(data, sort_keys=False))
         if file_type == "yaml":

@@ -68,7 +68,7 @@ def find_groups(path, all_tree):
 @app.on_event("startup")
 async def startup_event():
     parse_config_files()
-    read_controls_file("controls.meta")
+    read_controls_file("files/controls.meta")
 
 
 @app.get("/tree")
@@ -104,5 +104,5 @@ def set_values(file_id: str, content: dict):
 @app.get("/update/data")
 def update_data():
     parse_config_files()
-    read_controls_file("controls.meta")
+    read_controls_file("files/controls.meta")
     return {"message": "ok"}

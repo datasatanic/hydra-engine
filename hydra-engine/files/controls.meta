@@ -34,3 +34,14 @@ root1/constr/infras:
 
 root1/constr/service:
   description: "Connection strings for logical services"
+
+root2:
+
+root2/constr:
+  description: "Connection strings"
+
+root2/constr/infras:
+  description: "Connection strings for infrastructions services"
+
+root2/constr/group:
+  description: "Connection strings for logical services"
