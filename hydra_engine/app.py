@@ -71,6 +71,11 @@ async def startup_event():
     read_controls_file("files/controls.meta")
 
 
+@app.get('/health')
+async def stats():
+    return {'service': 'hydra-engine', 'status': 'Serve'}
+
+
 @app.get("/tree")
 def get_forms():
     try:
