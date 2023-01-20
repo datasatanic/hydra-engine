@@ -1,47 +1,62 @@
 root:
+    display_name:"Root"
 
 root/constr:
   description: "Connection strings"
+  display_name:"Connection strings"
 
 root/constr/form:
   description: "Eagle master"
+  display_name:"Form"
 
 root/constr/form/group:
   description: "Kalash s venkami"
+  display_name:"Group"
 
 root/constr/infras:
   description: "Connection strings for infrastructions services"
+  display_name:"Infrastructure"
 
 root/constr/service:
   description: "Connection strings for logical services"
+  display_name:"Service"
 
 root/test:
   description: ""
+  display_name:"Test"
 
 root/test/TEST1:
   description: ""
+  display_name:"Test1"
 
 root/test/TEST2:
   description: ""
+  display_name:"Test2"
 
 root1:
-
+    display_name:"Root1"
 root1/constr:
   description: "Connection strings"
+  display_name:"Connection Strings"
 
 root1/constr/infras:
   description: "Connection strings for infrastructions services"
+  display_name:"Infrastructure"
 
 root1/constr/service:
   description: "Connection strings for logical services"
+  display_name:"Service"
 
 root2:
-
+    display_name:"Root2"
 root2/constr:
   description: "Connection strings"
+  display_name:"Connection strings"
 
 root2/constr/infras:
   description: "Connection strings for infrastructions services"
+  display_name:"Infrastructure"
 
 root2/constr/group:
   description: "Connection strings for logical services"
+  display_name:"Group"
