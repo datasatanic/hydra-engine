@@ -6,6 +6,9 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
+from hydra_engine.search.searcher import HydraSearcher
+from hydra_engine.search.index_schema import HydraIndexScheme
+
 app = FastAPI()
 origins = [
     "http://localhost",
@@ -69,6 +72,7 @@ def find_groups(path, all_tree):
 async def startup_event():
     parse_config_files()
     read_controls_file("files/controls.meta")
+    await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
 
 
 @app.get("/tree")
@@ -106,3 +110,9 @@ def update_data():
     parse_config_files()
     read_controls_file("files/controls.meta")
     return {"message": "ok"}
+
+
+@app.post("/debug_search_2")
+async def debug_search_2(q):
+    r = await HydraSearcher().perform_search(q)
+    return JSONResponse(content=r) if r != 'not exists' else JSONResponse(content={'index': r})
