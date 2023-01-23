@@ -1,8 +1,9 @@
 import copy
+
 from schemas import add_node, tree, add_additional_fields, get_element_info, set_value, get_value
 from parser import parse_config_files
 from fastapi.encoders import jsonable_encoder
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -26,6 +27,9 @@ app.add_middleware(
 
 
 def read_controls_file(file_name: str):
+    """
+        Reads meta file of tree and creates structured tree
+    """
     tree.clear()
     path = ""
     f = open(file_name)
@@ -40,6 +44,9 @@ def read_controls_file(file_name: str):
 
 
 def filter_tree(all_tree):
+    """
+        Deletes empty nodes with no child elements
+    """
     tree_filter = all_tree
     keys = list(tree_filter)
     for key in keys:
@@ -51,6 +58,7 @@ def filter_tree(all_tree):
 
 
 def find_groups(path, all_tree):
+
     name = path[0]
     if name in all_tree:
         keys = list(all_tree[name].child)
@@ -112,7 +120,17 @@ def update_data():
     return {"message": "ok"}
 
 
-@app.post("/debug_search_2")
-async def debug_search_2(q):
-    r = await HydraSearcher().perform_search(q)
-    return JSONResponse(content=r) if r != 'not exists' else JSONResponse(content={'index': r})
+@app.post("/debug_s1")
+def debug1():
+    return tree
+
+
+@app.get("/search")
+async def search(q,
+                 pagenum: int = Query(title='page number of search results',
+                                      ge=1, default=None),
+                 pagelen: int = Query(title='count of page results in single page to return',
+                                      ge=1, le=None, default=None)
+                 ):
+    results = await HydraSearcher().perform_search(q, pagenum, pagelen)
+    return JSONResponse(content=results) if results != 'not exists' else JSONResponse(content={'index': results})

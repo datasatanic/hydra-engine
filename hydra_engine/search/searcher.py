@@ -41,7 +41,7 @@ class HydraSearcher(metaclass=SingletonMeta):
 
     def __init__(self, index_name: str, schema):
         self.pagelen = 10
-        self.pagelen_limit = 10
+        self.pagelen_limit = 1000
         self.accessible_when_reindex = config.accessible_when_reindex
         self._main_index_lock = True
         self._wait_for_add_tasks = False
@@ -299,7 +299,7 @@ class HydraSearcher(metaclass=SingletonMeta):
         for r in results:
             d = {**r}
             if highlight:
-                for f in self.schema.showable_fields:
+                for f in self.schema.highlightable:
                     if r[f] and isinstance(r[f], str):
                         d[f] = r.highlights(f) or r[f]
 
