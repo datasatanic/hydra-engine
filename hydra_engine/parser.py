@@ -36,10 +36,12 @@ def parse_elements_fileinfo():
     elements_files_info.clear()
     for filename in os.listdir("files/config_files"):
         if "meta" in filename:
-            with open(os.path.join("files/config_files", filename), 'r') as stream:
-                data_loaded = yaml.safe_load(stream)
-                _elements = data_loaded["FILE"]
-                elements_files_info.append(_elements)
+            if os.path.isfile(os.path.join("files/config_files", filename)):
+                with open(os.path.join("files/config_files", filename), 'r') as stream:
+                    data_loaded = yaml.safe_load(stream)
+                    if data_loaded is not None:
+                        _elements = data_loaded["FILE"]
+                        elements_files_info.append(_elements)
 
 
 def parse_value_files():
@@ -69,7 +71,6 @@ def parse_config_files():
     parse_elements_fileinfo()
     parse_value_files()
     parse_meta_params()
-
 
 elements_files_info = []
 elements_json = []

@@ -5,6 +5,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from filewatcher import start_monitoring_files
 
 app = FastAPI()
 origins = [
@@ -67,6 +68,7 @@ def find_groups(path, all_tree):
 
 @app.on_event("startup")
 async def startup_event():
+    start_monitoring_files()
     parse_config_files()
     read_controls_file("files/controls.meta")
 

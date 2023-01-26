@@ -1,12 +1,12 @@
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from app import parse_config_files, read_controls_file
+import app
 
 
 class EventHandler(FileSystemEventHandler):
     def on_any_event(self, event):
-        parse_config_files()
-        read_controls_file("files/controls.meta")
+        app.parse_config_files()
+        app.read_controls_file("files/controls.meta")
 
     def on_created(self, event):
         pass
@@ -24,5 +24,5 @@ class EventHandler(FileSystemEventHandler):
 def start_monitoring_files():
     event_handler = EventHandler()
     observer = Observer()
-    observer.schedule(event_handler, path='files', recursive=False)
+    observer.schedule(event_handler, path='files', recursive=True)
     observer.start()
