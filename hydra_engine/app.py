@@ -1,11 +1,15 @@
 import copy
+
 from schemas import add_node, tree, add_additional_fields, get_element_info, set_value, get_value
 from parser import parse_config_files
 from fastapi.encoders import jsonable_encoder
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from filewatcher import start_monitoring_files
+
+from hydra_engine.search.searcher import HydraSearcher
+from hydra_engine.search.index_schema import HydraIndexScheme
 
 app = FastAPI()
 origins = [
@@ -24,6 +28,9 @@ app.add_middleware(
 
 
 def read_controls_file(file_name: str):
+    """
+        Reads meta file of tree and creates structured tree
+    """
     tree.clear()
     path = ""
     f = open(file_name)
@@ -38,6 +45,9 @@ def read_controls_file(file_name: str):
 
 
 def filter_tree(all_tree):
+    """
+        Deletes empty nodes with no child elements
+    """
     tree_filter = all_tree
     keys = list(tree_filter)
     for key in keys:
@@ -49,6 +59,7 @@ def filter_tree(all_tree):
 
 
 def find_groups(path, all_tree):
+
     name = path[0]
     if name in all_tree:
         keys = list(all_tree[name].child)
@@ -71,6 +82,7 @@ async def startup_event():
     start_monitoring_files()
     parse_config_files()
     read_controls_file("files/controls.meta")
+    await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
 
 
 @app.get('/health')
@@ -113,3 +125,19 @@ def update_data():
     parse_config_files()
     read_controls_file("files/controls.meta")
     return {"message": "ok"}
+
+
+@app.post("/debug_s1")
+def debug1():
+    return tree
+
+
+@app.get("/search")
+async def search(q,
+                 pagenum: int = Query(title='page number of search results',
+                                      ge=1, default=None),
+                 pagelen: int = Query(title='count of page results in single page to return',
+                                      ge=1, le=None, default=None)
+                 ):
+    results = await HydraSearcher().perform_search(q, pagenum, pagelen)
+    return JSONResponse(content=results) if results != 'not exists' else JSONResponse(content={'index': results})

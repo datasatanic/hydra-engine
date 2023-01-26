@@ -9,8 +9,12 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.85.1"
+nltk = "^3.7"
 hypercorn = "^0.14.3"
 watchdog = "^2.2.1"
+whoosh = "^2.7.0"
+pytz = "^2022.7.1"
+apscheduler = "^3.9.1.post1"
 
 
 [tool.poetry.group.dev.dependencies]

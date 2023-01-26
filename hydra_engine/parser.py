@@ -5,6 +5,11 @@ import yaml
 import os
 
 
+elements_files_info = []
+elements_json = []
+elements_yaml = []
+
+
 class ValuesInstance:
     type: str
     path: str
@@ -71,6 +76,7 @@ def parse_config_files():
     parse_elements_fileinfo()
     parse_value_files()
     parse_meta_params()
+
 
 elements_files_info = []
 elements_json = []
