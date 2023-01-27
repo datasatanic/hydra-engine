@@ -16,7 +16,7 @@ PARAMS:
       output_url: "root/constr/service"
       render:
         ??? control: input_control
-        display_name: "rex conn url"
+        display_name: "Rex conn url"
         constraints:
           - cons1:
               args:

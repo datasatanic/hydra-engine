@@ -142,8 +142,9 @@ def get_elements(output_url):
             keys = list(item)
             for key in keys:
                 if item[key]["output_url"] == output_url:
-                    uid = elements_files_info[elements_yaml.index(elements)]["uid"]
-                    elem_list.append({key: uid})
+                    if elements_yaml.index(elements) < len(elements_files_info):
+                        uid = elements_files_info[elements_yaml.index(elements)]["uid"]
+                        elem_list.append({key: uid})
     return elem_list
 
 
