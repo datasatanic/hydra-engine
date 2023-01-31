@@ -51,6 +51,7 @@ def filter_tree(all_tree):
     tree_filter = all_tree
     keys = list(tree_filter)
     for key in keys:
+        tree_filter[key].elem.clear()
         if len(tree_filter[key].child) == 0:
             tree_filter.pop(key)
         else:
@@ -59,7 +60,6 @@ def filter_tree(all_tree):
 
 
 def find_groups(path, all_tree):
-
     name = path[0]
     if name in all_tree:
         keys = list(all_tree[name].child)
@@ -100,7 +100,7 @@ def get_forms():
 
 
 @app.get("/tree/{name:path}")
-def get_groups(name: str):
+def get_form_info(name: str):
     groups = find_groups(name.split("/"), copy.deepcopy(tree))
     return JSONResponse(content=jsonable_encoder(groups), status_code=200)
 

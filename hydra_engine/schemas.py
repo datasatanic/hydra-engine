@@ -8,6 +8,7 @@ tree = {}
 
 class ElemInfo(BaseModel):
     value: object
+    file_id: str
     type: str
     description: str = None
     sub_type: str = None
@@ -144,7 +145,7 @@ def get_elements(output_url):
                 if item[key]["output_url"] == output_url:
                     if elements_yaml.index(elements) < len(elements_files_info):
                         uid = elements_files_info[elements_yaml.index(elements)]["uid"]
-                        elem_list.append({key: uid})
+                        elem_list.append({key: get_element_info(key, uid)})
     return elem_list
 
 
@@ -191,5 +192,6 @@ def get_element_info(input_url, uid: str):
                                      sub_type=element["sub_type"],
                                      readOnly=element["readonly"],
                                      display_name=render_dict["display_name"], control=render_dict["??? control"],
-                                     constraints=render_dict["constraints"], value=get_value(input_url, uid))
+                                     constraints=render_dict["constraints"], value=get_value(input_url, uid),
+                                     file_id=uid)
                 return elem_info
