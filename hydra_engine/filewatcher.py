@@ -24,5 +24,5 @@ class EventHandler(FileSystemEventHandler):
 def start_monitoring_files():
     event_handler = EventHandler()
     observer = Observer()
-    observer.schedule(event_handler, path='files', recursive=True)
+    observer.schedule(event_handler, path='files', recursive=False)
     observer.start()

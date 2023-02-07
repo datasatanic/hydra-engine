@@ -1,4 +1,5 @@
 import copy
+import logging
 
 from schemas import add_node, tree, add_additional_fields, get_element_info, set_value, get_value
 from parser import parse_config_files
@@ -11,6 +12,7 @@ from filewatcher import start_monitoring_files
 from hydra_engine.search.searcher import HydraSearcher
 from hydra_engine.search.index_schema import HydraIndexScheme
 
+logger = logging.getLogger("common_logger")
 app = FastAPI()
 origins = [
     "http://localhost",
@@ -33,15 +35,18 @@ def read_controls_file(file_name: str):
     """
     tree.clear()
     path = ""
-    f = open(file_name)
-    for line in f:
-        str_list = list(filter(lambda x: len(x), line.replace('\n', '').strip().split(":")))
-        if line != '\n':
-            if len(str_list) == 1:
-                path = str_list[0]
-                add_node(path.split("/"))
-            else:
-                add_additional_fields(path.split("/"), str_list)
+    try:
+        f = open(file_name)
+        for line in f:
+            str_list = list(filter(lambda x: len(x), line.replace('\n', '').strip().split(":")))
+            if line != '\n':
+                if len(str_list) == 1:
+                    path = str_list[0]
+                    add_node(path.split("/"))
+                else:
+                    add_additional_fields(path.split("/"), str_list)
+    except Exception as e:
+        logger.error(f"Error in parsing meta file of tree {e}")
 
 
 def filter_tree(all_tree):
@@ -79,9 +84,13 @@ def find_groups(path, all_tree):
 
 @app.on_event("startup")
 async def startup_event():
-    parse_config_files()
-    read_controls_file("files/controls.meta")
-    start_monitoring_files()
+    logger.debug("Start parsing directory")
+    try:
+        parse_config_files()
+        read_controls_file("files/controls.meta")
+        logger.debug("Directory has been parsed successfully")
+    except Exception as e:
+        logger.error(f"Error in parsing files with {e}")
     await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
 
 
@@ -118,6 +127,8 @@ def get_element_value(input_url: str, file_id: str):
 @app.post("/elements/values/{file_id:str}")
 def set_values(file_id: str, content: dict):
     set_value(content["Key"], file_id, content["Value"])
+    read_controls_file("files/controls.meta")
+    return content
 
 
 @app.get("/update/data")

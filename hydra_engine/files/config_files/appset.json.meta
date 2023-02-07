@@ -11,7 +11,7 @@ PARAMS:
   - ConnectionStrings/Rex: # Input_URL
       type: string
       sub_type: # optional for array
-      readonly: True
+      readonly: False
       description: "REx connection string"
       output_url: "root/constr/service"
       render:
@@ -26,23 +26,6 @@ PARAMS:
                 -
                 -
         additional: # specified info
-  - ConnectionStrings/CONSUL_ADDR: # Input_URL
-      type: string
-      readonly: True
-      sub_type: # optional for array
-      description: "Consul connection string"
-      output_url: "root1/constr/service"
-      render:
-        ??? control: input_control
-        display_name: "consul conn url"
-        constraints:
-          - cons1:
-              args:
-                -
-          - cons2:
-              args:
-                -
-                -
   - AllowedHosts: # Input_URL
       type: array
       sub_type: string

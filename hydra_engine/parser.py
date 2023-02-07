@@ -1,10 +1,10 @@
 import json
 import uuid
-
+import logging
 import yaml
 import os
 
-
+logger = logging.getLogger("common_logger")
 elements_files_info = []
 elements_json = []
 elements_yaml = []
@@ -64,12 +64,16 @@ def parse_value_files():
                 elements_json.append(value_instance)
 
 
-def write_file(data, file_path, file_type):
-    with open(os.path.join("files/config_files", file_path), 'w') as file:
-        if file_type == "json":
-            file.write(json.dumps(data, sort_keys=False))
-        if file_type == "yaml":
-            file.write(yaml.safe_dump(data, sort_keys=False))
+def write_file(data, file_path, file_type, key,value):
+    try:
+        with open(os.path.join("files/config_files", file_path), 'w') as file:
+            if file_type == "json":
+                file.write(json.dumps(data, sort_keys=False))
+            if file_type == "yaml":
+                file.write(yaml.safe_dump(data, sort_keys=False))
+        logger.info(f"File {file_path} was modified to value {value} in parameter {key}")
+    except Exception as e:
+        logger.error(f"Error in editing file {file_path} with {e}")
 
 
 def parse_config_files():

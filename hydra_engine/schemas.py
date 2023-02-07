@@ -2,8 +2,10 @@ import datetime
 from typing import List
 from pydantic import BaseModel, validator, Extra, parse_obj_as
 from parser import write_file, elements_json, elements_yaml, elements_files_info
+import logging
 
 tree = {}
+logger = logging.getLogger('common_logger')
 
 
 class ElemInfo(BaseModel):
@@ -172,12 +174,13 @@ def set_value_in_dict(elements, value, input_url_list):
 
 
 def set_value(input_url: str, uid: str, value: str):
+    logger.debug(f"post {value} in {input_url}")
     input_url_list = input_url.split("/")
     key = input_url_list[0]
     for elements in elements_json:
         if key in elements.values and elements.uid == uid:
             set_value_in_dict(elements.values, value, input_url_list)
-            return write_file(elements.values, elements.path, elements.type)
+            return write_file(elements.values, elements.path, elements.type, input_url, value)
 
 
 def get_element_info(input_url, uid: str):
