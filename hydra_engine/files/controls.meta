@@ -60,3 +60,74 @@ root2/constr2/infras:
 root2/constr2/group1:
   description: "Connection strings for logical services"
   display_name:"Group1"
+
+root3:
+    display_name:"Root3"
+root3/constr2:
+  description: "Connection3 strings"
+  display_name:"Connection3 strings"
+
+root3/constr2/infras:
+  description: "Connection strings for infrastructions services"
+  display_name:"Infrastructure"
+
+root3/constr2/group1:
+  description: "Connection strings for logical services"
+  display_name:"Group1"
+
+root3/constr:
+    display_name:"Connection strings"
+
+root3/constr/infras2:
+    display_name:"Infrastructure2"
+
+root3/constr/group:
+    display_name:"Group"
+
+root4:
+    display_name:"Root4"
+root4/constr2:
+  description: "Connection1 strings"
+  display_name:"Connection1 strings"
+
+root4/constr2/infras:
+  description: "Connection strings for infrastructions services"
+  display_name:"Infrastructure"
+
+root4/constr2/group1:
+  description: "Connection strings for logical services"
+  display_name:"Group1"
+
+root4/constr:
+    display_name:"Connection1 strings"
+
+root4/constr/infras2:
+    display_name:"Connection1 strings"
+
+root4/constr/group:
+    display_name:"Connection1 strings"
+
+root5:
+    display_name:"Root5"
+root5/constr2:
+  description: "Connection1 strings"
+  display_name:"Connection1 strings"
+
+root5/constr2/infras:
+  description: "Connection strings for infrastructions services"
+  display_name:"Infrastructure"
+
+root5/constr2/group1:
+  description: "Connection strings for logical services"
+  display_name:"Group1"
+
+root5/constr:
+    display_name:"Connection1 strings"
+
+root5/constr/infras2:
+    display_name:"Connection1 strings"
+
+root5/constr/group:
+    display_name:"Connection1 strings"
+
+

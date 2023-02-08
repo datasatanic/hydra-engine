@@ -77,6 +77,9 @@ def write_file(data, file_path, file_type, key,value):
 
 
 def parse_config_files():
-    parse_elements_fileinfo()
-    parse_value_files()
-    parse_meta_params()
+    try:
+        parse_elements_fileinfo()
+        parse_value_files()
+        parse_meta_params()
+    except Exception as e:
+        logger.error(f"Error in parsing configuration files with {e}")

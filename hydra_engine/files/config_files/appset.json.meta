@@ -29,7 +29,7 @@ PARAMS:
   - AllowedHosts: # Input_URL
       type: array
       sub_type: string
-      readonly: True
+      readonly: False
       description: "Allowed hosts in infras"
       output_url: "root/constr/infras"
       render:
