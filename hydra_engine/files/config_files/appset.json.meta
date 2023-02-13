@@ -62,3 +62,20 @@ PARAMS:
               args:
                 -
                 -
+  - key1:
+      type: array
+      readonly: True
+      sub_type: datetime
+      description: "auth info"
+      output_url: "root/constr"
+      render:
+        ??? control: datetime_control
+        display_name: "key1"
+        constraints:
+          - cons1:
+              args:
+                -
+          - cons2:
+              args:
+                -
+                -

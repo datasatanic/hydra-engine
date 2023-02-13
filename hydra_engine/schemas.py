@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from typing import List
 from pydantic import BaseModel, validator, Extra, parse_obj_as
 from parser import write_file, elements_json, elements_yaml, elements_files_info
@@ -43,7 +43,8 @@ class ElemInfo(BaseModel):
                 raise ValueError("Not double type")
         if value_type == "datetime":
             try:
-                datetime.datetime.strptime(values["value"], '%b %d %Y %I:%M%p')
+                date = datetime.strptime(values["value"], '%a, %d %b %Y %H:%M:%S')
+                values["value"] = date.isoformat()
                 return value_type
             except TypeError:
                 raise ValueError("Not datetime type")
@@ -82,7 +83,8 @@ class ElemInfo(BaseModel):
         if sub_type == "datetime":
             for item in values["value"]:
                 try:
-                    datetime.datetime.strptime(item, '%b %d %Y %I:%M%p')
+                    date = datetime.strptime(item, '%a, %d %b %Y %H:%M:%S')
+                    values["value"][values["value"].index(item)] = date.isoformat()
                 except TypeError:
                     raise ValueError(f"item {item} in array is not datetime")
             return sub_type
