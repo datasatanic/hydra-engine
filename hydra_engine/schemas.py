@@ -1,11 +1,19 @@
 from datetime import datetime
-from typing import List
+from typing import List, Literal
 from pydantic import BaseModel, validator, Extra, parse_obj_as
 from parser import write_file, elements_json, elements_yaml, elements_files_info
 import logging
 
 tree = {}
 logger = logging.getLogger('common_logger')
+
+
+class ConstraintItem(BaseModel):
+    value: str
+    type: Literal['maxlength', 'minlength', 'pattern', 'cols', 'rows', 'min', 'max', 'format']
+
+    class Config:
+        orm_mode = True
 
 
 class ElemInfo(BaseModel):
@@ -17,7 +25,7 @@ class ElemInfo(BaseModel):
     readOnly: bool = False
     display_name: str
     control: str
-    constraints: List = []
+    constraints: List=None
 
     @validator("type")
     def check_type(cls, value_type, values, **kwargs):

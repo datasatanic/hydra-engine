@@ -15,13 +15,6 @@ PARAMS:
         ??? control: input_control
         display_name: "rex conn url"
         constraints:
-          - cons1:
-              args:
-                -
-          - cons2:
-              args:
-                -
-                -
         additional: # specified info
   - Logging/LogLevel/Default: # Input_URL
       type: string
@@ -33,10 +26,3 @@ PARAMS:
         ??? control: input_control
         display_name: "default logging"
         constraints:
-          - cons1:
-              args:
-                -
-          - cons2:
-              args:
-                -
-                -

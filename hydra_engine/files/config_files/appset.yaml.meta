@@ -15,11 +15,4 @@ PARAMS:
         ??? control: input_control
         display_name: "PG Username"
         constraints:
-          - cons1:
-              args:
-                -
-          - cons2:
-              args:
-                -
-                -
         additional: # specified info

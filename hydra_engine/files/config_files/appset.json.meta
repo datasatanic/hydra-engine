@@ -18,13 +18,8 @@ PARAMS:
         ??? control: input_control
         display_name: "Rex conn url"
         constraints:
-          - cons1:
-              args:
-                -
-          - cons2:
-              args:
-                -
-                -
+          - maxlength: 23
+          - minlength: 21
         additional: # specified info
   - AllowedHosts: # Input_URL
       type: array
@@ -36,13 +31,6 @@ PARAMS:
         ??? control: input_control
         display_name: "allowed hosts"
         constraints:
-          - cons1:
-              args:
-                -
-          - cons2:
-              args:
-                -
-                -
         additional: # specified info
 
   - Auth/RequireHttpsMetadata: # Input_URL
@@ -55,13 +43,7 @@ PARAMS:
         ??? control: checkbox_control
         display_name: "auth require https Metadata"
         constraints:
-          - cons1:
-              args:
-                -
-          - cons2:
-              args:
-                -
-                -
+
   - key1:
       type: array
       readonly: True
@@ -72,10 +54,3 @@ PARAMS:
         ??? control: datetime_control
         display_name: "key1"
         constraints:
-          - cons1:
-              args:
-                -
-          - cons2:
-              args:
-                -
-                -
