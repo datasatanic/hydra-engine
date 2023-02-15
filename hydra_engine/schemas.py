@@ -1,16 +1,25 @@
 from datetime import datetime
+import maya
 from typing import List, Literal
 from pydantic import BaseModel, validator, Extra, parse_obj_as
 from parser import write_file, elements_json, elements_yaml, elements_files_info
 import logging
+import re
 
 tree = {}
 logger = logging.getLogger('common_logger')
 
+types = Literal["string", "int", "bool", "datetime", "array"]
+sub_types = Literal["string", "int", "bool", "datetime"]
+constraints = Literal[
+    'maxlength', 'minlength', 'pattern', 'cols', 'rows', 'min', 'max', 'format', "pattern", "size", "resize"]
+controls = Literal[
+    "input_control", "textarea_control", "list_control", "checkbox_control", "number_control", "datetime_control", "date_control", "time_control"]
+
 
 class ConstraintItem(BaseModel):
     value: str
-    type: Literal['maxlength', 'minlength', 'pattern', 'cols', 'rows', 'min', 'max', 'format']
+    type: constraints
 
     class Config:
         orm_mode = True
@@ -19,18 +28,18 @@ class ConstraintItem(BaseModel):
 class ElemInfo(BaseModel):
     value: object
     file_id: str
-    type: str
+    type: types
     description: str = None
-    sub_type: str = None
+    sub_type: sub_types = None
     readOnly: bool = False
     display_name: str
-    control: str
-    constraints: List=None
+    control: controls
+    constraints: List[ConstraintItem] = None
 
     @validator("type")
     def check_type(cls, value_type, values, **kwargs):
         if value_type is None:
-            raise ValueError("Type can't be empty")
+            raise TypeError("Type can't be empty")
         if value_type == "string":
             return value_type
         if value_type == "int":
@@ -38,33 +47,33 @@ class ElemInfo(BaseModel):
                 int(values["value"])
                 return value_type
             except TypeError:
-                raise ValueError("Not integer type")
+                raise TypeError("Not integer type")
         if value_type == "bool":
             if values["value"] is True or values["value"] is False:
                 return value_type
-            raise ValueError("Not boolean type")
+            raise TypeError("Not boolean type")
         if value_type == "double":
             try:
                 float(values["value"])
                 return value_type
             except TypeError:
-                raise ValueError("Not double type")
+                raise TypeError("Not double type")
         if value_type == "datetime":
             try:
-                date = datetime.strptime(values["value"], '%a, %d %b %Y %H:%M:%S')
-                values["value"] = date.isoformat()
+                date = maya.parse(values["value"]).datetime()
+                values["value"] = date.replace(tzinfo=None).isoformat()
                 return value_type
             except TypeError:
-                raise ValueError("Not datetime type")
+                raise TypeError("Not datetime type")
         if value_type == "array":
             return value_type
 
     @validator("sub_type")
     def check_sub_type(cls, sub_type, values, **kwargs):
         if values["type"] != "array" and sub_type is not None:
-            raise ValueError("sub_type can be not empty only when type is array")
+            raise TypeError("sub_type can be not empty only when type is array")
         if values["type"] == "array" and sub_type is None:
-            raise ValueError("sub_type can't be empty in array")
+            raise TypeError("sub_type can't be empty in array")
         if sub_type == "string":
             return sub_type
         if sub_type == "int":
@@ -72,30 +81,131 @@ class ElemInfo(BaseModel):
                 try:
                     int(item)
                 except TypeError:
-                    raise ValueError(f"item {item} in array is not integer")
+                    raise TypeError(f"item {item} in array is not integer")
             return sub_type
         if sub_type == "bool":
             for item in values["value"]:
                 try:
                     bool(item)
                 except TypeError:
-                    raise ValueError(f"item {item} in array is not boolean")
+                    raise TypeError(f"item {item} in array is not boolean")
             return sub_type
         if sub_type == "double":
             for item in values["value"]:
                 try:
                     float(item)
                 except TypeError:
-                    raise ValueError(f"item {item} in array is not double")
+                    raise TypeError(f"item {item} in array is not double")
             return sub_type
         if sub_type == "datetime":
             for item in values["value"]:
                 try:
-                    date = datetime.strptime(item, '%a, %d %b %Y %H:%M:%S')
-                    values["value"][values["value"].index(item)] = date.isoformat()
+                    date = maya.parse(item).datetime()
+                    values["value"][values["value"].index(item)] = date.replace(tzinfo=None).isoformat()
                 except TypeError:
-                    raise ValueError(f"item {item} in array is not datetime")
+                    raise TypeError(f"item {item} in array is not datetime")
             return sub_type
+
+    @validator("constraints")
+    def check_constraints(cls, elem_constraints, values, **kwargs):
+        if values["control"] != "checkbox_control":
+            check_allowed_constraints(elem_constraints, values["control"])
+        else:
+            if elem_constraints:
+                raise ValueError("checkbox_control can't be have constraints")
+        check_constraints_values(elem_constraints, values)
+
+
+def check_allowed_constraints(elem_constraints, control):
+    for constraint in elem_constraints:
+        if constraint.type not in get_control_constraints(control):
+            raise ValueError(f"Constraint {constraint.type} not allowed in {control}")
+
+
+def check_constraints_values(elem_constraints, elem):
+    for constraint in elem_constraints:
+        match constraint.type:
+            case "maxlength":
+                try:
+                    int(constraint.value)
+                except TypeError:
+                    raise TypeError(f"In constraint maxlength value must be integer")
+            case "minlength":
+                try:
+                    int(constraint.value)
+                except TypeError:
+                    raise TypeError(f"In constraint minlength value must be integer")
+            case "size":
+                try:
+                    int(constraint.value)
+                except TypeError:
+                    raise TypeError(f"In constraint size value must be integer")
+            case "pattern":
+                if re.match(constraint.value, elem["value"]) is None:
+                    raise ValueError(f"The string does not match the regular expression")
+            case "min":
+                if elem["control"] == "datetime_control" or elem["control"] == "date_control" \
+                        or elem["control"] == "time_control":
+                    try:
+                        date = maya.parse(constraint.value).datetime()
+                        constraint.value = date.replace(tzinfo=None).isoformat()
+                    except TypeError:
+                        raise TypeError(
+                            f"Not datetime value in constraint {constraint.type} when control is {elem['control']}")
+                else:
+                    try:
+                        int(constraint.value)
+                    except TypeError:
+                        raise TypeError(
+                            f"Not integer value in constraint {constraint.type} when control is {elem['control']}")
+            case "max":
+                if elem["control"] == "datetime_control" or elem["control"] == "date_control" \
+                        or elem["control"] == "time_control":
+                    try:
+                        date = maya.parse(constraint.value).datetime()
+                        constraint.value = date.replace(tzinfo=None).isoformat()
+                    except TypeError:
+                        raise TypeError(
+                            f"Not datetime value in constraint {constraint.type} when control is {elem['control']}")
+                else:
+                    try:
+                        int(constraint.value)
+                    except TypeError:
+                        raise TypeError(
+                            f"Not integer value in constraint {constraint.type} when control is {elem['control']}")
+            case "cols":
+                try:
+                    int(constraint.value)
+                except TypeError:
+                    raise TypeError("In constraint cols value must be integer")
+            case "rows":
+                try:
+                    int(constraint.value)
+                except TypeError:
+                    raise TypeError("In constraint rows value must be integer")
+            case "resize":
+                try:
+                    bool(constraint.value)
+                except TypeError:
+                    raise TypeError("In constraint resize value must be bool")
+
+
+def get_control_constraints(control: controls):
+    match control:
+        case "input_control":
+            return ["minlength", "maxlength", "pattern", "size"]
+        case "textarea_control":
+            return ["minlength", "maxlength", "pattern", "resize", "cols", "rows"]
+        case "password_control":
+            return ["minlength", "maxlength", "pattern", "size"]
+        case "date_control":
+            return ["min", "max", "format"]
+        case "datetime_control":
+            return ["min", "max", "format"]
+        case "time_control":
+            return ["min", "max", "format"]
+        case "number_control":
+            return ["min", "max"]
 
 
 class Node(BaseModel):
@@ -201,10 +311,17 @@ def get_element_info(input_url, uid: str):
                 if len(element) == 0:
                     return None
                 render_dict = element["render"]
+                render_dict_constraints = render_dict["constraints"]
+                render_constraints = []
+                if render_dict_constraints:
+                    for constraint in render_dict_constraints:
+                        for key in constraint:
+                            constraint_item = ConstraintItem(value=constraint[key], type=key)
+                            render_constraints.append(constraint_item)
                 elem_info = ElemInfo(type=element["type"], description=element["description"],
                                      sub_type=element["sub_type"],
                                      readOnly=element["readonly"],
                                      display_name=render_dict["display_name"], control=render_dict["??? control"],
-                                     constraints=render_dict["constraints"], value=get_value(input_url, uid),
+                                     constraints=render_constraints, value=get_value(input_url, uid),
                                      file_id=uid)
                 return elem_info
