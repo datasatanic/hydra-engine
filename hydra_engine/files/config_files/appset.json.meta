@@ -46,11 +46,11 @@ PARAMS:
 
   - key1:
       type: array
-      readonly: True
+      readonly: False
       sub_type: datetime
       description: "auth info"
       output_url: "root/constr"
       render:
-        ??? control: time_control
+        ??? control: date_control
         display_name: "key1"
         constraints:
