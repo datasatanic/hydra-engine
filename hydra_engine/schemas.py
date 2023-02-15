@@ -1,7 +1,7 @@
 from datetime import datetime
 import maya
 from typing import List, Literal
-from pydantic import BaseModel, validator, Extra, parse_obj_as
+from pydantic import BaseModel, validator, Extra, root_validator
 from parser import write_file, elements_json, elements_yaml, elements_files_info
 import logging
 import re
@@ -14,7 +14,8 @@ sub_types = Literal["string", "int", "bool", "datetime"]
 constraints = Literal[
     'maxlength', 'minlength', 'pattern', 'cols', 'rows', 'min', 'max', 'format', "pattern", "size", "resize"]
 controls = Literal[
-    "input_control", "textarea_control", "list_control", "checkbox_control", "number_control", "datetime_control", "date_control", "time_control"]
+    "input_control", "textarea_control", "list_control", "checkbox_control", "number_control", "datetime_control",
+    "date_control", "time_control"]
 
 
 class ConstraintItem(BaseModel):
@@ -61,7 +62,7 @@ class ElemInfo(BaseModel):
         if value_type == "datetime":
             try:
                 date = maya.parse(values["value"]).datetime()
-                values["value"] = date.replace(tzinfo=None).isoformat()
+                values["value"] = date
                 return value_type
             except TypeError:
                 raise TypeError("Not datetime type")
@@ -101,19 +102,42 @@ class ElemInfo(BaseModel):
             for item in values["value"]:
                 try:
                     date = maya.parse(item).datetime()
-                    values["value"][values["value"].index(item)] = date.replace(tzinfo=None).isoformat()
+                    values["value"][values["value"].index(item)] = date
                 except TypeError:
-                    raise TypeError(f"item {item} in array is not datetime")
+                    raise TypeError(f"item {item} in array is not datetime format")
             return sub_type
+
+    @validator("control")
+    def check_control(cls, elem_control, values, **kwargs):
+        match elem_control:
+            case "datetime_control":
+                if values["sub_type"] is None:
+                    values["value"] = values["value"].replace(tzinfo=None).isoformat()
+                else:
+                    for item in values["value"]:
+                        values["value"][values["value"].index(item)] = item.replace(tzinfo=None).isoformat()
+            case "date_control":
+                if values["sub_type"] is None:
+                    values["value"] = values["value"].replace(tzinfo=None).isoformat()
+                else:
+                    for item in values["value"]:
+                        values["value"][values["value"].index(item)] = item.replace(tzinfo=None).isoformat()
+            case "time_control":
+                if values["sub_type"] is None:
+                    values["value"] = values["value"].replace(tzinfo=None).time().isoformat()
+                else:
+                    for item in values["value"]:
+                        values["value"][values["value"].index(item)] = item.replace(tzinfo=None).time().isoformat()
+        return elem_control
 
     @validator("constraints")
     def check_constraints(cls, elem_constraints, values, **kwargs):
         if values["control"] != "checkbox_control":
             check_allowed_constraints(elem_constraints, values["control"])
+            check_constraints_values(elem_constraints, values)
         else:
             if elem_constraints:
                 raise ValueError("checkbox_control can't be have constraints")
-        check_constraints_values(elem_constraints, values)
 
 
 def check_allowed_constraints(elem_constraints, control):
@@ -144,35 +168,64 @@ def check_constraints_values(elem_constraints, elem):
                 if re.match(constraint.value, elem["value"]) is None:
                     raise ValueError(f"The string does not match the regular expression")
             case "min":
-                if elem["control"] == "datetime_control" or elem["control"] == "date_control" \
-                        or elem["control"] == "time_control":
-                    try:
-                        date = maya.parse(constraint.value).datetime()
-                        constraint.value = date.replace(tzinfo=None).isoformat()
-                    except TypeError:
-                        raise TypeError(
-                            f"Not datetime value in constraint {constraint.type} when control is {elem['control']}")
-                else:
-                    try:
-                        int(constraint.value)
-                    except TypeError:
-                        raise TypeError(
-                            f"Not integer value in constraint {constraint.type} when control is {elem['control']}")
+                match elem["control"]:
+                    case "datetime_control":
+                        try:
+                            date = maya.parse(constraint.value).datetime()
+                            constraint.value = date.replace(tzinfo=None).isoformat()
+                        except TypeError:
+                            raise TypeError(
+                                f"Not datetime value in constraint {constraint.type} when control is {elem['control']}")
+                    case "date_control":
+                        try:
+                            date = maya.parse(constraint.value).datetime()
+                            constraint.value = date.replace(tzinfo=None).date().isoformat()
+                        except TypeError:
+                            raise TypeError(
+                                f"Not date value in constraint {constraint.type} when control is {elem['control']}")
+                    case "time_control":
+                        try:
+                            date = maya.parse(constraint.value).datetime()
+                            constraint.value = date.replace(tzinfo=None).time().isoformat()
+                        except TypeError:
+                            raise TypeError(
+                                f"Not time value in constraint {constraint.type} when control is {elem['control']}")
+                    case "number_control":
+                        try:
+                            int(constraint.value)
+                        except TypeError:
+                            raise TypeError(
+                                f"Not integer value in constraint {constraint.type} when control is {elem['control']}")
+
             case "max":
-                if elem["control"] == "datetime_control" or elem["control"] == "date_control" \
-                        or elem["control"] == "time_control":
-                    try:
-                        date = maya.parse(constraint.value).datetime()
-                        constraint.value = date.replace(tzinfo=None).isoformat()
-                    except TypeError:
-                        raise TypeError(
-                            f"Not datetime value in constraint {constraint.type} when control is {elem['control']}")
-                else:
-                    try:
-                        int(constraint.value)
-                    except TypeError:
-                        raise TypeError(
-                            f"Not integer value in constraint {constraint.type} when control is {elem['control']}")
+                match elem["control"]:
+                    case "datetime_control":
+                        try:
+                            date = maya.parse(constraint.value).datetime()
+                            constraint.value = date.replace(tzinfo=None).isoformat()
+                        except TypeError:
+                            raise TypeError(
+                                f"Not datetime value in constraint {constraint.type} when control is {elem['control']}")
+                    case "date_control":
+                        try:
+                            date = maya.parse(constraint.value).datetime()
+                            constraint.value = date.replace(tzinfo=None).date().isoformat()
+                        except TypeError:
+                            raise TypeError(
+                                f"Not date value in constraint {constraint.type} when control is {elem['control']}")
+                    case "time_control":
+                        try:
+                            date = maya.parse(constraint.value).datetime()
+                            constraint.value = date.replace(tzinfo=None).time().isoformat()
+                        except TypeError:
+                            raise TypeError(
+                                f"Not time value in constraint {constraint.type} when control is {elem['control']}")
+                    case "number_control":
+                        try:
+                            int(constraint.value)
+                        except TypeError:
+                            raise TypeError(
+                                f"Not integer value in constraint {constraint.type} when control is {elem['control']}")
             case "cols":
                 try:
                     int(constraint.value)
