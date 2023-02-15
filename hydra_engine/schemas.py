@@ -118,10 +118,10 @@ class ElemInfo(BaseModel):
                         values["value"][values["value"].index(item)] = item.replace(tzinfo=None).isoformat()
             case "date_control":
                 if values["sub_type"] is None:
-                    values["value"] = values["value"].replace(tzinfo=None).isoformat()
+                    values["value"] = values["value"].replace(tzinfo=None).date().isoformat()
                 else:
                     for item in values["value"]:
-                        values["value"][values["value"].index(item)] = item.replace(tzinfo=None).isoformat()
+                        values["value"][values["value"].index(item)] = item.replace(tzinfo=None).date().isoformat()
             case "time_control":
                 if values["sub_type"] is None:
                     values["value"] = values["value"].replace(tzinfo=None).time().isoformat()
