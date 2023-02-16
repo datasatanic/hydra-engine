@@ -7,7 +7,6 @@ from fastapi.encoders import jsonable_encoder
 from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from filewatcher import start_monitoring_files
 
 from hydra_engine.search.searcher import HydraSearcher
 from hydra_engine.search.index_schema import HydraIndexScheme

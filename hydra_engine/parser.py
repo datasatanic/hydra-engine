@@ -1,5 +1,5 @@
 import json
-import uuid
+import hashlib
 import logging
 import yaml
 import os
@@ -55,16 +55,20 @@ def parse_value_files():
         if file["type"] == "json":
             with open(os.path.join("files/config_files", file["path"]), 'r') as stream:
                 data_loaded = json.load(stream)
-                value_instance = ValuesInstance(file["type"], file["path"], uuid.uuid4().hex, data_loaded)
+                value_instance = ValuesInstance(file["type"], file["path"],
+                                                hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
+                                                data_loaded)
                 elements_json.append(value_instance)
         if file["type"] == "yaml":
             with open(os.path.join("files/config_files", file["path"]), 'r') as stream:
                 data_loaded = yaml.safe_load(stream)
-                value_instance = ValuesInstance(file["type"], file["path"], uuid.uuid4().hex, data_loaded)
+                value_instance = ValuesInstance(file["type"], file["path"],
+                                                hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
+                                                data_loaded)
                 elements_json.append(value_instance)
 
 
-def write_file(data, file_path, file_type, key,value):
+def write_file(data, file_path, file_type, key, value):
     try:
         with open(os.path.join("files/config_files", file_path), 'w') as file:
             if file_type == "json":
