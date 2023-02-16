@@ -126,7 +126,6 @@ def get_element_value(input_url: str, file_id: str):
 @app.post("/elements/values/{file_id:str}")
 def set_values(file_id: str, content: dict):
     set_value(content["Key"], file_id, content["Value"])
-    read_controls_file("files/controls.meta")
     return content
 
 

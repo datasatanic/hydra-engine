@@ -16,7 +16,7 @@ ConnectionStrings:
 PG:
   ClusterName: pgclus1
   DBName: dbnametest
-  Username: Mikhail
+  Username: Mikhailo
   Password: r7446**!@#
 Chronicler:
   Name: testnameservice

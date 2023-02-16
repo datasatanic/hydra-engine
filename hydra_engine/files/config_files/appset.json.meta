@@ -11,7 +11,7 @@ PARAMS:
   - ConnectionStrings/Rex: # Input_URL
       type: string
       sub_type: # optional for array
-      readonly: True
+      readonly: False
       description: "REx connection string"
       output_url: "root/constr/service"
       render:
