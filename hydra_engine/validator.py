@@ -14,9 +14,9 @@ def validate_node(current_node):
     keys = current_node.keys()
     for key in keys:
         for elem in current_node[key].elem:
-            elem[list(elem.keys())[0]].check_type()
-            elem[list(elem.keys())[0]].check_sub_type()
-            elem[list(elem.keys())[0]].check_control()
-            elem[list(elem.keys())[0]].check_constraints(
-            )
+            values = elem[list(elem.keys())[0]]
+            elem[list(elem.keys())[0]].check_type(values.type, values.__dict__)
+            elem[list(elem.keys())[0]].check_sub_type(values.sub_type, values.__dict__)
+            elem[list(elem.keys())[0]].check_control(values.control, values.__dict__)
+            elem[list(elem.keys())[0]].check_constraints(values.constraints, values.__dict__)
         validate_node(current_node[key].child)
