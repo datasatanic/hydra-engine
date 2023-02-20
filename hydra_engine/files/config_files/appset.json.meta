@@ -51,6 +51,6 @@ PARAMS:
       description: "auth info"
       output_url: "root/constr"
       render:
-        ??? control: date_control
+        ??? control: datetime_control
         display_name: "key1"
         constraints:

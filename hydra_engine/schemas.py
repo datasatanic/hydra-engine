@@ -135,9 +135,11 @@ class ElemInfo(BaseModel):
         if values["control"] != "checkbox_control":
             check_allowed_constraints(elem_constraints, values["control"])
             check_constraints_values(elem_constraints, values)
+            return elem_constraints
         else:
             if elem_constraints:
                 raise ValueError("checkbox_control can't be have constraints")
+            return elem_constraints
 
 
 def check_allowed_constraints(elem_constraints, control):
@@ -151,12 +153,26 @@ def check_constraints_values(elem_constraints, elem):
         match constraint.type:
             case "maxlength":
                 try:
-                    int(constraint.value)
+                    maxlength = int(constraint.value)
+                    if elem["type"] != "array":
+                        if len(elem["value"]) > maxlength:
+                            raise ValueError(f"Value of {elem['display_name']} more than max length")
+                    else:
+                        for value in elem["value"]:
+                            if len(value) > maxlength:
+                                raise ValueError(f"Value of {elem['display_name']} more than max length")
                 except TypeError:
                     raise TypeError(f"In constraint maxlength value must be integer")
             case "minlength":
                 try:
-                    int(constraint.value)
+                    minlength = int(constraint.value)
+                    if elem["type"] != "array":
+                        if len(elem["value"]) < minlength:
+                            raise ValueError(f"Value of {elem['display_name']} less than min length")
+                    else:
+                        for value in elem["value"]:
+                            if len(value) < minlength:
+                                raise ValueError(f"Value of array {elem['display_name']} less than min length")
                 except TypeError:
                     raise TypeError(f"In constraint minlength value must be integer")
             case "size":
@@ -165,14 +181,28 @@ def check_constraints_values(elem_constraints, elem):
                 except TypeError:
                     raise TypeError(f"In constraint size value must be integer")
             case "pattern":
-                if re.match(constraint.value, elem["value"]) is None:
-                    raise ValueError(f"The string does not match the regular expression")
+                if elem["type"] != "array":
+                    if re.match(constraint.value, elem["value"]) is None:
+                        raise ValueError(f"The string does not match the regular expression")
+                else:
+                    for value in elem["value"]:
+                        if re.match(constraint.value, value) is None:
+                            raise ValueError(f"The string of array does not match the regular expression")
             case "min":
                 match elem["control"]:
                     case "datetime_control":
                         try:
                             date = maya.parse(constraint.value).datetime()
                             constraint.value = date.replace(tzinfo=None).isoformat()
+                            if elem["type"] != "array":
+                                min = maya.parse(elem["value"]).datetime().replace(tzinfo=None)
+                                if min < date.replace(tzinfo=None):
+                                    raise ValueError(f"Value of {elem['display_name']} less than min value")
+                            else:
+                                for value in elem["value"]:
+                                    min = maya.parse(value).datetime().replace(tzinfo=None)
+                                    if min < date.replace(tzinfo=None):
+                                        raise ValueError(f"Value of array {elem['display_name']} less than min value")
                         except TypeError:
                             raise TypeError(
                                 f"Not datetime value in constraint {constraint.type} when control is {elem['control']}")
@@ -180,6 +210,15 @@ def check_constraints_values(elem_constraints, elem):
                         try:
                             date = maya.parse(constraint.value).datetime()
                             constraint.value = date.replace(tzinfo=None).date().isoformat()
+                            if elem["type"] != "array":
+                                min = maya.parse(elem["value"]).datetime().replace(tzinfo=None)
+                                if min < date.replace(tzinfo=None):
+                                    raise ValueError(f"Value of {elem['display_name']} less than min value")
+                            else:
+                                for value in elem["value"]:
+                                    min = maya.parse(value).datetime().replace(tzinfo=None)
+                                    if min < date.replace(tzinfo=None):
+                                        raise ValueError(f"Value of array {elem['display_name']} less than min value")
                         except TypeError:
                             raise TypeError(
                                 f"Not date value in constraint {constraint.type} when control is {elem['control']}")
@@ -187,22 +226,46 @@ def check_constraints_values(elem_constraints, elem):
                         try:
                             date = maya.parse(constraint.value).datetime()
                             constraint.value = date.replace(tzinfo=None).time().isoformat()
+                            if elem["type"] != "array":
+                                min = maya.parse(elem["value"]).datetime().replace(tzinfo=None)
+                                if min < date.replace(tzinfo=None):
+                                    raise ValueError(f"Value of {elem['display_name']} less than min value")
+                            else:
+                                for value in elem["value"]:
+                                    min = maya.parse(value).datetime().replace(tzinfo=None)
+                                    if min < date.replace(tzinfo=None):
+                                        raise ValueError(f"Value of array {elem['display_name']} less than min value")
                         except TypeError:
                             raise TypeError(
                                 f"Not time value in constraint {constraint.type} when control is {elem['control']}")
                     case "number_control":
                         try:
-                            int(constraint.value)
+                            min = int(constraint.value)
+                            if elem["type"] != "array":
+                                if int(elem["value"]) < min:
+                                    raise ValueError(f"Value of {elem['display_name']} less than min value")
+                            else:
+                                for value in elem["value"]:
+                                    if int(value) < min:
+                                        raise ValueError(f"Value of array {elem['display_name']} less than min value")
                         except TypeError:
                             raise TypeError(
                                 f"Not integer value in constraint {constraint.type} when control is {elem['control']}")
-
             case "max":
                 match elem["control"]:
                     case "datetime_control":
                         try:
                             date = maya.parse(constraint.value).datetime()
                             constraint.value = date.replace(tzinfo=None).isoformat()
+                            if elem["type"] != "array":
+                                max = maya.parse(elem["value"]).datetime().replace(tzinfo=None)
+                                if max > date.replace(tzinfo=None):
+                                    raise ValueError(f"Value of {elem['display_name']} more than max value")
+                            else:
+                                for value in elem["value"]:
+                                    max = maya.parse(value).datetime().replace(tzinfo=None)
+                                    if max > date.replace(tzinfo=None):
+                                        raise ValueError(f"Value of array {elem['display_name']} more than max value")
                         except TypeError:
                             raise TypeError(
                                 f"Not datetime value in constraint {constraint.type} when control is {elem['control']}")
@@ -210,6 +273,15 @@ def check_constraints_values(elem_constraints, elem):
                         try:
                             date = maya.parse(constraint.value).datetime()
                             constraint.value = date.replace(tzinfo=None).date().isoformat()
+                            if elem["type"] != "array":
+                                max = maya.parse(elem["value"]).datetime().replace(tzinfo=None)
+                                if max > date.replace(tzinfo=None):
+                                    raise ValueError(f"Value of {elem['display_name']} more than max value")
+                            else:
+                                for value in elem["value"]:
+                                    max = maya.parse(value).datetime().replace(tzinfo=None)
+                                    if max > date.replace(tzinfo=None):
+                                        raise ValueError(f"Value of array {elem['display_name']} more than max value")
                         except TypeError:
                             raise TypeError(
                                 f"Not date value in constraint {constraint.type} when control is {elem['control']}")
@@ -217,12 +289,28 @@ def check_constraints_values(elem_constraints, elem):
                         try:
                             date = maya.parse(constraint.value).datetime()
                             constraint.value = date.replace(tzinfo=None).time().isoformat()
+                            if elem["type"] != "array":
+                                max = maya.parse(elem["value"]).datetime().replace(tzinfo=None)
+                                if max > date.replace(tzinfo=None):
+                                    raise ValueError(f"Value of {elem['display_name']} more than max value")
+                            else:
+                                for value in elem["value"]:
+                                    max = maya.parse(value).datetime().replace(tzinfo=None)
+                                    if max > date.replace(tzinfo=None):
+                                        raise ValueError(f"Value of array {elem['display_name']} more than max value")
                         except TypeError:
                             raise TypeError(
                                 f"Not time value in constraint {constraint.type} when control is {elem['control']}")
                     case "number_control":
                         try:
-                            int(constraint.value)
+                            max = int(constraint.value)
+                            if elem["type"] != "array":
+                                if int(elem["value"]) > max:
+                                    raise ValueError(f"Value of {elem['display_name']} more than max value")
+                            else:
+                                for value in elem["value"]:
+                                    if int(value) > max:
+                                        raise ValueError(f"Value of array {elem['display_name']} more than max value")
                         except TypeError:
                             raise TypeError(
                                 f"Not integer value in constraint {constraint.type} when control is {elem['control']}")
