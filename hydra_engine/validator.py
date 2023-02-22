@@ -1,5 +1,5 @@
 import typer
-from schemas import tree
+from app import tree, read_controls_file
 
 validator = typer.Typer()
 
@@ -7,11 +7,10 @@ validator = typer.Typer()
 @validator.command()
 def validate():
     validate_node(tree)
-    typer.echo("Hello World")
 
 
 def validate_node(current_node):
-    keys = current_node.keys()
+    keys = list(current_node)
     for key in keys:
         for elem in current_node[key].elem:
             values = elem[list(elem.keys())[0]]

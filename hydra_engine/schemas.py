@@ -37,7 +37,7 @@ class ElemInfo(BaseModel):
     control: controls
     constraints: List[ConstraintItem] = None
 
-    @validator("type")
+    @validator("type", pre=True)
     def check_type(cls, value_type, values, **kwargs):
         if value_type is None:
             raise TypeError("Type can't be empty")
@@ -69,8 +69,10 @@ class ElemInfo(BaseModel):
         if value_type == "array":
             return value_type
 
-    @validator("sub_type")
+    @validator("sub_type", pre=True)
     def check_sub_type(cls, sub_type, values, **kwargs):
+        if "type" not in values:
+            return
         if values["type"] != "array" and sub_type is not None:
             raise TypeError("sub_type can be not empty only when type is array")
         if values["type"] == "array" and sub_type is None:
@@ -107,8 +109,10 @@ class ElemInfo(BaseModel):
                     raise TypeError(f"item {item} in array is not datetime format")
             return sub_type
 
-    @validator("control")
+    @validator("control", pre=True)
     def check_control(cls, elem_control, values, **kwargs):
+        if "sub_type" not in values:
+            return
         match elem_control:
             case "datetime_control":
                 if values["sub_type"] is None:
@@ -130,8 +134,10 @@ class ElemInfo(BaseModel):
                         values["value"][values["value"].index(item)] = item.replace(tzinfo=None).time().isoformat()
         return elem_control
 
-    @validator("constraints")
+    @validator("constraints", pre=True)
     def check_constraints(cls, elem_constraints, values, **kwargs):
+        if "control" not in values:
+            return
         if values["control"] != "checkbox_control":
             check_allowed_constraints(elem_constraints, values["control"])
             check_constraints_values(elem_constraints, values)

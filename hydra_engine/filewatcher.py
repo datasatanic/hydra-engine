@@ -17,21 +17,9 @@ class EventHandler(FileSystemEventHandler):
         super().__init__()
 
     def on_any_event(self, event):
-        action = {
-            EVENT_TYPE_CREATED: "Created",
-            EVENT_TYPE_DELETED: "Deleted",
-            EVENT_TYPE_MODIFIED: "Modified",
-            EVENT_TYPE_MOVED: "Moved",
-        }[event.event_type]
         if not event.is_directory:
-            self._q.put((
-                # Name of the modified file.
-                Path(event.src_path).name,
-                # Action executed on that file.
-                action,
-                app.parse_config_files(),
-                app.read_controls_file("files/controls.meta"),
-            ))
+            app.parse_config_files()
+            app.read_controls_file("files/controls.meta")
 
 
 def start_monitoring_files():
