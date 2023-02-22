@@ -12,19 +12,14 @@ from watchdog.events import (
 
 
 class EventHandler(FileSystemEventHandler):
-    def __init__(self, q):
-        self._q = q
-        super().__init__()
 
     def on_any_event(self, event):
-        if not event.is_directory:
-            app.parse_config_files()
-            app.read_controls_file("files/controls.meta")
+        app.parse_config_files()
+        app.read_controls_file("files")
 
 
 def start_monitoring_files():
-    q = queue.Queue()
-    event_handler = EventHandler(q)
+    event_handler = EventHandler()
     observer = Observer()
     observer.schedule(event_handler, path='files', recursive=True)
     observer.start()

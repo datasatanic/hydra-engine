@@ -2,7 +2,7 @@
 
 FILE:
   type: 'json'
-  path: 'appset1.json' # Optional/ default: path w/o .meta
+  path: 'files/config_files/appset1.json' # Optional/ default: path w/o .meta
 
 PARAMS:
   - ConnectionStrings/Rex: # Input_URL

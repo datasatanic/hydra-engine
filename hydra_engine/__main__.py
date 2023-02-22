@@ -1,7 +1,6 @@
 import logging
 from hydra_engine._logging import global_logging_config
 from app import app
-from validator import validator
 import uvicorn
 from filewatcher import start_monitoring_files
 

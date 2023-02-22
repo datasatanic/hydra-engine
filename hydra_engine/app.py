@@ -1,6 +1,6 @@
 import copy
 import logging
-
+import os
 from schemas import add_node, tree, add_additional_fields, get_element_info, set_value, get_value
 from parser import parse_config_files
 from fastapi.encoders import jsonable_encoder
@@ -28,24 +28,27 @@ app.add_middleware(
 )
 
 
-def read_controls_file(file_name: str):
+def read_controls_file(directory):
     """
         Reads meta file of tree and creates structured tree
     """
     tree.clear()
     path = ""
-    try:
-        f = open(file_name)
-        for line in f:
-            str_list = list(filter(lambda x: len(x), line.replace('\n', '').strip().split(":")))
-            if line != '\n':
-                if len(str_list) == 1:
-                    path = str_list[0]
-                    add_node(path.split("/"))
-                else:
-                    add_additional_fields(path.split("/"), str_list)
-    except Exception as e:
-        logger.error(f"Error in parsing meta file of tree {e}")
+    for root, dirs, files in os.walk(directory):
+        for name in files:
+            if os.path.join(root, name).split("/")[-1] == "controls.meta":
+                try:
+                    f = open(os.path.join(root, name))
+                    for line in f:
+                        str_list = list(filter(lambda x: len(x), line.replace('\n', '').strip().split(":")))
+                        if line != '\n':
+                            if len(str_list) == 1:
+                                path = str_list[0]
+                                add_node(path.split("/"))
+                            else:
+                                add_additional_fields(path.split("/"), str_list)
+                except Exception as e:
+                    logger.error(f"Error in parsing meta file of tree {e}")
 
 
 def filter_tree(all_tree):
@@ -86,7 +89,7 @@ async def startup_event():
     logger.debug("Start parsing directory")
     try:
         parse_config_files()
-        read_controls_file("files/controls.meta")
+        read_controls_file("files")
         logger.debug("Directory has been parsed successfully")
     except Exception as e:
         logger.error(f"Error in parsing files with {e}")

@@ -5,13 +5,13 @@
 
 FILE:
   type: 'json'
-  path: 'appset.json' # Optional/ default: path w/o .meta
+  path: 'files/config_files/hosts/appset.json' # Optional/ default: path w/o .meta
 
 PARAMS:
   - ConnectionStrings/Rex: # Input_URL
       type: string
       sub_type: # optional for array
-      readonly: True
+      readonly: False
       description: "REx connection string"
       output_url: "root/constr/service"
       render:

@@ -8,4 +8,4 @@ validator = typer.Typer()
 @validator.command()
 def validate():
     parse_config_files()
-    read_controls_file("files/controls.meta")
+    read_controls_file("files")

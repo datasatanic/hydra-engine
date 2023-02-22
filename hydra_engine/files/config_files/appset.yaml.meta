@@ -2,7 +2,7 @@
 
 FILE:
   type: 'yaml'
-  path: 'appset.yaml' # Optional/ default: path w/o .meta
+  path: 'files/config_files/appset.yaml' # Optional/ default: path w/o .meta
 
 PARAMS:
   - PG/Username: # Input_URL
