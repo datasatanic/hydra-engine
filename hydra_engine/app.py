@@ -126,9 +126,10 @@ def get_element_value(input_url: str, file_id: str):
     return get_value(input_url, file_id)
 
 
-@app.post("/elements/values/{file_id:str}")
-def set_values(file_id: str, content: dict):
-    set_value(content["Key"], file_id, content["Value"])
+@app.post("/elements/values")
+def set_values(content: list):
+    for item in content:
+        set_value(item["Value"]["Key"], item["Key"], item["Value"]["Value"])
     return content
 
 
