@@ -78,6 +78,7 @@ def write_file(data, file_path, file_type, key, value):
             if file_type == "yaml":
                 file.write(yaml.safe_dump(data, sort_keys=False))
         logger.info(f"File {file_path} was modified to value {value} in parameter {key}")
+        file.close()
     except Exception as e:
         logger.error(f"Error in editing file {file_path} with {e}")
 

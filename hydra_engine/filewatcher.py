@@ -14,8 +14,9 @@ from watchdog.events import (
 class EventHandler(FileSystemEventHandler):
 
     def on_any_event(self, event):
-        app.parse_config_files()
-        app.read_controls_file("files")
+        if not event.is_directory:
+            app.parse_config_files()
+            app.read_controls_file("files")
 
 
 def start_monitoring_files():

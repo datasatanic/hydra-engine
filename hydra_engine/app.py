@@ -36,7 +36,7 @@ def read_controls_file(directory):
     path = ""
     for root, dirs, files in os.walk(directory):
         for name in files:
-            if os.path.join(root, name).split("/")[-1] == "controls.meta":
+            if name == "controls.meta":
                 try:
                     f = open(os.path.join(root, name))
                     for line in f:
