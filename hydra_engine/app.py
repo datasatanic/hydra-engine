@@ -7,6 +7,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from starlette_prometheus import metrics, PrometheusMiddleware
 
 from hydra_engine.search.searcher import HydraSearcher
 from hydra_engine.search.index_schema import HydraIndexScheme
@@ -26,6 +27,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(PrometheusMiddleware)
+
+app.get("/metrics", name='metrics')(metrics)
 
 
 def read_controls_file(directory):
