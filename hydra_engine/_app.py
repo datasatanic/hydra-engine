@@ -11,7 +11,7 @@ from hydra_engine.parser import parse_config_files
 from hydra_engine.search.searcher import HydraSearcher
 from hydra_engine.search.index_schema import HydraIndexScheme
 
-# from starlette_prometheus import metrics, PrometheusMiddleware
+from starlette_prometheus import metrics, PrometheusMiddleware
 
 logger = logging.getLogger("common_logger")
 app = FastAPI()
@@ -25,9 +25,9 @@ app.add_middleware(
 )
 
 
-# app.add_middleware(PrometheusMiddleware)
+app.add_middleware(PrometheusMiddleware)
 
-# app.get("/metrics", name='metrics')(metrics)
+app.get("/metrics", name='metrics')(metrics)
 
 
 def read_controls_file(directory):
