@@ -1,4 +1,4 @@
-from hydra_engine import config
+from .configs import config
 import sys
 import logging
 import json

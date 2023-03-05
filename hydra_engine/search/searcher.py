@@ -19,7 +19,7 @@ from whoosh import query, sorting
 from whoosh.searching import ResultsPage
 
 # import asyncpg
-from hydra_engine import config
+from ..configs import config
 from hydra_engine.search.status import IndexStatus
 from hydra_engine.search.doc_parser import get_documents_from_hydra
 

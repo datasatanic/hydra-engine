@@ -2,7 +2,7 @@ from datetime import datetime
 import maya
 from typing import List, Literal
 from pydantic import BaseModel, validator, Extra, root_validator
-from parser import write_file, elements_json, elements_yaml, elements_files_info
+from hydra_engine.parser import write_file, elements_json, elements_yaml, elements_files_info
 import logging
 import re
 

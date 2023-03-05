@@ -1,5 +1,5 @@
 import typer
-from app import read_controls_file, parse_config_files
+from _app import read_controls_file, parse_config_files
 from schemas import ElemInfo
 
 validator = typer.Typer()

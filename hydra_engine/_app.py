@@ -1,35 +1,33 @@
 import copy
 import logging
 import os
-from schemas import add_node, tree, add_additional_fields, get_element_info, set_value, get_value
-from parser import parse_config_files
-from fastapi.encoders import jsonable_encoder
 from fastapi import FastAPI, Query
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from starlette_prometheus import metrics, PrometheusMiddleware
 
+from hydra_engine.schemas import add_node, tree, add_additional_fields, get_element_info, set_value, get_value
+from hydra_engine.parser import parse_config_files
 from hydra_engine.search.searcher import HydraSearcher
 from hydra_engine.search.index_schema import HydraIndexScheme
 
+# from starlette_prometheus import metrics, PrometheusMiddleware
+
 logger = logging.getLogger("common_logger")
 app = FastAPI()
-origins = [
-    "http://localhost",
-    "http://localhost:8080",
-    "https://localhost:7285"
-]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(PrometheusMiddleware)
 
-app.get("/metrics", name='metrics')(metrics)
+
+# app.add_middleware(PrometheusMiddleware)
+
+# app.get("/metrics", name='metrics')(metrics)
 
 
 def read_controls_file(directory):
