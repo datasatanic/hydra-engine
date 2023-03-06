@@ -6,8 +6,9 @@ from hydra_engine._app import parse_config_files, read_controls_file
 class EventHandler(FileSystemEventHandler):
 
     def on_any_event(self, event):
-        parse_config_files()
-        read_controls_file("files")
+        if not event.is_directory:
+            parse_config_files()
+            read_controls_file("files")
 
 
 def start_monitoring_files():
