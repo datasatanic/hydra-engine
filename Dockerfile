@@ -1,5 +1,7 @@
 FROM python:3.11 as requirements-stage
 
+EXPOSE 8080
+
 #
 WORKDIR /tmp
 
