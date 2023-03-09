@@ -1,0 +1,19 @@
+# File metadata
+
+FILE:
+  type: 'yaml'
+  path: 'files/config_files/appset.yaml' # Optional/ default: path w/o .meta
+
+PARAMS:
+  - PG/Username: # Input_URL
+      type: string
+      sub_type: # optional for array
+      readonly: False
+      description: "Username in PG"
+      output_url: "root/constr/infras"
+      render:
+        ??? control: input_control
+        display_name: "PG username"
+        constraints:
+            - maxlength: 30
+        additional: # specified info

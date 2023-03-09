@@ -1,17 +1,18 @@
 import copy
 import logging
 import os
+
 from fastapi import FastAPI, Query
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-
-from hydra_engine.schemas import add_node, tree, add_additional_fields, get_element_info, set_value, get_value
-from hydra_engine.parser import parse_config_files
-from hydra_engine.search.searcher import HydraSearcher
-from hydra_engine.search.index_schema import HydraIndexScheme
-
+from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from starlette_prometheus import metrics, PrometheusMiddleware
+
+from hydra_engine.parser import parse_config_files
+from hydra_engine.schemas import add_node, tree, add_additional_fields, get_element_info, set_value, get_value
+from hydra_engine.search.index_schema import HydraIndexScheme
+from hydra_engine.search.searcher import HydraSearcher
 
 logger = logging.getLogger("common_logger")
 app = FastAPI()
@@ -23,7 +24,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 app.add_middleware(PrometheusMiddleware)
 
@@ -156,3 +156,7 @@ async def search(q,
                  ):
     results = await HydraSearcher().perform_search(q, pagenum, pagelen)
     return JSONResponse(content=results) if results != 'not exists' else JSONResponse(content={'index': results})
+
+
+base_dir = os.path.dirname(os.path.abspath(__file__))
+app.mount("/", StaticFiles(directory=os.path.join(base_dir, "wwwroot"), html=True), "client")

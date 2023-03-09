@@ -1,0 +1,26 @@
+Logging:
+  LogLevel:
+    Default: Information
+    Microsoft: Warning
+    Microsoft.Hosting.Lifetime: Information
+AllowedHosts:
+- host1
+- host2
+Auth:
+  Authority: https://192.168.75.196/realms/CCFA
+  RequireHttpsMetadata: false
+  Audience: W12321
+ConnectionStrings:
+  Rex: http://192.168.75.214
+  CONSUL_ADDR: http://127.0.0.1:8500
+PG:
+  ClusterName: pgclus1
+  DBName: dbnametest
+  Username: Mikhail
+  Password: r7446**!@#
+Chronicler:
+  Name: testnameservice
+  Tag: ''
+  Address: http://192.168.75.166:5000
+  UseConsule: true
+key1: 5

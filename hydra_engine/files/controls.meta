@@ -1,0 +1,133 @@
+root:
+    display_name:"Root"
+
+root/constr:
+  description: "Connection strings"
+  display_name:"Connection strings"
+
+root/constr/form:
+  description: "Eagle master"
+  display_name:"Form"
+
+root/constr/form/group:
+  description: "Kalash s venkami"
+  display_name:"Group"
+
+root/constr/infras:
+  description: "Connection strings for infrastructions services"
+  display_name:"Infrastructure"
+
+root/constr/service:
+  description: "Connection strings for logical services"
+  display_name:"Service"
+
+root/test:
+  description: ""
+  display_name:"Test"
+
+root/test/TEST1:
+  description: ""
+  display_name:"Test1"
+
+root/test/TEST2:
+  description: ""
+  display_name:"Test2"
+
+root1:
+    display_name:"Root1"
+root1/constr:
+  description: "Connection strings"
+  display_name:"Connection Strings"
+
+root1/constr/infras:
+  description: "Connection strings for infrastructions services"
+  display_name:"Infrastructure"
+
+root1/constr/service:
+  description: "Connection strings for logical services"
+  display_name:"Service"
+
+root2:
+    display_name:"Root2"
+root2/constr2:
+  description: "Connection1 strings"
+  display_name:"Connection1 strings"
+
+root2/constr2/infras:
+  description: "Connection strings for infrastructions services"
+  display_name:"Infrastructure"
+
+root2/constr2/group1:
+  description: "Connection strings for logical services"
+  display_name:"Group1"
+
+root3:
+    display_name:"Root3"
+root3/constr2:
+  description: "Connection3 strings"
+  display_name:"Connection3 strings"
+
+root3/constr2/infras:
+  description: "Connection strings for infrastructions services"
+  display_name:"Infrastructure"
+
+root3/constr2/group1:
+  description: "Connection strings for logical services"
+  display_name:"Group1"
+
+root3/constr:
+    display_name:"Connection strings"
+
+root3/constr/infras2:
+    display_name:"Infrastructure2"
+
+root3/constr/group:
+    display_name:"Group"
+
+root4:
+    display_name:"Root4"
+root4/constr2:
+  description: "Connection1 strings"
+  display_name:"Connection1 strings"
+
+root4/constr2/infras:
+  description: "Connection strings for infrastructions services"
+  display_name:"Infrastructure"
+
+root4/constr2/group1:
+  description: "Connection strings for logical services"
+  display_name:"Group1"
+
+root4/constr:
+    display_name:"Connection1 strings"
+
+root4/constr/infras2:
+    display_name:"Connection1 strings"
+
+root4/constr/group:
+    display_name:"Connection1 strings"
+
+root5:
+    display_name:"Root5"
+root5/constr2:
+  description: "Connection1 strings"
+  display_name:"Connection1 strings"
+
+root5/constr2/infras:
+  description: "Connection strings for infrastructions services"
+  display_name:"Infrastructure"
+
+root5/constr2/group1:
+  description: "Connection strings for logical services"
+  display_name:"Group1"
+
+root5/constr:
+    display_name:"Connection1 strings"
+
+root5/constr/infras2:
+    display_name:"Connection1 strings"
+
+root5/constr/group:
+    display_name:"Connection1 strings"
+
+
