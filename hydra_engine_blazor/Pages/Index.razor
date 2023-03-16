@@ -1,0 +1,203 @@
+﻿@page "/{*Output_URL}"
+@using hydra_engine_blazor.Models
+@using System.Security
+@using System.Text.Json
+@using System.Runtime.CompilerServices
+@using Microsoft.VisualBasic
+@inject SettingsContainer SettingsContainer
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+<div class="page-container">
+    <div class="input-search-container">
+        <input type="search" placeholder="Search..." value="@searchValue" @oninput="SearchCallback" @onfocus="SearchOnFocus"/>
+        <img/>
+    </div>
+    <div class="search-container">
+        <div class="cards-container">
+            @foreach (var entity in _searchEntities)
+            {
+                <CascadingValue Value="_searchEntities">
+                    <SearchCard Entity="entity" SendList="list => _searchEntities = list" Load="value => _load = value"></SearchCard>
+                </CascadingValue>
+            }
+        </div>
+    </div>
+    @if (!string.IsNullOrEmpty(Output_URL) & (currentControlsMeta.Elem.Count > 0 | currentControlsMeta.Child.Where(item => item.Type.Equals("group")).Select(item => item.Elem.Count).Where(x => x > 0).ToList().Count > 0))
+    {
+        <button id="save" class="save-button" @onclick="SaveValues">Save</button>
+    }
+    <div class="form-container">
+        <div class="element-container">
+            <div class="path-container">
+                @if (!string.IsNullOrEmpty(SettingsContainer.CurrentOutputUrl) & !string.IsNullOrEmpty(SettingsContainer.CurrentDisplayNamePath))
+                {
+                    var list = SettingsContainer.CurrentOutputUrl.Split("/").ToList();
+                    var displayNameList = SettingsContainer.CurrentDisplayNamePath.Split("/").ToList();
+                    var href = "";
+                    if (list.Count == displayNameList.Count)
+                    {
+                        @foreach (var path in list)
+                        {
+                            href += path+"/";
+                            <a class="path" href="@href.Remove(href.Length - 1)" last-child="@(list.IndexOf(path) == list.Count - 1)">
+                                @displayNameList[list.IndexOf(path)]
+                            </a>
+                            <img class="@(list.IndexOf(path) != list.Count-1 && !string.IsNullOrEmpty(path) ? "right-arrow" : "")"/>                                                                         
+                        }
+                    }
+                }
+            </div>
+            <div class="form-elements-container">
+                <h2>@currentControlsMeta.DisplayName</h2>
+                <h4>@currentControlsMeta.Description</h4>
+                <div class="elements-container">
+                    @foreach (var elem in currentControlsMeta.Elem)
+                    {
+                        var id = elem.Keys.ToList()[0];
+                        <div id="@($"#f{SettingsContainer.GetHash(id)}")">
+                            @foreach (var kvp in elem)
+                            {
+                                <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
+                                </ElemComponent>
+                            }
+                        </div>
+                    }
+                </div>
+                
+            </div>
+            <div class="groups @(currentControlsMeta.Child.Where(item => item.Type.Equals("group")).ToList().Count==0
+                                   ? "hide" : "")">
+                @foreach (var item in currentControlsMeta.Child.Where(item => item.Type.Equals("group")))
+                {
+                    var id = Output_URL + "/" + item.Name;
+                    <div tabindex="1" id=@($"#g{SettingsContainer.GetHash(id)}")>
+                        <h2>@item.DisplayName</h2>
+                        <h4>@item.Description</h4>
+                        <div class="elements-container">
+                            @foreach (var elem in item.Elem)
+                            {
+                                var uid = elem.Keys.ToList()[0];
+                                <div class="elems-group" id="@($"#f{SettingsContainer.GetHash(uid)}")">
+                                    @foreach (var kvp in elem)
+                                    {
+                                        <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
+                                        </ElemComponent>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div>
+            @foreach (var item in currentControlsMeta.Child.Where(item => item.Type.Equals("form")))
+            {
+                <div class="forms-link-container">
+                    @{var href = Output_URL + "/" + item.Name;}
+                    <a class="path" href="@href">Link to @item.DisplayName</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+
+
+@code{
+    [Parameter]
+    public string Output_URL { get; set; }
+    IJSObjectReference? _module;
+    private List<ControlsMeta> groups;
+    private List<ControlsMeta> forms;
+    private ControlsMeta currentControlsMeta=new();
+    private List<SearchEntity>? _searchEntities = new();
+    private string? searchValue = string.Empty;
+    bool _load;
+    private List<KeyValuePair<string, ElemInfo>> changeElements = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _load = false;
+        SettingsContainer.CurrentOutputUrl = Output_URL;
+        currentControlsMeta = new ControlsMeta();
+        changeElements.Clear();
+        if (!string.IsNullOrEmpty(Output_URL))
+        {
+            SettingsContainer.CurrentDisplayNamePath = SettingsContainer.ListOutputUrl.GetValueOrDefault(SettingsContainer.CurrentOutputUrl, "");
+            var query = await SettingsContainer.GetFormInfo(Output_URL);
+            if (query != null) JsonParser.DeserializeTree(query.ToString(),currentControlsMeta,currentControlsMeta.Child);
+            _load = true;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module=await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/Index.razor.js");
+        }
+        if (_load && _module != null)
+        {
+            await _module.InvokeVoidAsync("Scroll");
+            _load = false;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        SettingsContainer.CurrentOutputUrl = Output_URL;
+    }
+
+    private async Task SaveValues()
+    {
+        if (!changeElements.Exists(item => !item.Value.isValid))
+        {
+            await SettingsContainer.SetValues(changeElements);
+            changeElements.Clear();
+        }
+    }
+
+    private async Task RefreshCallback()
+    {
+        await SettingsContainer.UpdateData();
+    }
+
+    private async Task SearchCallback(ChangeEventArgs obj)
+    {
+        _searchEntities?.Clear();
+        searchValue = obj.Value?.ToString();
+        if (!string.IsNullOrEmpty(searchValue))
+        {
+            _searchEntities = await SettingsContainer.SearchRequest(searchValue);
+        }
+    }
+
+
+    private async Task SearchOnFocus()
+    {
+        if (!string.IsNullOrEmpty(searchValue))
+        {
+            _searchEntities = await SettingsContainer.SearchRequest(searchValue);
+        }
+    }
+
+    private void ChangeValue(ElemInfo obj,string key)
+    {
+        var elem = new KeyValuePair<string, ElemInfo>(key, obj);
+        if (changeElements.Exists(item=>item.Key.Equals(elem.Key)))
+        {
+            var existElem = changeElements.Find(item => item.Key.Equals(elem.Key));
+            var index = changeElements.IndexOf(existElem);
+            changeElements.RemoveAt(index);
+            changeElements.Insert(index,elem);
+        }
+        else
+        {
+            changeElements.Add(elem);
+        }
+        
+    }
+
+}

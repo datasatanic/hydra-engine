@@ -1,0 +1,113 @@
+﻿@using hydra_engine_blazor.Models
+@inherits LayoutComponentBase
+@inject SettingsContainer SettingsContainer
+@inject NavigationManager Navigation
+@inject IJSRuntime JsRuntime
+<div class="page">
+    <div @ref="_elementReference" class="menu-container" @onmousemove="ResizeCallback">
+        <h1>Config dota</h1>
+        <div class="search-container">
+            <div class="input-search-container">
+                <input id="tree-search" type="search" value="@searchValue" @oninput="SearchCallback"/>
+                <img/>
+            </div>
+            <div class="expand-collapse-container">
+                <img @onclick="() => SettingsContainer.Expand=true"/>
+                <img @onclick="() => SettingsContainer.Expand=false"/>
+            </div>
+        </div>
+        <div class="sidebar">
+            @if (searchForms.Count == 0)
+            {
+                foreach (var node in _settingsTree.Child)
+                {
+                    <NavMenu Settings="@node" Root="@node.Name" DisplayNamePath="@node.DisplayName"/>
+                }
+            }
+            else
+            {
+                <ul class="search-list">
+                    @foreach (var form in searchForms)
+                    {
+                        <li>
+                            <div @onclick="() => Navigation.NavigateTo(form.Key)">@form.Value.Value</div>
+                            <h4>@form.Value.Key[1..]</h4>
+                        </li>
+                    }
+                </ul>
+            }
+            
+        </div>
+        <div class="slider-container" @onmousedown="() => resize = true" @onmouseup="() => resize = false"
+             onmouseleave="@MouseLeave">
+            <img class="slider"/>
+        </div>
+        
+    </div>
+    <main>
+        <article>
+            @Body
+        </article>
+    </main>
+</div>
+
+@code{
+    public ControlsMeta _settingsTree = new();
+    private bool resize;
+    private ElementReference _elementReference;
+    private IJSObjectReference? _module;
+    private Dictionary<string,KeyValuePair<string,string>> searchForms;
+    private string? searchValue;
+    protected override async Task OnInitializedAsync()
+    {
+        SettingsContainer.Expand = true;
+        searchForms = new Dictionary<string, KeyValuePair<string,string>>();
+        var query = await SettingsContainer.GetTree();
+        _settingsTree.Name = "tree";
+        if (query != null) JsonParser.DeserializeTree(query.ToString(),_settingsTree,_settingsTree.Child);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module=await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./Shared/MainLayout.razor.js");
+        }
+    }
+
+    private async Task ResizeCallback(MouseEventArgs obj)
+    {
+        if (resize)
+        {
+            if (_module != null) await _module.InvokeVoidAsync("ResizeMenu", obj.PageX,_elementReference);
+        }
+    }
+
+    private void MouseLeave()
+    {
+        resize = false;
+    }
+
+    private void SearchCallback(ChangeEventArgs obj)
+    {
+        searchForms.Clear();
+        searchValue = obj.Value?.ToString();
+        FindForms(_settingsTree.Child,"","");
+    }
+
+    private void FindForms(List<ControlsMeta> forms,string root,string displayName)
+    {
+        foreach (var form in forms)
+        {
+            var outputUrl = root+"/"+form.Name;
+            var displayNameUrl = displayName + "/" + form.DisplayName;
+            if (form.DisplayName.Contains(searchValue,StringComparison.OrdinalIgnoreCase) & !string.IsNullOrEmpty(searchValue))
+            {
+                searchForms.Add(outputUrl,new KeyValuePair<string, string>(displayNameUrl,form.DisplayName));
+            }
+            FindForms(form.Child,outputUrl,displayNameUrl);
+            
+        }
+    }
+
+}

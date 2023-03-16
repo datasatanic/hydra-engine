@@ -1,0 +1,66 @@
+@using hydra_engine_blazor.Models
+@using System.Text.RegularExpressions
+@inject NavigationManager Navigation
+@inject SettingsContainer SettingsContainer
+<div class="search-card-container" @onclick="NavigateCallback">
+    <div class="search-row">
+        <h3>Display name :</h3>
+        <h3> @_displayName</h3>
+    </div>
+    <div class="search-row">
+        <h3>Description :</h3>
+        <h3>@_description</h3>
+    </div>
+    <div class="search-row">
+        <h3>Entity :</h3>
+        <h3>@Entity.Entity</h3>
+    </div>
+</div>
+
+
+@code {
+    [CascadingParameter]
+    public List<SearchEntity> SearchEntities { get; set; }
+    [Parameter]
+    public EventCallback<List<SearchEntity>> SendList { get; set; }
+    [Parameter]
+    public SearchEntity Entity { get; set; }
+    [Parameter]
+    public EventCallback<bool> Load { get; set; }
+
+    private string? _displayName;
+    private string? _description;
+    protected override void OnInitialized()
+    {
+        _displayName = Regex.Replace(Entity.DisplayName, "<[^>]+>", string.Empty);
+        _description=Regex.Replace(Entity.Description, "<[^>]+>", string.Empty);
+    }
+
+    private async Task NavigateCallback()
+    {
+        if (Entity.Entity == Models.Entity.Form)
+        {
+            Navigation.NavigateTo(Entity.Output_Url);
+        }
+        else
+        {
+            var list = new List<string>(Entity.Output_Url.Split("/"));
+            list.RemoveAll(string.IsNullOrEmpty);
+            if (!SettingsContainer.ListOutputUrl.ContainsKey(string.Join("/", list)))
+            {
+                list.RemoveAt(list.Count-1);
+            }
+            var id = Entity.Entity switch
+            {
+                Models.Entity.Field => $"#f{SettingsContainer.GetHash(Entity.Input_Url)}",
+                Models.Entity.Group => $@"#g{SettingsContainer.GetHash(Entity.Output_Url.Remove(Entity.Output_Url.Length - 1))}",
+                _ => ""
+                };
+            Navigation.NavigateTo($"{string.Join("/",list)}{id}");
+        }
+        SearchEntities.Clear();
+        await SendList.InvokeAsync(SearchEntities);
+        await Load.InvokeAsync(true);
+    }
+
+}

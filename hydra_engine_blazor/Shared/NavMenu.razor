@@ -1,0 +1,71 @@
+﻿@using hydra_engine_blazor.Models
+@using System.Security.Cryptography
+@using System.Text.Json
+@using System.Text.Json.Nodes
+@inject NavigationManager Navigation
+@inject SettingsContainer SettingsContainer
+
+<ul class="tree">
+    <li @onclick="SavePathSettings"
+        @ondblclick:stopPropagation="true">
+        <div class="item-container @(SettingsContainer.CurrentOutputUrl == Root ? "active-link" : "")">
+            <img data-bs-toggle="collapse" data-bs-target="@($"#r{Root.GetHashCode()}")" aria-controls="@($"r{Root.GetHashCode()}")" type="button" aria-expanded="@(SettingsContainer.Expand ? "true" : "false")" 
+                 class="arrow-toggle @(Settings.Child.Count==0 ? "hidden" : "")" @ondblclick:stopPropagation="true" @onclick:stopPropagation="true" alt=""/>
+            <h4>@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]</h4>
+        </div>
+    </li>
+    <div class="collapse @(SettingsContainer.Expand ? "show":"")" id="@($"r{Root.GetHashCode()}")">
+        @foreach (var item in Settings.Child)
+        {
+            var href = Root + "/" + item.Name;
+            var displayName = DisplayNamePath + "/" + item.DisplayName;
+            <NavMenu Settings="@item" Root="@href" DisplayNamePath="@displayName"/>
+        }
+    </div>
+</ul>
+
+@code {
+    private bool collapseNavMenu = true;
+    [Parameter]
+    public ControlsMeta Settings { get; set; }
+    [Parameter]
+    public string Root{ get; set; }
+    [Parameter]
+    public string DisplayNamePath { get; set; }
+    private string link_margin;
+    private string[] OutputUrlList=>Root.Split("/");
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    protected override void OnInitialized()
+    {
+        SettingsContainer.OnChange += StateHasChanged;
+        if (!SettingsContainer.ListOutputUrl.ContainsKey(Root))
+        {
+            SettingsContainer.ListOutputUrl.Add(Root,DisplayNamePath);
+        }
+        if (!string.IsNullOrEmpty(SettingsContainer.CurrentOutputUrl) && SettingsContainer.CurrentOutputUrl.Equals(Root))
+        {
+            SettingsContainer.CurrentDisplayNamePath = DisplayNamePath;
+        }
+        
+    }
+
+    protected override void OnParametersSet()
+    {
+        var count = OutputUrlList.Length;
+        link_margin = $"margin-left:{(count - 1) * 20}px";
+    }
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    private void SavePathSettings()
+    {
+        SettingsContainer.CurrentOutputUrl = Root;
+        SettingsContainer.CurrentDisplayNamePath = DisplayNamePath;
+        Navigation.NavigateTo(Root);
+    }
+
+}
