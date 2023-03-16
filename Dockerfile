@@ -37,5 +37,6 @@ COPY --from=requirements-stage /tmp/requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 COPY --from=publish /app/publish/wwwroot /code/wwwroot
+RUN cp /code/wwwroot/index.html /code/wwwroot/404.html
 COPY ./hydra_engine /code/hydra_engine
 CMD python -m hydra_engine
