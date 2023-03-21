@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  hydra:
+    image: mdryomin/hydra:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - /etc/terragrunt/dockermodule:/code/files:rw
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/terraform:/usr/bin/terraform
+      - /usr/bin/terragrunt:/usr/bin/terragrunt
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10mb"
+        max-file: "3"

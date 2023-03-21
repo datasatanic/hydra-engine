@@ -90,3 +90,4 @@ def parse_config_files():
         parse_meta_params()
     except Exception as e:
         logger.error(f"Error in parsing configuration files with {e}")
+        raise ValueError("Configuration files not valid")
