@@ -72,6 +72,8 @@ public enum ElemType
     Bool,
     [EnumMember(Value = "datetime")]
     DateTime,
+    [EnumMember(Value = "range")]
+    Range,
     [EnumMember(Value = "array")]
     Array,
 }
@@ -99,7 +101,9 @@ public enum Control
     [EnumMember(Value = "radio_control")]
     Radio,
     [EnumMember(Value = "list_control")]
-    Fieldset
+    Fieldset,
+    [EnumMember(Value="range_control")]
+    Range
 }
 
 public class ConstraintItem

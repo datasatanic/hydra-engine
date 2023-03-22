@@ -9,13 +9,13 @@ import re
 tree = {}
 logger = logging.getLogger('common_logger')
 
-types = Literal["string", "int", "bool", "datetime", "array"]
-sub_types = Literal["string", "int", "bool", "datetime"]
+types = Literal["string", "int", "bool", "datetime", "range", "array"]
+sub_types = Literal["string", "int", "bool", "datetime", "range"]
 constraints = Literal[
     'maxlength', 'minlength', 'pattern', 'cols', 'rows', 'min', 'max', 'format', "pattern", "size", "resize"]
 controls = Literal[
     "input_control", "textarea_control", "list_control", "checkbox_control", "number_control", "datetime_control",
-    "date_control", "time_control"]
+    "date_control", "time_control", "range_control"]
 
 
 class ConstraintItem(BaseModel):
@@ -66,6 +66,13 @@ class ElemInfo(BaseModel):
                 return value_type
             except TypeError:
                 raise TypeError("Not datetime type")
+        if value_type == "range":
+            try:
+                int(values["value"]["from"])
+                int(values["value"]["to"])
+                return value_type
+            except TypeError:
+                raise TypeError("Not range type")
         if value_type == "array":
             return value_type
 
@@ -107,6 +114,14 @@ class ElemInfo(BaseModel):
                     values["value"][values["value"].index(item)] = date
                 except TypeError:
                     raise TypeError(f"item {item} in array is not datetime format")
+            return sub_type
+        if sub_type == "range":
+            for item in values["value"]:
+                try:
+                    int(item["from"])
+                    int(item["to"])
+                except TypeError:
+                    raise TypeError(f"item {item} in array is not range")
             return sub_type
 
     @validator("control", pre=True)

@@ -89,6 +89,7 @@ public class JsonParser
                         "integer" => ElemType.Int,
                         "datetime" => ElemType.DateTime,
                         "bool"=>ElemType.Bool,
+                        "range"=>ElemType.Range,
                         "array"=>ElemType.Array,
                         _ => elemInfo.type
                     };
@@ -104,7 +105,7 @@ public class JsonParser
                         "integer" => ElemType.Int,
                         "datetime" => ElemType.DateTime,
                         "bool"=>ElemType.Bool,
-                        "array"=>ElemType.Array,
+                        "range"=>ElemType.Range,
                         _ => elemInfo.type
                     };
                     break;
@@ -127,6 +128,7 @@ public class JsonParser
                         "date_control"=>Control.Date,
                         "radio_control" => Control.Radio,
                         "list_control" => Control.Fieldset,
+                        "range_control"=>Control.Range,
                         _ => elemInfo.control
                     };
                     break;
