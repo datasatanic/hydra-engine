@@ -44,7 +44,6 @@ async def startup_event():
         parse_config_files()
         read_controls_file("files")
         logger.debug("Directory has been parsed successfully")
-        os.system("terragrunt run-all apply --terragrunt-non-interactive")
     except Exception as e:
         logger.error(f"Error in parsing files with {e}")
     await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()

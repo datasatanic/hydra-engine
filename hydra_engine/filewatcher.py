@@ -7,9 +7,10 @@ class EventHandler(FileSystemEventHandler):
 
     def on_any_event(self, event):
         if not event.is_directory:
-            print(event.src_path)
-            parse_config_files()
-            read_controls_file("files")
+            if "terragrunt-cache" not in event.src_path:
+                print(event.src_path)
+                parse_config_files()
+                read_controls_file("files")
 
 
 def start_monitoring_files():
