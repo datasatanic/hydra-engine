@@ -104,7 +104,10 @@ public class SettingsContainer
     {
         return await _client.GetFromJsonAsync<object>("update/data",options);
     }
-    
+    public async Task<string?> ResetInfrastructure()
+    {
+        return await _client.GetFromJsonAsync<string?>("api/hydra/reset/configuration", options);
+    }
     /// <summary>
     /// Search elements,forms,groups
     /// </summary>

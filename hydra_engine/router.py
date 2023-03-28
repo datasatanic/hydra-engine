@@ -1,6 +1,7 @@
 import copy
 import logging
-
+import os
+import subprocess
 from fastapi import APIRouter, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -41,7 +42,16 @@ def get_element_value(input_url: str, file_id: str):
 def set_values(content: list):
     for item in content:
         set_value(item["Value"]["Key"], item["Key"], item["Value"]["Value"])
+    cmd = "terragrunt run-all plan -json > test.json"
+    subprocess.Popen(cmd, shell=True, cwd="/code/files")
     return content
+
+
+@router.get("/reset/configuration")
+def reset():
+    cmd = "git reset --hard HEAD"
+    subprocess.Popen(cmd, shell=True, cwd="/code/files")
+    return {"reset": "successful"}
 
 
 @router.post("/debug_s1")

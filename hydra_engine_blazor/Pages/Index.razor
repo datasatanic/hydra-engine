@@ -26,6 +26,7 @@
     {
         <button id="save" class="save-button" @onclick="SaveValues">Save</button>
     }
+    <button class="save-button" style="right:150px" @onclick="ResetInfrastructure">Reset</button>
     <div class="form-container">
         <div class="element-container">
             <div class="path-container">
@@ -42,7 +43,7 @@
                             <a class="path" href="@href.Remove(href.Length - 1)" last-child="@(list.IndexOf(path) == list.Count - 1)">
                                 @displayNameList[list.IndexOf(path)]
                             </a>
-                            <img class="@(list.IndexOf(path) != list.Count-1 && !string.IsNullOrEmpty(path) ? "right-arrow" : "")"/>                                                                         
+                            <img class="@(list.IndexOf(path) != list.Count-1 && !string.IsNullOrEmpty(path) ? "right-arrow" : "")"/>
                         }
                     }
                 }
@@ -63,7 +64,7 @@
                         </div>
                     }
                 </div>
-                
+
             </div>
             <div class="groups @(currentControlsMeta.Child.Where(item => item.Type.Equals("group")).ToList().Count==0
                                    ? "hide" : "")">
@@ -197,7 +198,12 @@
         {
             changeElements.Add(elem);
         }
-        
+
+    }
+
+    private void ResetInfrastructure()
+    {
+        SettingsContainer?.ResetInfrastructure();
     }
 
 }
