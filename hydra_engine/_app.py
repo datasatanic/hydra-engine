@@ -49,7 +49,7 @@ async def startup_event():
     await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
 
 
-# app_static.mount("/", StaticFiles(directory="wwwroot", html=True), "client")
+app_static.mount("/", StaticFiles(directory="wwwroot", html=True), "client")
 
 
 def read_controls_file(directory):
