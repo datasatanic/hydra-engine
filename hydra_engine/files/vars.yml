@@ -1,0 +1,10 @@
+image_name: nginx
+image_tag: latest
+container_name: nginx_conrainer
+ports:
+- from: 8000
+  to: 81
+- from: 60000
+  to: 800
+env:
+  test: figest

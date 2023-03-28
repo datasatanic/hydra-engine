@@ -49,7 +49,7 @@ async def startup_event():
     await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
 
 
-app_static.mount("/", StaticFiles(directory="wwwroot", html=True), "client")
+# app_static.mount("/", StaticFiles(directory="wwwroot", html=True), "client")
 
 
 def read_controls_file(directory):
@@ -73,4 +73,4 @@ def read_controls_file(directory):
                                 add_additional_fields(path.split("/"), str_list)
                 except Exception as e:
                     logger.error(f"Error in parsing meta file of tree {e}")
-                    return
+                    raise ValueError("Error in parsing meta file of tree {e}")

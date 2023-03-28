@@ -122,7 +122,14 @@ textarea{
     gap:5px;
     align-items: center;
 }
-.list-item-container>img{
+.list-item-container>img,.delete-image{
     content: url("icons/remove_item.svg");
     cursor: pointer;
+}
+.range-titles-container{
+    display: flex;
+    flex-direction: row;
+    gap: 210px;
+    padding: 0 0 0 10px;
+    margin-bottom: -10px;
 }

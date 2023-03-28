@@ -1,0 +1,61 @@
+# File metadata
+
+FILE:
+  type: 'yaml'
+  path: 'files/vars.yml' # Optional/ default: path w/o .meta
+
+PARAMS:
+  - image_name: # Input_URL
+      type: string
+      sub_type: # optional for array
+      readonly: False
+      description: "Docker image name"
+      output_url: "root/constr/service"
+      render:
+        ??? control: input_control
+        display_name: "Docker image name"
+        constraints:
+          
+  - container_name: # Input_URL
+      type: string
+      sub_type: # optional for array
+      readonly: False
+      description: "Name of the docker container to deploy"
+      output_url: "root/constr/service"
+      render:
+        ??? control: input_control
+        display_name: "Docker container name"
+        constraints:
+          
+  - image_tag: # Input_URL
+      type: string
+      sub_type: # optional for array
+      readonly: False
+      description: "Docker image tag"
+      output_url: "root/constr/service"
+      render:
+        ??? control: input_control
+        display_name: "Tag of image"
+        constraints:
+          
+  - env/test: # Input_URL
+      type: string
+      sub_type: # optional for array
+      readonly: False
+      description: "Map of Env variables to set for container"
+      output_url: "root/constr/service"
+      render:
+        ??? control: input_control
+        display_name: "Env name"
+        constraints:
+  - ports: # Input_URL
+      type: array
+      sub_type: range
+      readonly: False
+      description: "Ports"
+      output_url: "root/constr/service"
+      render:
+        ??? control: range_control
+        display_name: "Ports"
+        constraints:
+          

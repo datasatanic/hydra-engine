@@ -1,4 +1,5 @@
-from datetime import datetime
+import json
+import yaml
 import maya
 from typing import List, Literal
 from pydantic import BaseModel, validator, Extra, root_validator
@@ -448,11 +449,14 @@ def find_value_in_dict(elements, input_url_list):
     return elements
 
 
-def set_value_in_dict(elements, value, input_url_list):
+def set_value_in_dict(elements, value, input_url_list, file_type):
     while len(input_url_list) > 1:
         elements = elements[input_url_list[0]]
         input_url_list.pop(0)
-    elements[input_url_list[0]] = value
+    if file_type == "yaml":
+        elements[input_url_list[0]] = yaml.safe_load(value)
+    else:
+        elements[input_url_list[0]] = value
 
 
 def set_value(input_url: str, uid: str, value: str):
@@ -461,7 +465,7 @@ def set_value(input_url: str, uid: str, value: str):
     key = input_url_list[0]
     for elements in elements_json:
         if key in elements.values and elements.uid == uid:
-            set_value_in_dict(elements.values, value, input_url_list)
+            set_value_in_dict(elements.values, value, input_url_list, elements.type)
             return write_file(elements.values, elements.path, elements.type, input_url, value)
 
 
