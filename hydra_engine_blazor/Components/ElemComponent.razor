@@ -80,10 +80,13 @@
                     <img @onclick="AddItem"/>
                 </legend>
                 <div class="d-flex flex-column gap-3">
-                    <div class="range-titles-container">
-                         <h4>From</h4>
-                        <h4>To</h4>
-                    </div>
+                    @if (elemInfo.sub_type == ElemType.Range)
+                    {
+                        <div class="range-titles-container">
+                            <h4>From</h4>
+                            <h4>To</h4>
+                        </div>
+                    }
                     @for (var i = 0; i < elemInfo?.arrayItems.Count; i++)
                     {
                         var j = i;
