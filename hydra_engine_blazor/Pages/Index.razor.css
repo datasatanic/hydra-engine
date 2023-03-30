@@ -104,3 +104,17 @@ input[type="search"]{
     flex-direction: column;
     gap:20px;
 }
+.modal-footer button[type=submit]{
+    background:var(--hydra-blue-default);
+    width: 108px;
+    font-size: 16px;
+    height: 38px;
+    font-weight: 500;
+}
+.modal-footer button[type=reset]{
+    background:var(--hydra-secondary-30);
+    width: 108px;
+    font-size: 16px;
+    height: 38px;
+    font-weight: 500;
+}

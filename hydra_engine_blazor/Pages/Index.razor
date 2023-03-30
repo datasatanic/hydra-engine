@@ -3,6 +3,7 @@
 @using System.Security
 @using System.Text.Json
 @using System.Runtime.CompilerServices
+@using DefaultNamespace
 @using Microsoft.VisualBasic
 @inject SettingsContainer SettingsContainer
 @inject IJSRuntime JSRuntime
@@ -26,7 +27,7 @@
     {
         <button id="save" class="save-button" @onclick="SaveValues">Save</button>
     }
-    <button class="save-button" style="right:150px" @onclick="ResetInfrastructure">Reset</button>
+    <button class="save-button" style="right: 150px" @onclick="ResetInfrastructure">Reset</button>
     <div class="form-container">
         <div class="element-container">
             <div class="path-container">
@@ -43,7 +44,7 @@
                             <a class="path" href="@href.Remove(href.Length - 1)" last-child="@(list.IndexOf(path) == list.Count - 1)">
                                 @displayNameList[list.IndexOf(path)]
                             </a>
-                            <img class="@(list.IndexOf(path) != list.Count-1 && !string.IsNullOrEmpty(path) ? "right-arrow" : "")"/>
+                            <img class="@(list.IndexOf(path) != list.Count-1 && !string.IsNullOrEmpty(path) ? "right-arrow" : "")"/>                                                                         
                         }
                     }
                 }
@@ -64,7 +65,7 @@
                         </div>
                     }
                 </div>
-
+                
             </div>
             <div class="groups @(currentControlsMeta.Child.Where(item => item.Type.Equals("group")).ToList().Count==0
                                    ? "hide" : "")">
@@ -101,6 +102,18 @@
             }
         </div>
     </div>
+    <Modal Model="Model" @ref="ModalWindow">
+        <Header>
+            <h2>Terragrunt Plan</h2>
+        </Header>
+        <Body>
+            <h3 class="text-break">@Model.PlanText</h3>
+        </Body>
+        <Footer>
+            <button type="submit" class="btn" @onclick="async () => { await ModalWindow.Close(); }">Apply</button>
+            <button type="reset" class="btn" @onclick="async () => { await ModalWindow.Close(); }">Cancel</button>
+        </Footer>
+    </Modal>
 </div>
 
 
@@ -110,6 +123,8 @@
     [Parameter]
     public string Output_URL { get; set; }
     IJSObjectReference? _module;
+    private Modal ModalWindow { get; set; } = new();
+    private PlanModel Model{get;set;}=new();
     private List<ControlsMeta> groups;
     private List<ControlsMeta> forms;
     private ControlsMeta currentControlsMeta=new();
@@ -153,11 +168,17 @@
 
     private async Task SaveValues()
     {
+        HttpResponseMessage responseMessage=new HttpResponseMessage();
         if (!changeElements.Exists(item => !item.Value.isValid))
         {
-            await SettingsContainer.SetValues(changeElements);
+            responseMessage=await SettingsContainer.SetValues(changeElements);
             changeElements.Clear();
         }
+        if (responseMessage.IsSuccessStatusCode)
+        {
+            Model.PlanText = await responseMessage.Content.ReadAsStringAsync();
+        }
+        await ModalWindow.Open();
     }
 
     private async Task RefreshCallback()
@@ -198,7 +219,7 @@
         {
             changeElements.Add(elem);
         }
-
+        
     }
 
     private void ResetInfrastructure()

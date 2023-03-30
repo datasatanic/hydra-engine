@@ -43,13 +43,14 @@ def get_element_value(input_url: str, file_id: str):
 def set_values(content: list):
     for item in content:
         set_value(item["Value"]["Key"], item["Key"], item["Value"]["Value"])
-    cmd = "terragrunt plan"
-    subprocess.Popen(cmd, shell=True, cwd="/code/files")
+    cmd = "terragrunt run-all plan -json > test.json"
+    subprocess.Popen(cmd, shell=True)
     for root, dirs, files in os.walk("files"):
         for name in files:
             if name == "test.json":
                 with open(os.path.join(root, name), 'r') as file:
                     readfile = file.read()
+                    print(readfile)
                 file.close()
                 return JSONResponse(content={"plan": readfile}, status_code=200)
 

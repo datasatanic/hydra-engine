@@ -65,7 +65,7 @@ public class SettingsContainer
     /// </summary>
     public async Task<object?> GetTree()
     {
-        return await _client.GetFromJsonAsync<object>($"/api/hydra/tree");
+        return await _client.GetFromJsonAsync<object>($"api/hydra/tree");
     }
     /// <summary>
     /// Get all info about current form
@@ -74,17 +74,17 @@ public class SettingsContainer
     /// <returns></returns>
     public async Task<object?> GetFormInfo(string url)
     {
-        return await _client.GetFromJsonAsync<object>($"/api/hydra/tree/{url}");
+        return await _client.GetFromJsonAsync<object>($"api/hydra/tree/{url}");
     }
 
     public async Task<object?> GetElementValue(string FilePath,string Key)
     {
-        return await _client.GetFromJsonAsync<object>($"/api/hydra/element/value/{FilePath}/{Key}", options);
+        return await _client.GetFromJsonAsync<object>($"api/hydra/element/value/{FilePath}/{Key}", options);
     }
 
     public async Task<object?> GetElementInfo(string Key,string FilePath)
     {
-        return await _client.GetFromJsonAsync<object>($"/api/hydra/elements/info/{Key}?file_path={FilePath}",options);
+        return await _client.GetFromJsonAsync<object>($"api/hydra/elements/info/{Key}?file_path={FilePath}",options);
     }
     /// <summary>
     /// Set new value to element in file
@@ -92,22 +92,24 @@ public class SettingsContainer
     /// <param name="Key"></param>
     /// <param name="Value"></param>
     /// <param name="FilePath"></param>
-    public async Task SetValues(List<KeyValuePair<string,ElemInfo>> changeElements)
+    public async Task<HttpResponseMessage> SetValues(List<KeyValuePair<string,ElemInfo>> changeElements)
     {
         var saveElements = changeElements.Select(element => new KeyValuePair<string, KeyValuePair<string, object>>(element.Value.fileId, new KeyValuePair<string, object>(element.Key, element.Value.value))).ToList();
         var json = JsonSerializer.Serialize(saveElements, options);
         HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
-        await _client.PostAsync($"/api/hydra/elements/values",content);
+        return await _client.PostAsync($"api/hydra/elements/values",content);
     }
 
     public async Task<object?> UpdateData()
     {
         return await _client.GetFromJsonAsync<object>("update/data",options);
     }
+
     public async Task<string?> ResetInfrastructure()
     {
         return await _client.GetFromJsonAsync<string?>("api/hydra/reset/configuration", options);
     }
+    
     /// <summary>
     /// Search elements,forms,groups
     /// </summary>
@@ -115,7 +117,7 @@ public class SettingsContainer
     /// <returns></returns>
     public async Task<List<SearchEntity>?> SearchRequest(string value)
     {
-        return await _client.GetFromJsonAsync<List<SearchEntity>>($"/api/hydra/search?q={value}&pagelen=6", options);
+        return await _client.GetFromJsonAsync<List<SearchEntity>>($"api/hydra/search?q={value}&pagelen=6", options);
     }
     /// <summary>
     /// Generating a hash code for anchor scrolling to an element
