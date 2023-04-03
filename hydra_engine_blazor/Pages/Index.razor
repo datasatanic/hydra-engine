@@ -107,7 +107,7 @@
             <h2>Terragrunt Plan</h2>
         </Header>
         <Body>
-            <h3 class="text-break">@Model.PlanText</h3>
+            <div id="graph"></div>
         </Body>
         <Footer>
             <button type="submit" class="btn" @onclick="async () => { await ModalWindow.Close(); }">Apply</button>
@@ -177,6 +177,7 @@
         if (responseMessage.IsSuccessStatusCode)
         {
             Model.PlanText = await responseMessage.Content.ReadAsStringAsync();
+            if (_module != null) await _module.InvokeVoidAsync("AddGraph", Model.PlanText);
         }
         await ModalWindow.Open();
     }

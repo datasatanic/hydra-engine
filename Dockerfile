@@ -1,7 +1,7 @@
 FROM python:3.11-alpine as release
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories && \
     echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories
-RUN apk update && apk add git terragrunt terraform
+RUN apk update && apk add git terragrunt terraform graphviz
 
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS publish

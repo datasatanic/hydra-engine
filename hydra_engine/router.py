@@ -1,11 +1,11 @@
 import copy
-import json
 import logging
 import os
 import subprocess
+
 from fastapi import APIRouter, Query
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 
 from hydra_engine.schemas import tree, get_element_info, set_value, get_value
 from hydra_engine.search.searcher import HydraSearcher
@@ -39,20 +39,18 @@ def get_element_value(input_url: str, file_id: str):
     return get_value(input_url, file_id)
 
 
-@router.post("/elements/values")
+@router.post("/elements/values", response_class=FileResponse)
 def set_values(content: list):
     for item in content:
         set_value(item["Value"]["Key"], item["Key"], item["Value"]["Value"])
     cmd = "terragrunt run-all plan -json > test.json"
+    cmd2 = "terragrunt graph -type=plan | dot -Tsvg > graph.svg"
     subprocess.Popen(cmd, shell=True)
+    subprocess.Popen(cmd2, shell=True, cwd="/code/files")
     for root, dirs, files in os.walk("files"):
         for name in files:
-            if name == "test.json":
-                with open(os.path.join(root, name), 'r') as file:
-                    readfile = file.read()
-                    print(readfile)
-                file.close()
-                return JSONResponse(content={"plan": readfile}, status_code=200)
+            if name == "graph.svg":
+                return os.path.join(root, name)
 
 
 @router.get("/reset/configuration")

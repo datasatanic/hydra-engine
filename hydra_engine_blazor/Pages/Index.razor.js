@@ -9,3 +9,7 @@ export function Scroll(){
     }
     
 }
+export function AddGraph(svg){
+    const el=document.getElementById("graph")
+    el.innerHTML=svg
+}
