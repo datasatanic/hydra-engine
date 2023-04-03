@@ -110,8 +110,7 @@
             <div id="graph"></div>
         </Body>
         <Footer>
-            <button type="submit" class="btn" @onclick="async () => { await ModalWindow.Close(); }">Apply</button>
-            <button type="reset" class="btn" @onclick="async () => { await ModalWindow.Close(); }">Cancel</button>
+            <button type="submit" class="btn" @onclick="ApplyCallback">Apply</button>
         </Footer>
     </Modal>
 </div>
@@ -226,6 +225,11 @@
     private void ResetInfrastructure()
     {
         SettingsContainer?.ResetInfrastructure();
+    }
+    private async Task ApplyCallback()
+    {
+        await SettingsContainer.ApplyPlan();
+        await ModalWindow.Close();
     }
 
 }

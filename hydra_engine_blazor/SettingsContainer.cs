@@ -100,6 +100,10 @@ public class SettingsContainer
         return await _client.PostAsync($"api/hydra/elements/values",content);
     }
 
+    public async Task<object?> ApplyPlan()
+    {
+        return await _client.GetFromJsonAsync<object?>("api/hydra/plan/apply");
+    }
     public async Task<object?> UpdateData()
     {
         return await _client.GetFromJsonAsync<object>("update/data",options);

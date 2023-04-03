@@ -121,6 +121,6 @@ input[type="search"]{
 #graph{
     margin: -30px;
 }
-#graph>svg{
+div[id="graph"] svg{
     max-width: 100%;
 }
