@@ -1,0 +1,11 @@
+<div class="loader-container">
+    <div style="border-top:16px solid @style;" class="loader"></div>
+    <h2 class="title">@Title</h2>
+</div>
+
+@code {
+    [Parameter] public string? Color { get; set; }
+    
+    [Parameter] public string? Title { get; set; }
+    private string style => Color;
+}

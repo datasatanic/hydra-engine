@@ -12,4 +12,6 @@ export function Scroll(){
 export function AddGraph(svg){
     const el=document.getElementById("graph")
     el.innerHTML=svg
+    const svg_elem=el.querySelector("svg");
+    svg_elem.style.maxWidth="100%";
 }

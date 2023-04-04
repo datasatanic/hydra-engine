@@ -9,6 +9,10 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
 <div class="page-container">
+    @if (plan_loader)
+    {
+        <Loader Color="#5C73E5" Title="Forming plan..."></Loader>
+    }
     <div class="input-search-container">
         <input type="search" placeholder="Search..." value="@searchValue" @oninput="SearchCallback" @onfocus="SearchOnFocus"/>
         <img/>
@@ -40,11 +44,11 @@
                     {
                         @foreach (var path in list)
                         {
-                            href += path+"/";
+                            href += path + "/";
                             <a class="path" href="@href.Remove(href.Length - 1)" last-child="@(list.IndexOf(path) == list.Count - 1)">
                                 @displayNameList[list.IndexOf(path)]
                             </a>
-                            <img class="@(list.IndexOf(path) != list.Count-1 && !string.IsNullOrEmpty(path) ? "right-arrow" : "")"/>                                                                         
+                            <img class="@(list.IndexOf(path) != list.Count - 1 && !string.IsNullOrEmpty(path) ? "right-arrow" : "")"/>
                         }
                     }
                 }
@@ -65,10 +69,9 @@
                         </div>
                     }
                 </div>
-                
+
             </div>
-            <div class="groups @(currentControlsMeta.Child.Where(item => item.Type.Equals("group")).ToList().Count==0
-                                   ? "hide" : "")">
+            <div class="groups @(currentControlsMeta.Child.Where(item => item.Type.Equals("group")).ToList().Count == 0 ? "hide" : "")">
                 @foreach (var item in currentControlsMeta.Child.Where(item => item.Type.Equals("group")))
                 {
                     var id = Output_URL + "/" + item.Name;
@@ -107,7 +110,11 @@
             <h2>Terragrunt Plan</h2>
         </Header>
         <Body>
-            <div id="graph"></div>
+        @if (applying_loader)
+        {
+            <Loader Color="#5C73E5" Title="Applying plan..."></Loader>
+        }
+        <div id="graph"></div>
         </Body>
         <Footer>
             <button type="submit" class="btn" @onclick="ApplyCallback">Apply</button>
@@ -131,6 +138,8 @@
     private string? searchValue = string.Empty;
     bool _load;
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
+    private bool plan_loader;
+    private bool applying_loader;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -167,6 +176,7 @@
 
     private async Task SaveValues()
     {
+        plan_loader = true;
         HttpResponseMessage responseMessage=new HttpResponseMessage();
         if (!changeElements.Exists(item => !item.Value.isValid))
         {
@@ -178,6 +188,7 @@
             Model.PlanText = await responseMessage.Content.ReadAsStringAsync();
             if (_module != null) await _module.InvokeVoidAsync("AddGraph", Model.PlanText);
         }
+        plan_loader = false;
         await ModalWindow.Open();
     }
 
@@ -226,10 +237,17 @@
     {
         SettingsContainer?.ResetInfrastructure();
     }
+
     private async Task ApplyCallback()
     {
-        await SettingsContainer.ApplyPlan();
-        await ModalWindow.Close();
+        applying_loader = true;
+        var result=await SettingsContainer.ApplyPlan();
+        if (result != null)
+        {
+            applying_loader = false;
+            await ModalWindow.Close();
+        }
+        
     }
 
 }

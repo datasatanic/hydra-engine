@@ -1,0 +1,37 @@
+.loader{
+    border: 16px solid var(--hydra-secondary-20);
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    position: relative;
+    top: 50%;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin-b-z9n7l8w8iu 2s linear infinite;
+}
+.title{
+    position: relative;
+    top:50%;
+}
+.loader-container{
+    position: absolute;
+    left: calc(50% - 50vw);
+    top: calc(50% - 50vh);
+    z-index: 1500;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    backdrop-filter: blur(1px);
+}
+/* Safari */
+@-webkit-keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

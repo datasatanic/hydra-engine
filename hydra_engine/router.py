@@ -45,8 +45,10 @@ def set_values(content: list):
         set_value(item["Value"]["Key"], item["Key"], item["Value"]["Value"])
     cmd = "terragrunt run-all plan -json > test.json"
     cmd2 = "terragrunt graph -type=plan | dot -Tsvg > graph.svg"
-    subprocess.Popen(cmd, shell=True)
-    subprocess.Popen(cmd2, shell=True, cwd="/code/files")
+    proc = subprocess.Popen(cmd, shell=True)
+    # proc.wait(timeout=30)
+    proc2 = subprocess.Popen(cmd2, shell=True, cwd="/code/files")
+    # proc2.wait(timeout=30)
     for root, dirs, files in os.walk("files"):
         for name in files:
             if name == "graph.svg":
@@ -56,7 +58,8 @@ def set_values(content: list):
 @router.get("/plan/apply")
 def apply_plan():
     cmd = "terragrunt run-all apply --terragrunt-non-interactive";
-    subprocess.Popen(cmd, shell=True);
+    proc = subprocess.Popen(cmd, shell=True);
+    # proc.wait(timeout=30)
     return {"plan": "apply"}
 
 
