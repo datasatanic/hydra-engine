@@ -57,9 +57,8 @@ def set_values(content: list):
 
 @router.get("/plan/apply")
 def apply_plan():
-    cmd = "terragrunt run-all apply --terragrunt-non-interactive";
-    proc = subprocess.Popen(cmd, shell=True);
-    # proc.wait(timeout=30)
+    cmd = "terragrunt run-all apply --terragrunt-non-interactive"
+    proc = subprocess.Popen(cmd, shell=True)
     return {"plan": "apply"}
 
 
