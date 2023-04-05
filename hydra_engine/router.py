@@ -5,7 +5,7 @@ import subprocess
 
 from fastapi import APIRouter, Query
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 
 from hydra_engine.schemas import tree, get_element_info, set_value, get_value
 from hydra_engine.search.searcher import HydraSearcher
@@ -43,16 +43,18 @@ def get_element_value(input_url: str, file_id: str):
 def set_values(content: list):
     for item in content:
         set_value(item["Value"]["Key"], item["Key"], item["Value"]["Value"])
-    cmd = "terragrunt run-all plan -json > test.json"
-    cmd2 = "terragrunt graph -type=plan | dot -Tsvg > graph.svg"
-    proc = subprocess.Popen(cmd, shell=True)
+    cmd = "terragrunt plan -out=test.out"
+    cmd2 = "terragrunt show -json test.out > test.json"
+    proc = subprocess.run(cmd, shell=True, cwd="/code/files")
     # proc.wait(timeout=30)
-    proc2 = subprocess.Popen(cmd2, shell=True, cwd="/code/files")
+    proc2 = subprocess.run(cmd2, shell=True, cwd="/code/files")
+    cmd3 = "terraform-visual --plan test.json"
+    subprocess.run(cmd3, shell=True, cwd="/code/files")
     # proc2.wait(timeout=30)
     for root, dirs, files in os.walk("files"):
-        for name in files:
-            if name == "graph.svg":
-                return os.path.join(root, name)
+        for dir in dirs:
+            if dir == "terraform-visual-report":
+                return os.path.join(root+"/"+dir, "index.html")
 
 
 @router.get("/plan/apply")
