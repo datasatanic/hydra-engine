@@ -114,7 +114,8 @@
         {
             <Loader Color="#5C73E5" Title="Applying plan..."></Loader>
         }
-        <div id="graph"></div>
+        <div id="graph">
+        </div>
         </Body>
         <Footer>
             <button type="submit" class="btn" @onclick="ApplyCallback">Apply</button>
@@ -185,11 +186,16 @@
         }
         if (responseMessage.IsSuccessStatusCode)
         {
-            Model.PlanText = await responseMessage.Content.ReadAsStringAsync();
-            if (_module != null) await _module.InvokeVoidAsync("AddGraph", Model.PlanText);
+            var planPage = await SettingsContainer.GetPlanPage();
+            if (planPage.IsSuccessStatusCode)
+            {
+                Model.PlanText = await planPage.Content.ReadAsStringAsync();
+                await _module.InvokeVoidAsync("AddGraph",Model.PlanText);
+                await ModalWindow.Open();
+            }
+            
         }
         plan_loader = false;
-        await ModalWindow.Open();
     }
 
     private async Task RefreshCallback()

@@ -10,6 +10,7 @@ namespace hydra_engine_blazor;
 
 public class SettingsContainer
 {
+	public string Plan { get; set; }
     public Dictionary<string,string> ListOutputUrl = new();
     private bool expand;
 
@@ -103,6 +104,15 @@ public class SettingsContainer
     public async Task<object?> ApplyPlan()
     {
         return await _client.GetFromJsonAsync<object?>("api/hydra/plan/apply");
+    }
+
+    public async Task<HttpResponseMessage> GetPlan()
+    {
+        return await _client.GetAsync("/plan.js");
+    }
+    public async Task<HttpResponseMessage> GetPlanPage()
+    {
+        return await _client.GetAsync("/plan/index.html");
     }
     public async Task<object?> UpdateData()
     {

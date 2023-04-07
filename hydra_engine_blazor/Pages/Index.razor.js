@@ -7,11 +7,20 @@ export function Scroll(){
             block:"start"
         });
     }
-    
+
 }
 export function AddGraph(svg){
     const el=document.getElementById("graph")
-    el.innerHTML=svg
-    const svg_elem=el.querySelector("svg");
-    svg_elem.style.maxWidth="100%";
+    let frame=document.createElement("iframe");
+    frame.src="plan/index.html";
+    frame.style.width="90vw";
+    frame.style.height="90vh"
+    el.appendChild(frame)
+
+}
+export function Include(url){
+    var doc = document.querySelector('link[rel="import"]').import;
+    var el=doc.querySelector("html")
+    var clone = document.importNode(el.content, true);
+    document.getElementById("graph").appendChild(clone)
 }

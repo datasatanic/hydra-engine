@@ -5,7 +5,7 @@ import subprocess
 
 from fastapi import APIRouter, Query
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
+from fastapi.responses import JSONResponse, FileResponse, PlainTextResponse
 
 from hydra_engine.schemas import tree, get_element_info, set_value, get_value
 from hydra_engine.search.searcher import HydraSearcher
@@ -39,7 +39,7 @@ def get_element_value(input_url: str, file_id: str):
     return get_value(input_url, file_id)
 
 
-@router.post("/elements/values", response_class=FileResponse)
+@router.post("/elements/values", response_class=PlainTextResponse)
 def set_values(content: list):
     for item in content:
         set_value(item["Value"]["Key"], item["Key"], item["Value"]["Value"])
@@ -51,10 +51,7 @@ def set_values(content: list):
     cmd3 = "terraform-visual --plan test.json"
     subprocess.run(cmd3, shell=True, cwd="/code/files")
     # proc2.wait(timeout=30)
-    for root, dirs, files in os.walk("files"):
-        for dir in dirs:
-            if dir == "terraform-visual-report":
-                return os.path.join(root+"/"+dir, "index.html")
+    return "plan/index.html"
 
 
 @router.get("/plan/apply")
