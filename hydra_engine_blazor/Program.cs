@@ -1,3 +1,4 @@
+using Blazored.Toast;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using hydra_engine_blazor;
@@ -13,4 +14,5 @@ builder.Services
 
 
 builder.Services.AddSingleton<SettingsContainer>();
+builder.Services.AddBlazoredToast();
 await builder.Build().RunAsync();

@@ -3,11 +3,12 @@
 @using System.Security
 @using System.Text.Json
 @using System.Runtime.CompilerServices
+@using System.Timers
 @using DefaultNamespace
 @using Microsoft.VisualBasic
 @inject SettingsContainer SettingsContainer
 @inject IJSRuntime JSRuntime
-@inject NavigationManager Navigation
+@inject IToastService _toastService
 <div class="page-container">
     @if (plan_loader)
     {
@@ -110,10 +111,6 @@
             <h2>Terragrunt Plan</h2>
         </Header>
         <Body>
-        @if (applying_loader)
-        {
-            <Loader Color="#5C73E5" Title="Applying plan..."></Loader>
-        }
         <div id="graph">
         </div>
         </Body>
@@ -140,7 +137,6 @@
     bool _load;
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
     private bool plan_loader;
-    private bool applying_loader;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -246,12 +242,12 @@
 
     private async Task ApplyCallback()
     {
-        applying_loader = true;
+        await _module.InvokeVoidAsync("RemoveGraph");
+        await ModalWindow.Close();
         var result=await SettingsContainer.ApplyPlan();
         if (result != null)
         {
-            applying_loader = false;
-            await ModalWindow.Close();
+            _toastService.ShowSuccess("Apply complete");
         }
         
     }

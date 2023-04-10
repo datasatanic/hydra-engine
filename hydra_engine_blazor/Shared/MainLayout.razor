@@ -3,6 +3,7 @@
 @inject SettingsContainer SettingsContainer
 @inject NavigationManager Navigation
 @inject IJSRuntime JsRuntime
+@using Blazored.Toast.Configuration
 <div class="page">
     <div @ref="_elementReference" class="menu-container" @onmousemove="ResizeCallback">
         <h1>Config dota</h1>
@@ -49,6 +50,8 @@
             @Body
         </article>
     </main>
+    <BlazoredToasts Position="ToastPosition.BottomRight"
+                    Timeout="10"/>
 </div>
 
 @code{

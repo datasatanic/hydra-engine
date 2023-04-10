@@ -5,8 +5,8 @@
     height: 120px;
     position: relative;
     top: 50%;
-    -webkit-animation: spin 2s linear infinite;
-    animation: spin-b-z9n7l8w8iu 2s linear infinite;
+    -webkit-animation: rotation 2s linear infinite;
+    animation: rotation 2s linear infinite;
 }
 .title{
     position: relative;
@@ -26,12 +26,17 @@
     backdrop-filter: blur(1px);
 }
 /* Safari */
-@-webkit-keyframes spin {
+@-webkit-keyframes rotation {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }

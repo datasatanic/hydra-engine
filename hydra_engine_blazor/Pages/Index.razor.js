@@ -12,6 +12,7 @@ export function Scroll(){
 export function AddGraph(svg){
     const el=document.getElementById("graph")
     let frame=document.createElement("iframe");
+    frame.id="plan"
     frame.src="plan/index.html";
     frame.style.width="90vw";
     frame.style.height="90vh"
@@ -23,4 +24,10 @@ export function Include(url){
     var el=doc.querySelector("html")
     var clone = document.importNode(el.content, true);
     document.getElementById("graph").appendChild(clone)
+}
+export function RemoveGraph(){
+    const el=document.getElementById("graph");
+    const frame=document.getElementById("plan");
+    el.removeChild(frame);
+    
 }

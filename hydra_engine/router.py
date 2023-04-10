@@ -40,24 +40,22 @@ def get_element_value(input_url: str, file_id: str):
 
 
 @router.post("/elements/values", response_class=PlainTextResponse)
-def set_values(content: list):
+async def set_values(content: list):
     for item in content:
         set_value(item["Value"]["Key"], item["Key"], item["Value"]["Value"])
-    cmd = "terragrunt plan -out=test.out"
-    cmd2 = "terragrunt show -json test.out > test.json"
-    proc = subprocess.run(cmd, shell=True, cwd="/code/files")
-    # proc.wait(timeout=30)
-    proc2 = subprocess.run(cmd2, shell=True, cwd="/code/files")
-    cmd3 = "terraform-visual --plan test.json"
-    subprocess.run(cmd3, shell=True, cwd="/code/files")
-    # proc2.wait(timeout=30)
+    run_terragrunt_plan()
     return "plan/index.html"
+
+
+def run_terragrunt_plan():
+    cmd = "terragrunt plan -out=test.out && terragrunt show -json test.out > test.json && terraform-visual --plan test.json"
+    subprocess.run(cmd, shell=True, cwd="/code/files")
 
 
 @router.get("/plan/apply")
 def apply_plan():
     cmd = "terragrunt run-all apply --terragrunt-non-interactive"
-    proc = subprocess.Popen(cmd, shell=True)
+    subprocess.run(cmd, shell=True)
     return {"plan": "apply"}
 
 
