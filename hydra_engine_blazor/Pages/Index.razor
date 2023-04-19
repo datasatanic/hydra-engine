@@ -175,7 +175,7 @@
     private async Task SaveValues()
     {
         plan_loader = true;
-        plan_title = "Forming plan...";
+        plan_title = "Forming plan";
         HttpResponseMessage responseMessage=new HttpResponseMessage();
         if (!changeElements.Exists(item => !item.Value.isValid))
         {
@@ -245,7 +245,7 @@
     private async Task ApplyCallback()
     {
         plan_loader = true;
-        plan_title = "Applying plan...";
+        plan_title = "Applying plan. It can take a few minutes";
         await _module.InvokeVoidAsync("RemoveGraph");
         await ModalWindow.Close();
         var result=await SettingsContainer.ApplyPlan();
