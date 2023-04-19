@@ -44,19 +44,24 @@ async def set_values(content: list):
     for item in content:
         set_value(item["Value"]["Key"], item["Key"], item["Value"]["Value"])
     run_terragrunt_plan()
+    logger.info("Plan generated successfully")
     return "plan/index.html"
 
 
 def run_terragrunt_plan():
     cmd = "terragrunt plan -out=test.out && terragrunt show -json test.out > test.json && terraform-visual --plan test.json"
-    subprocess.run(cmd, shell=True, cwd="/code/files")
+    subprocess.run(cmd, shell=True, cwd="/code/files", check=True)
 
 
 @router.get("/plan/apply")
 def apply_plan():
     cmd = "terragrunt run-all apply --terragrunt-non-interactive"
-    subprocess.run(cmd, shell=True)
-    return {"plan": "apply"}
+    try:
+        subprocess.run(cmd, shell=True, check=True)
+        logger.info("Plan apply completed")
+        return {"plan": "apply"}
+    except Exception as e:
+        return JSONResponse(content={"plan": "not apply"}, status_code=500)
 
 
 @router.get("/reset/configuration")

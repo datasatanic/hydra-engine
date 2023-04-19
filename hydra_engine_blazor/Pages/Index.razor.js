@@ -16,6 +16,7 @@ export function AddGraph(svg){
     frame.src="plan/index.html";
     frame.style.width="90vw";
     frame.style.height="90vh"
+    frame.style.margin="10px"
     el.appendChild(frame)
 
 }

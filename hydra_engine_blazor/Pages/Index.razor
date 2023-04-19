@@ -12,7 +12,7 @@
 <div class="page-container">
     @if (plan_loader)
     {
-        <Loader Color="#5C73E5" Title="Forming plan..."></Loader>
+        <Loader Color="#5C73E5" Title="@plan_title"></Loader>
     }
     <div class="input-search-container">
         <input type="search" placeholder="Search..." value="@searchValue" @oninput="SearchCallback" @onfocus="SearchOnFocus"/>
@@ -137,6 +137,7 @@
     bool _load;
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
     private bool plan_loader;
+    private string plan_title;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -174,6 +175,7 @@
     private async Task SaveValues()
     {
         plan_loader = true;
+        plan_title = "Forming plan...";
         HttpResponseMessage responseMessage=new HttpResponseMessage();
         if (!changeElements.Exists(item => !item.Value.isValid))
         {
@@ -242,6 +244,8 @@
 
     private async Task ApplyCallback()
     {
+        plan_loader = true;
+        plan_title = "Applying plan...";
         await _module.InvokeVoidAsync("RemoveGraph");
         await ModalWindow.Close();
         var result=await SettingsContainer.ApplyPlan();
@@ -249,7 +253,8 @@
         {
             _toastService.ShowSuccess("Apply complete");
         }
-        
+        plan_loader = false;
+
     }
 
 }
