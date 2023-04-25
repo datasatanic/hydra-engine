@@ -109,6 +109,7 @@
     <Modal Model="Model" @ref="ModalWindow">
         <Header>
             <h2>Terragrunt Plan</h2>
+            <img @onclick="async () => await ModalWindow.Close()" alt=""/>
         </Header>
         <Body>
         <div id="graph">
@@ -184,13 +185,9 @@
         }
         if (responseMessage.IsSuccessStatusCode)
         {
-            var planPage = await SettingsContainer.GetPlanPage();
-            if (planPage.IsSuccessStatusCode)
-            {
-                Model.PlanText = await planPage.Content.ReadAsStringAsync();
-                await _module.InvokeVoidAsync("AddGraph",Model.PlanText);
-                await ModalWindow.Open();
-            }
+            Model.PlanText = await responseMessage.Content.ReadAsStringAsync();
+            await _module.InvokeVoidAsync("AddGraph",Model.PlanText);
+            await ModalWindow.Open();
             
         }
         plan_loader = false;

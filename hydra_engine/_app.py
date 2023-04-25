@@ -1,9 +1,12 @@
 import logging
 import os
-from fastapi import FastAPI
+import json
+import uuid
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.templating import Jinja2Templates
 from starlette_prometheus import metrics, PrometheusMiddleware
 
 from hydra_engine import router
@@ -31,6 +34,7 @@ app = FastAPI()
 app.include_router(router=router.router)
 
 app_static.mount("/api", app, "hydra_engine_api")
+templates = Jinja2Templates(directory="hydra_engine/static")
 
 
 @app_static.get('/health')
@@ -38,28 +42,12 @@ async def stats():
     return {'service': 'hydra-engine', 'status': 'Serve'}
 
 
-@app_static.get("/plan/_next/static/{url:path}", response_class=FileResponse)
-def get_visual_css(url: str):
-    for root, dirs, files in os.walk("/code/files/terraform-visual-report/_next/static"):
+@app_static.get("/hydra_engine/static/{url:path}", response_class=FileResponse)
+def get_template_statics(url: str):
+    for root, dirs, files in os.walk("/code/hydra_engine/static"):
         for file in files:
-            if os.path.join(root, file) == os.path.join("/code/files/terraform-visual-report/_next/static", url):
+            if os.path.join(root, file) == os.path.join("/code/hydra_engine/static", url):
                 return os.path.join(root, file)
-
-
-@app_static.get("/plan/plan.js", response_class=FileResponse)
-def get_plan_json():
-    for root, dirs, files in os.walk("files"):
-        for dir in dirs:
-            if dir == "terraform-visual-report":
-                return os.path.join(root + "/" + dir, "plan.js")
-
-
-@app_static.get("/plan/index.html", response_class=FileResponse)
-def get_plan_page():
-    for root, dirs, files in os.walk("files"):
-        for dir in dirs:
-            if dir == "terraform-visual-report":
-                return os.path.join(root + "/" + dir, "index.html")
 
 
 @app_static.on_event("startup")
@@ -72,6 +60,18 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Error in parsing files with {e}")
     await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
+
+
+@app_static.get("/testapi", response_class=HTMLResponse)
+async def set_values(request: Request):
+    for root, dirs, files in os.walk("files"):
+        for name in files:
+            if name == "test.json" and "terragrunt-cache" not in root:
+                with open(os.path.join(root, name)) as file:
+                    plan = json.load(file)
+    return templates.TemplateResponse("plan.html",
+                                      {"request": request, "plan": {"plan": plan},
+                                       "id": uuid})
 
 
 app_static.mount("/", StaticFiles(directory="wwwroot", html=True), "client")

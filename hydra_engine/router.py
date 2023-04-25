@@ -1,17 +1,21 @@
 import copy
 import logging
-import os
+import json
 import subprocess
+import os
+import uuid
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, FileResponse, PlainTextResponse
+from fastapi.responses import JSONResponse, FileResponse, PlainTextResponse, HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 from hydra_engine.schemas import tree, get_element_info, set_value, get_value
 from hydra_engine.search.searcher import HydraSearcher
 
 logger = logging.getLogger("common_logger")
 router = APIRouter(prefix="/hydra")
+templates = Jinja2Templates(directory="hydra_engine/static")
 
 
 @router.get("/tree")
@@ -39,35 +43,48 @@ def get_element_value(input_url: str, file_id: str):
     return get_value(input_url, file_id)
 
 
-@router.post("/elements/values", response_class=PlainTextResponse)
-async def set_values(content: list):
+@router.post("/elements/values", response_class=HTMLResponse)
+async def set_values(request: Request, content: list):
     for item in content:
         set_value(item["Value"]["Key"], item["Key"], item["Value"]["Value"])
-    run_terragrunt_plan()
-    logger.info("Plan generated successfully")
-    return "plan/index.html"
+    result = run_terragrunt_plan()
+    if result.returncode == 0:
+        logger.info("Plan generated successfully")
+        for root, dirs, files in os.walk("files"):
+            for name in files:
+                if name == "test.json" and "terragrunt-cache" not in root:
+                    with open(os.path.join(root, name)) as file:
+                        plan = json.load(file)
+        return templates.TemplateResponse("plan.html",
+                                          {"request": request, "plan": {"plan": plan},
+                                           "id": uuid})
+    else:
+        logger.error(f"Error when form plan with {result.stderr}")
 
 
 def run_terragrunt_plan():
-    cmd = "terragrunt plan -out=test.out && terragrunt show -json test.out > test.json && terraform-visual --plan test.json"
-    subprocess.run(cmd, shell=True, cwd="/code/files", check=True)
+    cmd = "terragrunt plan -out=test.out && terragrunt show -json test.out > test.json"
+    result = subprocess.run(cmd, shell=True, cwd="/code/files", check=True, stdout=subprocess.DEVNULL)
+    return result
 
 
 @router.get("/plan/apply")
 def apply_plan():
     cmd = "terragrunt run-all apply --terragrunt-non-interactive"
-    try:
-        subprocess.run(cmd, shell=True, check=True)
+    result = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.DEVNULL)
+    if result.returncode == 0:
         logger.info("Plan apply completed")
         return {"plan": "apply"}
-    except Exception as e:
+    else:
+        logger.error(f"Error when plan applied with {result.stderr}")
         return JSONResponse(content={"plan": "not apply"}, status_code=500)
 
 
 @router.get("/reset/configuration")
 def reset():
     cmd = "git reset --hard HEAD"
-    subprocess.Popen(cmd, shell=True, cwd="/code/files")
+    cmd2 = "git config --global --add safe.directory /code/files && git branch"
+    subprocess.run(cmd2, shell=True, cwd="/code/files")
     return {"reset": "successful"}
 
 

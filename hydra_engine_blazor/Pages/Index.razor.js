@@ -9,15 +9,9 @@ export function Scroll(){
     }
 
 }
-export function AddGraph(svg){
+export function AddGraph(tree){
     const el=document.getElementById("graph")
-    let frame=document.createElement("iframe");
-    frame.id="plan"
-    frame.src="plan/index.html";
-    frame.style.width="90vw";
-    frame.style.height="90vh"
-    frame.style.margin="10px"
-    el.appendChild(frame)
+    el.innerHTML=tree;
 
 }
 export function Include(url){
@@ -28,7 +22,6 @@ export function Include(url){
 }
 export function RemoveGraph(){
     const el=document.getElementById("graph");
-    const frame=document.getElementById("plan");
-    el.removeChild(frame);
+    el.innerHTML="";
     
 }
