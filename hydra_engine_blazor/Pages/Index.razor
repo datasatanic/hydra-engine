@@ -1,32 +1,29 @@
 ﻿@page "/{*Output_URL}"
 @using hydra_engine_blazor.Models
-@using System.Security
-@using System.Text.Json
-@using System.Runtime.CompilerServices
 @using System.Timers
 @using DefaultNamespace
-@using Microsoft.VisualBasic
 @inject SettingsContainer SettingsContainer
 @inject IJSRuntime JSRuntime
 @inject IToastService _toastService
+@implements IDisposable;
 <div class="page-container">
     @if (plan_loader)
     {
         <Loader Color="#5C73E5" Title="@plan_title"></Loader>
     }
-    <div class="input-search-container">
-        <input type="search" placeholder="Search..." value="@searchValue" @oninput="SearchCallback" @onfocus="SearchOnFocus"/>
-        <img/>
-    </div>
-    <div class="search-container">
-        <div class="cards-container">
-            @foreach (var entity in _searchEntities)
-            {
-                <CascadingValue Value="_searchEntities">
-                    <SearchCard Entity="entity" SendList="list => _searchEntities = list" Load="value => _load = value"></SearchCard>
-                </CascadingValue>
-            }
-        </div>
+    <div @onfocusout="BlurCallback">
+        <div class="input-search-container">
+                <input type="search" placeholder="Search..." value="@searchValue" @oninput="SearchCallback" @onkeyup="ResetTimer" @onfocus="SearchOnFocus"/>
+                <img/>
+            </div>
+            <div class="search-container" tabindex="1" @onfocusin="SearchOnFocus">
+                <div class="cards-container @(visibility ? "" : "hidden")">
+                    @foreach (var entity in _searchEntities)
+                    {
+                        <SearchCard Entity="entity" SendList="list => _searchEntities = list" Load="value => _load = value" Visibility="_visibility=>visibility=_visibility"></SearchCard>
+                    }
+                </div>
+            </div>
     </div>
     @if (!string.IsNullOrEmpty(Output_URL) & (currentControlsMeta.Elem.Count > 0 | currentControlsMeta.Child.Where(item => item.Type.Equals("group")).Select(item => item.Elem.Count).Where(x => x > 0).ToList().Count > 0))
     {
@@ -139,6 +136,8 @@
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
     private bool plan_loader;
     private string plan_title;
+    private Timer? _timer;
+    private bool visibility = true;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -171,6 +170,9 @@
     protected override void OnInitialized()
     {
         SettingsContainer.CurrentOutputUrl = Output_URL;
+        _timer = new Timer(250);
+        _timer.Elapsed += OnSearchFinish;
+        _timer.AutoReset = false;
     }
 
     private async Task SaveValues()
@@ -198,23 +200,20 @@
         await SettingsContainer.UpdateData();
     }
 
-    private async Task SearchCallback(ChangeEventArgs obj)
+    private void SearchCallback(ChangeEventArgs obj)
     {
-        _searchEntities?.Clear();
         searchValue = obj.Value?.ToString();
-        if (!string.IsNullOrEmpty(searchValue))
+        if (string.IsNullOrEmpty(searchValue))
         {
-            _searchEntities = await SettingsContainer.SearchRequest(searchValue);
+            _searchEntities?.Clear();
         }
     }
 
 
-    private async Task SearchOnFocus()
+    private void SearchOnFocus()
     {
-        if (!string.IsNullOrEmpty(searchValue))
-        {
-            _searchEntities = await SettingsContainer.SearchRequest(searchValue);
-        }
+        visibility = true;
+        StateHasChanged();
     }
 
     private void ChangeValue(ElemInfo obj,string key)
@@ -252,6 +251,27 @@
         }
         plan_loader = false;
 
+    }
+    private async void OnSearchFinish(object? source, ElapsedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(searchValue)){ return;}
+        _searchEntities = await SettingsContainer.SearchRequest(searchValue);
+        StateHasChanged();
+    }
+
+    private void ResetTimer()
+    {
+        _timer?.Stop();
+        _timer?.Start();
+    }
+    void IDisposable.Dispose()
+        =>
+            _timer?.Dispose();
+
+    private void BlurCallback()
+    {
+        visibility = false;
+        StateHasChanged();
     }
 
 }

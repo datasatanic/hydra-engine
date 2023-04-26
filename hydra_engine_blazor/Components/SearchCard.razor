@@ -19,14 +19,14 @@
 
 
 @code {
-    [CascadingParameter]
-    public List<SearchEntity> SearchEntities { get; set; }
     [Parameter]
     public EventCallback<List<SearchEntity>> SendList { get; set; }
     [Parameter]
     public SearchEntity Entity { get; set; }
     [Parameter]
     public EventCallback<bool> Load { get; set; }
+    [Parameter]
+    public EventCallback<bool> Visibility { get; set; }
 
     private string? _displayName;
     private string? _description;
@@ -58,9 +58,8 @@
                 };
             Navigation.NavigateTo($"{string.Join("/",list)}{id}");
         }
-        SearchEntities.Clear();
-        await SendList.InvokeAsync(SearchEntities);
         await Load.InvokeAsync(true);
+        await Visibility.InvokeAsync(false);
     }
 
 }

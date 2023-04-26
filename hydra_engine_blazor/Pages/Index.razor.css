@@ -132,4 +132,7 @@ div[id="graph"] svg{
     width: 24px;
     cursor:pointer;
 }
+.hidden{
+    display: none !important;
+}
 
