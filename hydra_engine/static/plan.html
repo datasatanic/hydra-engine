@@ -1,6 +1,6 @@
 ﻿{% macro dump_node(plan,id) -%}
 {% if plan is mapping %}
-    <ul>
+    <ul class="plan-node">
         {%- for item in plan.items() %}
         {% set curId = id.uuid4().hex %}
         {% if item[0] == "resource_changes" or item[0] == "resource_drift" or item[0] == "plan" or (item[0] == "change" and item[1]["actions"][0] != "no-op") %}

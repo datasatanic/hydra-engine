@@ -6,6 +6,7 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Runtime.InteropServices
 @using System.Text
+@using System.Text.RegularExpressions
 @inject IJSRuntime JSRuntime
 @inject SettingsContainer SettingsContainer
 @if (elemInfo != null)
@@ -36,6 +37,13 @@
                             {
                                 <div class="validation-message range-error">Not @ElemType.Int type</div>
                             }
+                            else
+                            {
+                                foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(range.GetValueOrDefault("from", "").ToString(), item, elemInfo.control)))
+                                {
+                                    <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
+                                }
+                            }
                         </div>
                         <div class="position-relative">
                             <h4>To</h4>
@@ -47,6 +55,13 @@
                             else if (!TryParseToType(range.GetValueOrDefault("to", "").ToString(), ElemType.Int))
                             {
                                 <div class="validation-message range-error">Not @ElemType.Int type</div>
+                            }
+                            else
+                            {
+                                foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(range.GetValueOrDefault("to", "").ToString(), item, elemInfo.control)))
+                                {
+                                    <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
+                                }
                             }
                         </div>
                     </div>
@@ -70,6 +85,14 @@
             {
                 <div class="validation-message">Not @elemInfo.type type</div>
             }
+            else
+            {
+                foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(Value.ToString(), item, elemInfo.control)))
+                {
+                    <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
+                }
+            }
+            
         }
     }
     else
@@ -113,6 +136,13 @@
                                             {
                                                 <div class="validation-message">Not @ElemType.Int type</div>
                                             }
+                                            else
+                                            {
+                                                foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(range.GetValueOrDefault("from", "").ToString(), item, elemInfo.control)))
+                                                {
+                                                    <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
+                                                }
+                                            }
                                         </div>
                                         <div class="position-relative">
                                             <input type="number" value="@range?.GetValueOrDefault("to", "")" validation-error="@(!TryParseToType(range?.GetValueOrDefault("to", "").ToString(), ElemType.Int))" @onchange="@((e) => ChangeArrayRangeValue(e, j, false))"/>
@@ -123,6 +153,13 @@
                                             else if (!TryParseToType(range.GetValueOrDefault("to", "").ToString(), ElemType.Int))
                                             {
                                                 <div class="validation-message">Not @ElemType.Int type</div>
+                                            }
+                                            else
+                                            {
+                                                foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(range.GetValueOrDefault("to", "").ToString(), item, elemInfo.control)))
+                                                {
+                                                    <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
+                                                }
                                             }
                                         </div>
                                         <img class="delete-image" @onclick="@(() => RemoveArrayItem(j))"/>
@@ -145,6 +182,14 @@
                                 {
                                     <div class="validation-message">Not @elemInfo?.sub_type type</div>
                                 }
+                                else
+                                {
+                                    foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elem.ToString(), item, elemInfo.control)))
+                                    {
+                                        <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
+                                    }
+                                }
+                                
                             }
                         </div>
                     }
@@ -219,7 +264,7 @@
     {
         Value = obj.Value?.ToString();
         value = obj.Value?.ToString();
-        if (TryParseToType(value.ToString(),elemInfo?.type) && !string.IsNullOrEmpty(value.ToString()))
+        if (TryParseToType(value.ToString(),elemInfo?.type) && !string.IsNullOrEmpty(value.ToString()) && !elemInfo.constraints.Exists(item=>!CheckConstraints(value.ToString(),item,elemInfo.control)))
         {
             ElementAttributes["validation-error"] = false;
             elemInfo.isValid = true;
@@ -232,15 +277,12 @@
                     elemInfo.value = int.Parse(value.ToString());
                     break;
                 case ElemType.Double:
-                    switch (CultureInfo.CurrentCulture.TwoLetterISOLanguageName)
+                    elemInfo.value = CultureInfo.CurrentCulture.TwoLetterISOLanguageName switch
                     {
-                        case "en":
-                            elemInfo.value = double.Parse(value.ToString().Replace(",", "."));
-                            break;
-                        case "ru":
-                            elemInfo.value = double.Parse(value.ToString().Replace(".", ","));
-                            break;
-                    }
+                        "en" => double.Parse(value.ToString().Replace(",", ".")),
+                        "ru" => double.Parse(value.ToString().Replace(".", ",")),
+                        _ => elemInfo.value
+                        };
                     break;
                 case ElemType.Bool:
                     elemInfo.value = bool.Parse(value.ToString());
@@ -261,7 +303,7 @@
     private async Task ChangeRangeValue(ChangeEventArgs obj, object? value,bool isStart)
     {
         var range=JsonSerializer.Deserialize<Dictionary<string, object>>(Value.ToString());
-        if (TryParseToType(obj.Value.ToString(), ElemType.Int) && !string.IsNullOrEmpty(obj.Value.ToString()))
+        if (TryParseToType(obj.Value.ToString(), ElemType.Int) && !string.IsNullOrEmpty(obj.Value.ToString()) && !elemInfo.constraints.Exists(item=>!CheckConstraints(obj.Value.ToString(),item,elemInfo.control)))
         {
             if (isStart)
             {
@@ -294,7 +336,7 @@
     {
         elemInfo.arrayItems[i]=obj.Value?.ToString();
         if (elemInfo?.arrayItems.Find(item => !TryParseToType(item?.ToString(), elemInfo?.sub_type) |
-                                              string.IsNullOrEmpty(item.ToString())) == null)
+                                              string.IsNullOrEmpty(item.ToString()) | elemInfo.constraints.Exists(item=>!CheckConstraints(item.ToString(),item,elemInfo.control))) == null)
         {
             elemInfo.isValid = true;
             switch (type)
@@ -335,7 +377,7 @@
     private async Task ChangeArrayRangeValue(ChangeEventArgs obj, int i, bool isStart)
     {
         var range=JsonSerializer.Deserialize<Dictionary<string, object>>(elemInfo.arrayItems[i].ToString());
-        if (TryParseToType(obj.Value.ToString(), ElemType.Int) && !string.IsNullOrEmpty(obj.Value.ToString()))
+        if (TryParseToType(obj.Value.ToString(), ElemType.Int) && !string.IsNullOrEmpty(obj.Value.ToString()) && !elemInfo.constraints.Exists(item=>!CheckConstraints(obj.Value.ToString(),item,elemInfo.control)))
         {
             if (isStart)
             {
@@ -399,7 +441,10 @@
             case Control.Fieldset:
                 break;
         }
-        if (elemInfo.constraints is null) return;
+        if (elemInfo.constraints is null)
+        {
+            elemInfo.constraints = new List<ConstraintItem>();
+        }
         foreach (var constraint in elemInfo.constraints)
         {
             ElementAttributes?.Add(constraint.type, constraint.value);
@@ -429,6 +474,29 @@
         {
             elemInfo?.arrayItems.Add(string.Empty);
         }
+    }
+
+    private bool CheckConstraints(string value, ConstraintItem constraintItem,Control control)
+    {
+        return constraintItem.type switch
+        {
+            "maxlength" => int.Parse(constraintItem.value) > value.Length,
+            "minlength" => int.Parse(constraintItem.value) < value.Length,
+            "max" => control switch
+            {
+                Control.Number or Control.Text or Control.Textarea => int.Parse(constraintItem.value) > int.Parse(value),
+                Control.Datetime or Control.Date or Control.Time => DateTime.Parse(constraintItem.value) > DateTime.Parse(value),
+                _ => true
+                },
+            "min" => control switch
+            {
+                Control.Number or Control.Text or Control.Textarea => int.Parse(constraintItem.value) < int.Parse(value),
+                Control.Datetime or Control.Date or Control.Time => DateTime.Parse(constraintItem.value) < DateTime.Parse(value),
+                _ => true
+                },
+            "pattern" => Regex.IsMatch(value, constraintItem.value, RegexOptions.IgnoreCase),
+            _ => true
+            };
     }
 
 }

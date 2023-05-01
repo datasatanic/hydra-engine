@@ -106,7 +106,7 @@
     <Modal Model="Model" @ref="ModalWindow">
         <Header>
             <h2>Terragrunt Plan</h2>
-            <img @onclick="async () => await ModalWindow.Close()" alt=""/>
+            <img @onclick="ModalClose" alt=""/>
         </Header>
         <Body>
         <div id="graph">
@@ -177,14 +177,12 @@
 
     private async Task SaveValues()
     {
+        if (changeElements.Exists(item => !item.Value.isValid)) return;
         plan_loader = true;
         plan_title = "Forming plan";
-        HttpResponseMessage responseMessage=new HttpResponseMessage();
-        if (!changeElements.Exists(item => !item.Value.isValid))
-        {
-            responseMessage=await SettingsContainer.SetValues(changeElements);
-            changeElements.Clear();
-        }
+        var responseMessage=new HttpResponseMessage();
+        responseMessage=await SettingsContainer.SetValues(changeElements);
+        changeElements.Clear();
         if (responseMessage.IsSuccessStatusCode)
         {
             Model.PlanText = await responseMessage.Content.ReadAsStringAsync();
@@ -272,6 +270,12 @@
     {
         visibility = false;
         StateHasChanged();
+    }
+
+    private async Task ModalClose()
+    {
+        await _module.InvokeVoidAsync("RemoveGraph");
+        await ModalWindow.Close();
     }
 
 }

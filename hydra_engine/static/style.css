@@ -1,4 +1,4 @@
-﻿ul{
+﻿.plan-node{
     list-style-type: none;
 }
 .item{
@@ -17,19 +17,19 @@
 .item>img[aria-expanded="true"]{
     transform: rotate(0.25turn);
 }
-ul ul {
+.plan-node ul {
     margin: 0 0 0 .5em; /* вести линию вниз где-то с полбуквы родителя */
 }
-ul > li:not(:only-child),
-ul li li {
+.plan-node > li:not(:only-child),
+.plan-node li li {
     position: relative;
     padding: .2em 0 0 1.2em; /* отступ до текста; для раскрывающегося списка в ряде случаев (в Хроме есть баг) padding-top (.2em) лучше указывать в px */
 }
-ul li:not(:last-child) {
+.plan-node li:not(:last-child) {
     border-left: 1px solid #ccc; /* толщина, цвет и стиль (вместо сплошной пунктирная или точечная) вертикальной линии */
 }
-ul li li:before,
-ul > li:not(:only-child):before { /* горизонтальная линия */
+.plan-node li li:before,
+.plan-node > li:not(:only-child):before { /* горизонтальная линия */
     content: "";
     position: absolute;
     top: 0;
@@ -38,7 +38,7 @@ ul > li:not(:only-child):before { /* горизонтальная линия */
     height: 1em; /* начинается приблизительно с половины высоты буквы (.5em + .2em) */
     border-bottom: 1px solid #ccc;
 }
-ul li:last-child:before { /* вертикальная линия последнего пункта в каждом списке */
+.plan-node li:last-child:before { /* вертикальная линия последнего пункта в каждом списке */
     width: calc(1.1em - 1px); /* для перфекционистов */
     border-left: 1px solid #ccc;
 }

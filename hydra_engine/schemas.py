@@ -13,7 +13,7 @@ logger = logging.getLogger('common_logger')
 types = Literal["string", "int", "bool", "datetime", "range", "array"]
 sub_types = Literal["string", "int", "bool", "datetime", "range"]
 constraints = Literal[
-    'maxlength', 'minlength', 'pattern', 'cols', 'rows', 'min', 'max', 'format', "pattern", "size", "resize"]
+    'maxlength', 'minlength', 'pattern', 'cols', 'rows', 'min', 'max', 'format', "size", "resize"]
 controls = Literal[
     "input_control", "textarea_control", "list_control", "checkbox_control", "number_control", "datetime_control",
     "date_control", "time_control", "range_control"]

@@ -133,3 +133,6 @@ textarea{
     padding: 0 0 0 10px;
     margin-bottom: -10px;
 }
+input,textarea:invalid{
+    border:1px solid var(--hydra-error);
+}
