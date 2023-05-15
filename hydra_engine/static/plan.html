@@ -3,7 +3,7 @@
     <ul class="plan-node">
         {%- for item in plan.items() %}
         {% set curId = id.uuid4().hex %}
-        {% if item[0] == "resource_changes" or item[0] == "resource_drift" or item[0] == "plan" or (item[0] == "change" and item[1]["actions"][0] != "no-op") %}
+        {% if item[0] == "resource_changes" or item[0] == "resource_drift" or item[0] == "plan" %}
         <li>
             <div class="item">
                 <img src="/hydra_engine/static/Collapsed.svg" data-bs-toggle="collapse" data-bs-target="#n{{curId}}" aria-expanded="true" aria-controls="n{{curId}}"/>
@@ -15,19 +15,42 @@
         </li>
         {% else %}
         <li>
+            {% if item[0] != "values_change" %}
             <div class="item">
                 <img src="/hydra_engine/static/Collapsed.svg" data-bs-toggle="collapse" data-bs-target="#n{{curId}}" aria-expanded="false" aria-controls="n{{curId}}"/>
                 <h5>{{ item[0] }}</h5>
             </div>
-            <div class="collapse" id="n{{curId}}" >
+            <div class="collapse" id="n{{curId}}">
                 {{ dump_node(item[1],id) }}
             </div>
+            {% else %}
+                <div class="btn-group dropend item">
+                    {% set dropdownId = id.uuid4().hex %}
+                    <h5 class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-display="static" data-bs-auto-close="outside" id="dr{{ dropdownId }}">
+                        {{ item[0] }}
+                    </h5>
+                    <div class="dropdown-menu values-change" aria-labelledby="dr{{ dropdownId }}">
+                        <div class="change_container" id="n{{curId}}">
+                            <div class="old-values">
+                                Old values
+                                {{ change(item[1]["old"]) }}
+                            </div>
+                            <div class="new-values">
+                                New values
+                                {{ change(item[1]["new"]) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         </li>
         {% endif %}
         {%- endfor %}
     </ul>
 {% elif plan is string or plan is number or plan is boolean %}
     <h5 class="variable">{{ plan }}</h5>
+{% elif plan is none %}
+<h5 class="variable">null</h5>
 {% elif plan is iterable %}
     {%- for item in plan %}
         {{ dump_node(item,id) }}
@@ -35,7 +58,46 @@
 {% endif %}
 {%- endmacro %}
 
-
+{% macro change(plan) -%}
+<div class="resource-changes-container">
+    {% if plan is mapping %}
+    <div>
+        {%- for item in plan.items() %}
+            <div class="change_item">
+                <h5 class="node-name">{{ item[0] }}:</h5>
+                {% if item[1] is mapping %}
+                    {{ change(item[1]) }}
+                {% elif item[1] is string or item[1] is number or item[1] is boolean %}
+                    <h5>{{ item[1] }} </h5>
+                {% elif item[1] is none %}
+                    <h5>null</h5>
+                {% elif item[1] is iterable %}
+                    <div class="array-container">
+                    {%- for array_value in item[1] %}
+                        {% if array_value is mapping %}
+                            {{ change(array_value) }}
+                        {% elif array_value is string or array_value is number or array_value is boolean %}
+                            <h5>{{ array_value }} </h5>
+                        {% elif array_value is none %}
+                            <h5>null</h5>
+                        {% elif array_value is iterable %}
+                            {%- for el_array_value in array_value %}
+                                {{ change(el_array_value) }}
+                            {%- endfor %}
+                        {% endif %}
+                    {%- endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {%- endfor %}
+    </div>
+    {% else %}
+        {%- for item in plan %}
+            {{ change(item) }}
+        {%- endfor %}
+    {% endif %}
+</div>
+{%- endmacro %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,5 +109,6 @@
 <body>
     {{ dump_node(plan,id) }}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="/hydra_engine/static/script.js"></script>
 </body>
 </html>
