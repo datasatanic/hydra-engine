@@ -16,9 +16,10 @@
     pointer-events: none;
 }
 fieldset{
-    border:1px solid gray;
+    border:1px solid var(--hydra-secondary-10);
+    box-shadow: 0 0 3px var(--hydra-secondary-65);
     padding: 20px;
-    border-radius: 4px;
+    border-radius: 8px;
 }
 fieldset>legend{
     font-weight: 600;

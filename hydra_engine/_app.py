@@ -85,7 +85,7 @@ def read_controls_file(directory):
     path = ""
     for root, dirs, files in os.walk(directory):
         for name in files:
-            if name == "controls.meta":
+            if name == "controls.meta" and "terragrunt-cache" not in root:
                 try:
                     f = open(os.path.join(root, name))
                     for line in f:
@@ -96,9 +96,9 @@ def read_controls_file(directory):
                                 add_node(path.split("/"))
                             else:
                                 add_additional_fields(path.split("/"), str_list)
+                    break
                 except Exception as e:
-                    logger.error(f"Error in parsing meta file of tree {e}")
-                    raise ValueError("Error in parsing meta file of tree {e}")
+                    raise ValueError(f"Error in parsing meta file of tree {e}")
 
 
 def find_changes_in_terraform_plan(plan_dict):

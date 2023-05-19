@@ -70,7 +70,7 @@
             default:
                 <div class="elem-container @(elemInfo.control==Control.Checkbox ? "elem-reverse" : "")">
                     <h4>@elemInfo.display_name</h4>
-                    <input @attributes="ElementAttributes" value="@(elemInfo.control==Control.Checkbox ? "bool" : Value)" @onchange="@((e)=>ChangeValue(e,Value,elemInfo.type))"/>
+                    <input @attributes="ElementAttributes" size="@(Value?.ToString()?.Length)" value="@(elemInfo.control==Control.Checkbox ? "bool" : Value)" @onchange="@((e)=>ChangeValue(e,Value,elemInfo.type))"/>
                 </div>
                 break;
 
@@ -232,7 +232,7 @@
         Value = elemInfo.value;
         if (elemInfo.type == ElemType.Array)
         {
-            elemInfo.arrayItems = JsonSerializer.Deserialize<List<object>>(Value.ToString());
+            elemInfo.arrayItems = JsonSerializer.Deserialize<List<object>>(Value.ToString(),options);
         }
         elemInfo.isValid = true;
         AddElementAttributes(elemInfo);

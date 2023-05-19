@@ -4,13 +4,16 @@
     flex-direction: row;
     height: 100vh;
     overflow-x: hidden;
+    background: var(--hydra-secondary-3);
+}
+article{
+    background: var(--hydra-background-white);
 }
 .menu-container{
     display: flex;
     flex-direction: column;
     gap:20px;
     padding: 30px;
-    background: var(--hydra-secondary-3);
     border-right: 1px solid var(--hydra-secondary-10);
     position: relative;
     min-width: 460px;

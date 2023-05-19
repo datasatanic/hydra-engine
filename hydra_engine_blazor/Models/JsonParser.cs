@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 
@@ -23,9 +24,8 @@ public class JsonParser
                         foreach (var elem in elements)
                         {
                             var elemNode = elem?.AsObject();
-                            list.AddRange(from key in elemNode
-                                let elemInfo = DeserializeElemInfo(key.Value?.ToString())
-                                select new Dictionary<string, ElemInfo>() { { key.Key, elemInfo } });
+                            if (elemNode == null) continue;
+                            list.AddRange(from key in elemNode where !string.IsNullOrEmpty(key.Value?.ToString()) let elemInfo = DeserializeElemInfo(key.Value?.ToString()) select new Dictionary<string, ElemInfo>() { { key.Key, elemInfo } });
                         }
 
                     tree.Elem = list;
@@ -86,7 +86,7 @@ public class JsonParser
                     {
                         "string" => ElemType.String,
                         "double" => ElemType.Double,
-                        "integer" => ElemType.Int,
+                        "int" => ElemType.Int,
                         "datetime" => ElemType.DateTime,
                         "bool"=>ElemType.Bool,
                         "range"=>ElemType.Range,
@@ -102,7 +102,7 @@ public class JsonParser
                     {
                         "string" => ElemType.String,
                         "double" => ElemType.Double,
-                        "integer" => ElemType.Int,
+                        "int" => ElemType.Int,
                         "datetime" => ElemType.DateTime,
                         "bool"=>ElemType.Bool,
                         "range"=>ElemType.Range,
