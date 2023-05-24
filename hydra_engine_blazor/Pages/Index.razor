@@ -105,7 +105,7 @@
     </div>
     <Modal Model="Model" @ref="ModalWindow">
         <Header>
-            <h2>Terragrunt Plan</h2>
+            <h2 class="plan-title">Terraform Plan</h2>
             <img @onclick="ModalClose" alt=""/>
         </Header>
         <Body>
@@ -132,7 +132,7 @@
     private ControlsMeta currentControlsMeta=new();
     private List<SearchEntity>? _searchEntities = new();
     private string? searchValue = string.Empty;
-    bool _load;
+    bool _load; //For loading before start scrolling
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
     private bool plan_loader;
     private string plan_title;
@@ -187,6 +187,7 @@
         {
             Model.PlanText = await responseMessage.Content.ReadAsStringAsync();
             await _module.InvokeVoidAsync("AddGraph",Model.PlanText);
+            await _module.InvokeVoidAsync("MakeHighlight");
             await ModalWindow.Open();
             
         }
@@ -231,9 +232,13 @@
         
     }
 
-    private void ResetInfrastructure()
+    private async Task ResetInfrastructure()
     {
-        SettingsContainer?.ResetInfrastructure();
+        var result = await SettingsContainer.ResetInfrastructure();
+        if (!result.IsSuccessStatusCode)
+        {
+            _toastService.ShowError(result.ReasonPhrase);
+        }
     }
 
     private async Task ApplyCallback()
@@ -243,9 +248,13 @@
         await _module.InvokeVoidAsync("RemoveGraph");
         await ModalWindow.Close();
         var result=await SettingsContainer.ApplyPlan();
-        if (result != null)
+        if (result.IsSuccessStatusCode)
         {
             _toastService.ShowSuccess("Apply complete");
+        }
+        else
+        {
+            _toastService.ShowError("Error in applying plan");
         }
         plan_loader = false;
 

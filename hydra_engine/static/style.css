@@ -1,5 +1,6 @@
 ﻿.plan-node{
     list-style-type: none;
+    width: fit-content;
 }
 .item{
     display: flex;
@@ -83,7 +84,7 @@ h1,h2,h3,h4,h5{
 }
 .values-change{
     border: 1px solid black !important;
-    width: 80vw;
+    width: max-content;
 }
 .old-values,.new-values{
     width: 100%;

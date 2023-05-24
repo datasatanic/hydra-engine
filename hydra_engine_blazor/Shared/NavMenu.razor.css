@@ -87,12 +87,6 @@
 .hidden-children{
     visibility: collapse;
 }
-.arrow-toggle{
-    content: url("icons/minus.svg");
-}
-.arrow-toggle[aria-expanded="false"]{
-    content: url("icons/plus.svg")
-}
 .item-container{
     display: flex;
     flex-direction: row;
@@ -102,4 +96,39 @@
 }
 .hidden{
     display: none;
+}
+.collapse-expand-el{
+    height: 18px;
+    width: 18px;
+    border: 1px solid var(--hydra-secondary-65);
+    position: relative;
+    border-radius: 4px;
+}
+.first-stick{
+    width: 0;
+    height: 9px;
+    border-left: 1px solid var(--hydra-secondary-65);
+    left: calc(50% - 0.5px);
+    right: 50%;
+    top: 25%;
+    bottom: 25%;
+    position: absolute;
+    border-radius: 4px;
+}
+.second-stick{
+    width: 9px;
+    height: 0;
+    border-top: 1px solid var(--hydra-secondary-65);
+    left: calc(25% - 0.5px);
+    right: 50%;
+    top: 50%;
+    bottom: 25%;
+    position: absolute;
+    border-radius: 4px;
+}
+.collapse-expand-el[aria-expanded="true"]>.first-stick{
+    visibility: visible;
+}
+.collapse-expand-el[aria-expanded="false"]>.first-stick{
+    visibility: hidden;
 }

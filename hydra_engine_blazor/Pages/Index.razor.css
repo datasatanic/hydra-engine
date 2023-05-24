@@ -135,4 +135,7 @@ div[id="graph"] svg{
 .hidden{
     display: none !important;
 }
+.plan-title{
+    font-size: 24px;
+}
 

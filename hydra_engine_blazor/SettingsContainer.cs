@@ -101,9 +101,10 @@ public class SettingsContainer
         return await _client.PostAsync($"api/hydra/elements/values",content);
     }
 
-    public async Task<object?> ApplyPlan()
+    public async Task<HttpResponseMessage> ApplyPlan()
     {
-        return await _client.GetFromJsonAsync<object?>("api/hydra/plan/apply");
+        HttpContent content = new StringContent("", Encoding.UTF8, "application/json");
+        return await _client.PostAsync("api/hydra/plan",content);
     }
 
     public async Task<HttpResponseMessage> GetPlan()
@@ -119,9 +120,10 @@ public class SettingsContainer
         return await _client.GetFromJsonAsync<object>("update/data",options);
     }
 
-    public async Task<string?> ResetInfrastructure()
+    public async Task<HttpResponseMessage> ResetInfrastructure()
     {
-        return await _client.GetFromJsonAsync<string?>("api/hydra/reset/configuration", options);
+        HttpContent content = new StringContent("", Encoding.UTF8, "application/json");
+        return await _client.PostAsync("api/hydra/configuration", content);
     }
     
     /// <summary>

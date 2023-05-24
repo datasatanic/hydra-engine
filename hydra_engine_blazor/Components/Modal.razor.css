@@ -26,8 +26,11 @@ dialog::backdrop {
 
 .modal-body {
     padding: 30px;
+    overflow-y: auto;
 }
 
 .modal-footer {
     padding: 20px 30px;
 }
+
+

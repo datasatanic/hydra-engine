@@ -9,8 +9,12 @@
     <li @onclick="SavePathSettings"
         @ondblclick:stopPropagation="true">
         <div class="item-container @(SettingsContainer.CurrentOutputUrl == Root ? "active-link" : "")">
-            <img data-bs-toggle="collapse" data-bs-target="@($"#r{Root.GetHashCode()}")" aria-controls="@($"r{Root.GetHashCode()}")" type="button" aria-expanded="@(SettingsContainer.Expand ? "true" : "false")" 
-                 class="arrow-toggle @(Settings.Child.Count==0 ? "hidden" : "")" @ondblclick:stopPropagation="true" @onclick:stopPropagation="true" alt=""/>
+            <div class="collapse-expand-el @(Settings.Child.Count==0 ? "hidden" : "")" data-bs-toggle="collapse" 
+                 data-bs-target="@($"#r{Root.GetHashCode()}")" aria-controls="@($"r{Root.GetHashCode()}")" type="button" aria-expanded="@(SettingsContainer.Expand ? "true" : "false")" 
+                 @ondblclick:stopPropagation="true" @onclick:stopPropagation="true">
+                <span class="first-stick"></span>
+                <span class="second-stick"></span>
+            </div>
             <h4>@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]</h4>
         </div>
     </li>

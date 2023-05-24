@@ -68,7 +68,7 @@ def run_terragrunt_plan():
     return result
 
 
-@router.get("/plan/apply")
+@router.post("/plan")
 def apply_plan():
     cmd = "terragrunt run-all apply --terragrunt-non-interactive"
     result = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.DEVNULL)
@@ -80,12 +80,14 @@ def apply_plan():
         return JSONResponse(content={"plan": "not apply"}, status_code=500)
 
 
-@router.get("/reset/configuration")
+@router.post("/configuration")
 def reset():
-    cmd = "git reset --hard HEAD"
-    cmd2 = "git config --global --add safe.directory /code/files && git branch"
-    subprocess.run(cmd2, shell=True, cwd="/code/files")
-    return {"reset": "successful"}
+    cmd = "git config --global --add safe.directory /code/files && git reset --hard HEAD"
+    result = subprocess.run(cmd, shell=True, check=True, cwd="/code/files")
+    if result.returncode == 0:
+        return {"reset": "successful"}
+    logger.error(f"Error when plan try to reset configuration to last stable condition with {result.stderr}")
+    return JSONResponse(content={"reset": "error when reset configuration"}, status_code=500)
 
 
 @router.post("/debug_s1")
