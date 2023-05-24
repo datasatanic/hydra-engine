@@ -18,6 +18,15 @@ hr{
     color:var(--hydra-background-white);
     border: 0;
 }
+.save-button:hover{
+    background:var(--hydra-blue-hover);
+}
+.save-button:active{
+    background:var(--hydra-blue-pressed);
+}
+.save-button:disabled{
+    background: var(--hydra-secondary-30) !important;
+}
 input[type="search"]{
     width: 100%;
     height: 32px;
@@ -112,13 +121,29 @@ input[type="search"]{
     font-size: 16px;
     height: 38px;
     font-weight: 500;
+    color:var(--hydra-background-white);
+    border: 0;
+}
+.modal-footer button[type=submit]:hover{
+    background:var(--hydra-blue-hover);
+}
+.modal-footer button[type=submit]:active{
+    background: var(--hydra-blue-pressed);
 }
 .modal-footer button[type=reset]{
-    background:var(--hydra-secondary-30);
+    background:var(--hydra-secondary-10);
     width: 108px;
     font-size: 16px;
     height: 38px;
     font-weight: 500;
+    color:var(--hydra-text);
+    border: 0;
+}
+.modal-footer button[type=reset]:hover{
+    background: var(--hydra-secondary-20);
+}
+.modal-footer button[type=reset]:active{
+    background: var(--hydra-secondary-30);
 }
 #graph{
     width: 95vw;
@@ -135,7 +160,7 @@ div[id="graph"] svg{
 .hidden{
     display: none !important;
 }
-.plan-title{
+.title{
     font-size: 24px;
 }
 

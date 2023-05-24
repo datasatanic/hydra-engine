@@ -6,7 +6,8 @@
     --hydra-secondary-65:#8B95BB;
     --hydra-background-white:#FFFFFF;
     --hydra-text:#2D334D;
-    --hydra-element-focus:#172C91;
     --hydra-error:#E5645C;
     --hydra-blue-default:#5C73E5;
+    --hydra-blue-hover:#304DDE;
+    --hydra-blue-pressed:#172C91;
 }

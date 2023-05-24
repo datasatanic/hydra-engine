@@ -25,11 +25,11 @@
                 </div>
             </div>
     </div>
-    @if (!string.IsNullOrEmpty(Output_URL) & (currentControlsMeta.Elem.Count > 0 | currentControlsMeta.Child.Where(item => item.Type.Equals("group")).Select(item => item.Elem.Count).Where(x => x > 0).ToList().Count > 0))
-    {
-        <button id="save" class="save-button" @onclick="SaveValues">Save</button>
-    }
-    <button class="save-button" style="right: 150px" @onclick="ResetInfrastructure">Reset</button>
+    <button id="save" class="save-button" disabled="@(string.IsNullOrEmpty(Output_URL) | 
+                                                      currentControlsMeta.Elem.Count == 0 
+                                                       & currentControlsMeta.Child.Where(item => item.Type.Equals("group")).Select(item => item.Elem.Count).Where(x => x > 0).ToList().Count == 0)" 
+                    @onclick="SaveValues">Save</button>
+    <button class="save-button" style="right: 150px" @onclick="async()=>await ResetModalWindow.Open()">Reset</button>
     <div class="form-container">
         <div class="element-container">
             <div class="path-container">
@@ -103,9 +103,9 @@
             }
         </div>
     </div>
-    <Modal Model="Model" @ref="ModalWindow">
+    <Modal Model="Model" @ref="PlanModalWindow">
         <Header>
-            <h2 class="plan-title">Terraform Plan</h2>
+            <h2 class="title">Terraform Plan</h2>
             <img @onclick="ModalClose" alt=""/>
         </Header>
         <Body>
@@ -113,7 +113,20 @@
         </div>
         </Body>
         <Footer>
-            <button type="submit" class="btn" @onclick="ApplyCallback">Apply</button>
+            <button type="submit" @onclick="ApplyCallback">Apply</button>
+        </Footer>
+    </Modal>
+    <Modal Model="ResetModel" @ref="ResetModalWindow" OnSubmit="ResetInfrastructure">
+        <Header>
+            <h2 class="title">@ResetModel.Title</h2>
+            <img @onclick="async () => await ResetModalWindow.Close()" alt=""/>
+        </Header>
+        <Body>
+            <h4 class="text-center">@ResetModel.Content</h4>
+        </Body>
+        <Footer>
+            <button type="reset" @onclick="async () => { await ResetModalWindow.Close(); }">Cancel</button>
+            <button type="submit">Submit</button>
         </Footer>
     </Modal>
 </div>
@@ -125,8 +138,10 @@
     [Parameter]
     public string Output_URL { get; set; }
     IJSObjectReference? _module;
-    private Modal ModalWindow { get; set; } = new();
-    private PlanModel Model{get;set;}=new();
+    private Modal PlanModalWindow { get; set; } = new();
+    private Modal ResetModalWindow { get; set; } = new();
+    private PlanModel Model{get;}=new();
+    private ResetModel ResetModel { get; } = new();
     private List<ControlsMeta> groups;
     private List<ControlsMeta> forms;
     private ControlsMeta currentControlsMeta=new();
@@ -188,15 +203,10 @@
             Model.PlanText = await responseMessage.Content.ReadAsStringAsync();
             await _module.InvokeVoidAsync("AddGraph",Model.PlanText);
             await _module.InvokeVoidAsync("MakeHighlight");
-            await ModalWindow.Open();
+            await PlanModalWindow.Open();
             
         }
         plan_loader = false;
-    }
-
-    private async Task RefreshCallback()
-    {
-        await SettingsContainer.UpdateData();
     }
 
     private void SearchCallback(ChangeEventArgs obj)
@@ -239,6 +249,7 @@
         {
             _toastService.ShowError(result.ReasonPhrase);
         }
+        await ResetModalWindow.Close();
     }
 
     private async Task ApplyCallback()
@@ -246,7 +257,7 @@
         plan_loader = true;
         plan_title = "Applying plan. It can take a few minutes";
         await _module.InvokeVoidAsync("RemoveGraph");
-        await ModalWindow.Close();
+        await PlanModalWindow.Close();
         var result=await SettingsContainer.ApplyPlan();
         if (result.IsSuccessStatusCode)
         {
@@ -284,7 +295,7 @@
     private async Task ModalClose()
     {
         await _module.InvokeVoidAsync("RemoveGraph");
-        await ModalWindow.Close();
+        await PlanModalWindow.Close();
     }
 
 }
