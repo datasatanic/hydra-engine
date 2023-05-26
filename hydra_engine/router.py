@@ -86,7 +86,7 @@ def reset():
     result = subprocess.run(cmd, shell=True, check=True, cwd="/code/files")
     if result.returncode == 0:
         return {"reset": "successful"}
-    logger.error(f"Error when plan try to reset configuration to last stable condition with {result.stderr}")
+    logger.error(f"Error when try to reset configuration to last stable condition with {result.stderr}")
     return JSONResponse(content={"reset": "error when reset configuration"}, status_code=500)
 
 
