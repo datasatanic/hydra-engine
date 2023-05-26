@@ -62,3 +62,7 @@ export function MakeHighlight(){
     let new_values=document.querySelector(".new-values>.resource-changes-container")
     highlightDifferences(old_values,new_values)
 }
+
+export function ReloadPage(){
+    location.reload();
+}

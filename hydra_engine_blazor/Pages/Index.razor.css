@@ -123,6 +123,7 @@ input[type="search"]{
     font-weight: 500;
     color:var(--hydra-background-white);
     border: 0;
+    border-radius: 4px;
 }
 .modal-footer button[type=submit]:hover{
     background:var(--hydra-blue-hover);
@@ -138,6 +139,7 @@ input[type="search"]{
     font-weight: 500;
     color:var(--hydra-text);
     border: 0;
+    border-radius: 4px;
 }
 .modal-footer button[type=reset]:hover{
     background: var(--hydra-secondary-20);

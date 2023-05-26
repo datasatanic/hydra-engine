@@ -103,7 +103,7 @@
             }
         </div>
     </div>
-    <Modal Model="Model" @ref="PlanModalWindow">
+    <Modal Model="Model" @ref="PlanModalWindow" OnSubmit="ApplyCallback">
         <Header>
             <h2 class="title">Terraform Plan</h2>
             <img @onclick="ModalClose" alt=""/>
@@ -113,7 +113,7 @@
         </div>
         </Body>
         <Footer>
-            <button type="submit" @onclick="ApplyCallback">Apply</button>
+            <button type="submit">Apply</button>
         </Footer>
     </Modal>
     <Modal Model="ResetModel" @ref="ResetModalWindow" OnSubmit="ResetInfrastructure">
@@ -250,6 +250,7 @@
             _toastService.ShowError(result.ReasonPhrase);
         }
         await ResetModalWindow.Close();
+        await _module.InvokeVoidAsync("ReloadPage");
     }
 
     private async Task ApplyCallback()
