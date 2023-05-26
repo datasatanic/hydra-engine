@@ -137,3 +137,9 @@ textarea{
 input,textarea:invalid{
     border:1px solid var(--hydra-error);
 }
+@media(max-width: 1200px){
+    .elem-container{
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

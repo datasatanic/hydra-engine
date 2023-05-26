@@ -18,7 +18,7 @@
             case Control.Textarea:
                 <div class="elem-container">
                     <h4>@elemInfo.display_name</h4>
-                    <textarea @attributes="ElementAttributes" @onchange="@((e)=>ChangeValue(e,Value,elemInfo.type))">@Value</textarea>
+                    <textarea @attributes="ElementAttributes" rows="@(Value?.ToString()?.Length)" @onchange="@((e)=>ChangeValue(e,Value,elemInfo.type))">@Value</textarea>
                 </div>
                 break;
             case Control.Range:
@@ -119,7 +119,7 @@
                             {
                                 case Control.Textarea:
                                     <div class="list-item-container">
-                                        <textarea @attributes="ElementAttributes" validation-error="@(!TryParseToType(elem.ToString(), elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
+                                        <textarea @attributes="ElementAttributes" rows="@(elem?.ToString()?.Length)"validation-error="@(!TryParseToType(elem.ToString(), elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
                                         <img @onclick="@(() => RemoveArrayItem(j))"/>
                                     </div>
                                     break;
@@ -167,7 +167,7 @@
                                     break;
                                 default:
                                     <div class="list-item-container">
-                                        <input @attributes="ElementAttributes" validation-error="@(!TryParseToType(elem.ToString(), elemInfo?.sub_type))" value="@elem" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))"/>
+                                        <input @attributes="ElementAttributes" size="@(elem?.ToString()?.Length)" validation-error="@(!TryParseToType(elem.ToString(), elemInfo?.sub_type))" value="@elem" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))"/>
                                         <img @onclick="@(() => RemoveArrayItem(j))"/>
                                     </div>
                                     break;
