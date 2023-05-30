@@ -3,7 +3,7 @@
     <ul class="plan-node">
         {%- for item in plan.items() %}
         {% set curId = id.uuid4().hex %}
-        {% if item[0] == "resource_changes" or item[0] == "resource_drift" or item[0] == "plan" %}
+        {% if item[0] == "resource_changes" or item[0] == "plan" %}
         <li>
             <div class="item">
                 <img src="/hydra_engine/static/Collapsed.svg" data-bs-toggle="collapse" data-bs-target="#n{{curId}}" aria-expanded="true" aria-controls="n{{curId}}"/>
@@ -18,7 +18,22 @@
             {% if item[0] != "values_change" %}
             <div class="item">
                 <img src="/hydra_engine/static/Collapsed.svg" data-bs-toggle="collapse" data-bs-target="#n{{curId}}" aria-expanded="false" aria-controls="n{{curId}}"/>
-                <h5>{{ item[0] }}</h5>
+                {% if item[1] is mapping and "actions" in item[1] %}
+                    <h5>{{ item[0] }}-[
+                        {%- for action in item[1]["actions"] %}
+                            {% if action == "delete" %}
+                                <span style="color:red">delete</span>
+                            {% elif action == "create" %}
+                                <span style="color:green">create</span>
+                            {% elif action == "update" %}
+                                <span style="color:orange">update</span>
+                            {% endif %}
+                        {%- endfor %}
+                        ]
+                    </h5>
+                {% else %}
+                    <h5>{{ item[0] }}</h5>
+                {% endif %}
             </div>
             <div class="collapse" id="n{{curId}}">
                 {{ dump_node(item[1],id) }}
