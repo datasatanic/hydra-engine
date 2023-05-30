@@ -484,10 +484,13 @@ def get_element_info(input_url, uid: str):
                         for key in constraint:
                             constraint_item = ConstraintItem(value=constraint[key], type=key)
                             render_constraints.append(constraint_item)
-                elem_info = ElemInfo(type=element["type"], description=element["description"],
+                try:
+                    elem_info = ElemInfo(type=element["type"], description=element["description"],
                                      sub_type=element["sub_type"],
                                      readOnly=element["readonly"],
                                      display_name=render_dict["display_name"], control=render_dict["control"],
                                      constraints=render_constraints, value=get_value(input_url, uid),
                                      file_id=uid)
+                except Exception as e:
+                    logger.error(f"Error {e} in file {elements_files_info[elements_yaml.index(elements)]['path']} in parameter {input_url}")
                 return elem_info
