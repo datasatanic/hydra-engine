@@ -2,6 +2,7 @@ import logging
 import os
 import json
 import uuid
+import re
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -81,6 +82,9 @@ def read_controls_file(directory):
     """
         Reads meta file of tree and creates structured tree
     """
+    input_url_pattern = r'^[a-zA-Z0-9_/\\.-]+:$'
+    display_name_pattern = r"\s*display_name:\s*[\"'].*[\"']"
+    description_pattern = r"\s*description:\s*[\"'].*[\"']"
     tree.clear()
     path = ""
     for root, dirs, files in os.walk(directory):
@@ -91,14 +95,20 @@ def read_controls_file(directory):
                     for line in f:
                         str_list = list(filter(lambda x: len(x), line.replace('\n', '').strip().split(":")))
                         if line != '\n':
-                            if len(str_list) == 1:
+                            if re.match(input_url_pattern, line.strip()):
                                 path = str_list[0]
                                 add_node(path.split("/"))
                             else:
-                                add_additional_fields(path.split("/"), str_list)
+                                description_match = re.match(description_pattern, line)
+                                display_name_match = re.match(display_name_pattern, line)
+                                if description_match or display_name_match:
+                                    add_additional_fields(path.split("/"), str_list)
+                                else:
+                                    raise ValueError(f"Not valid line {line.strip()}")
                     break
                 except Exception as e:
-                    raise ValueError(f"Error in parsing meta file of tree {e}")
+                    logger.error(f"Error in parsing 'controls.meta' {e}")
+                    return
 
 
 def find_changes_in_terraform_plan(plan_dict):
@@ -139,4 +149,3 @@ def find_changes_in_terraform_plan(plan_dict):
                 resource[resource_address][key] = resource[key]
                 resource.pop(key)
     return plan_dict
-
