@@ -122,6 +122,9 @@ def filter_tree(all_tree):
 
 
 def find_groups(path, all_tree):
+    """
+        Find child forms and groups of current form
+    """
     name = path[0]
     if name in all_tree:
         keys = list(all_tree[name].child)

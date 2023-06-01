@@ -24,6 +24,9 @@ class ValuesInstance:
 
 
 def parse_meta_params():
+    """
+        Parse files with metadata and get info about meta info of different parameters
+    """
     elements_yaml.clear()
     for root, dirs, files in os.walk("files"):
         for filename in files:
@@ -39,6 +42,9 @@ def parse_meta_params():
 
 
 def parse_elements_fileinfo():
+    """
+        Parse files with metadata and get info about configuration files paths and formats
+    """
     elements_files_info.clear()
     for root, dirs, files in os.walk("files"):
         for filename in files:
@@ -52,6 +58,9 @@ def parse_elements_fileinfo():
 
 
 def parse_value_files():
+    """
+        Parse configuration files
+    """
     elements_json.clear()
     for file in elements_files_info:
         if file["type"] == "json":
