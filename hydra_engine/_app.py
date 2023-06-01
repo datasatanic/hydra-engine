@@ -12,7 +12,7 @@ from starlette_prometheus import metrics, PrometheusMiddleware
 
 from hydra_engine import router
 from hydra_engine.parser import parse_config_files
-from hydra_engine.schemas import add_node, tree, add_additional_fields
+from hydra_engine.schemas import add_node, HydraParametersInfo, add_additional_fields
 from hydra_engine.search.index_schema import HydraIndexScheme
 from hydra_engine.search.searcher import HydraSearcher
 
@@ -85,7 +85,7 @@ def read_controls_file(directory):
     input_url_pattern = r'^[a-zA-Z0-9_/\\.-]+:$'
     display_name_pattern = r"\s*display_name:\s*[\"'].*[\"']"
     description_pattern = r"\s*description:\s*[\"'].*[\"']"
-    tree.clear()
+    HydraParametersInfo().tree.clear()
     path = ""
     for root, dirs, files in os.walk(directory):
         for name in files:

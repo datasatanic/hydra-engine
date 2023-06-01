@@ -5,6 +5,8 @@ import yaml
 from itertools import chain
 
 from ..configs import config
+from ..parser import HydraParametersInfo
+
 
 def collect_documents_from_raw_files():
     final_documents = []
@@ -114,8 +116,8 @@ def collect_documents_from_tree(tree, pre=""):
 def get_documents_from_hydra():
     # sys.modules['schemas'].tree костыль ебучий надо выпиливать
     final_documents = []
-    tree_docs = collect_documents_from_tree(sys.modules['hydra_engine.schemas'].tree)
-    settings_docs = collect_documents_from_fields(sys.modules['hydra_engine.schemas'].elements_yaml)
+    tree_docs = collect_documents_from_tree(HydraParametersInfo().get_tree_structure())
+    settings_docs = collect_documents_from_fields(HydraParametersInfo().get_elements_metadata())
     final_documents.extend(tree_docs)
     final_documents.extend(settings_docs)
 

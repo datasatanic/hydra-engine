@@ -5,6 +5,42 @@ import yaml
 import os
 
 logger = logging.getLogger("common_logger")
+
+
+class SingletonMeta(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(SingletonMeta, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class HydraParametersInfo(metaclass=SingletonMeta):
+    def __init__(self):
+        self.tree = {}
+        self.elements_files_info = None
+        self.elements_values = None
+        self.elements_meta = None
+
+    def get_elements_files_info(self):
+        return self.elements_files_info
+
+    def get_elements_values(self):
+        return self.elements_values
+
+    def get_elements_metadata(self):
+        return self.elements_meta
+    
+    def get_tree_structure(self):
+        return self.tree
+
+    def set_lists(self, l1, l2, l3):
+        self.elements_files_info = l1
+        self.elements_values = l2
+        self.elements_meta = l3
+
+
 elements_files_info = []
 elements_json = []
 elements_yaml = []
@@ -96,3 +132,4 @@ def parse_config_files():
     parse_elements_fileinfo()
     parse_value_files()
     parse_meta_params()
+    HydraParametersInfo().set_lists(elements_files_info, elements_json, elements_yaml)

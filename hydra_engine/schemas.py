@@ -3,11 +3,11 @@ import yaml
 import maya
 from typing import List, Literal
 from pydantic import BaseModel, validator, Extra, root_validator
-from hydra_engine.parser import write_file, elements_json, elements_yaml, elements_files_info
+from hydra_engine.parser import write_file, HydraParametersInfo
 import logging
 import re
 
-tree = {}
+tree = HydraParametersInfo().tree
 logger = logging.getLogger('common_logger')
 
 types = Literal["string", "int", "bool", "datetime", "range", "array"]
@@ -423,13 +423,15 @@ def find_node(node_list):
 
 def get_elements(output_url):
     elem_list = []
-    for elements in elements_yaml:
+    elements_meta = HydraParametersInfo().get_elements_metadata()
+    elements_files_info = HydraParametersInfo().get_elements_files_info()
+    for elements in elements_meta:
         for item in elements:
             keys = list(item)
             for key in keys:
                 if item[key]["output_url"] == output_url:
-                    if elements_yaml.index(elements) < len(elements_files_info):
-                        uid = elements_files_info[elements_yaml.index(elements)]["uid"]
+                    if elements_meta.index(elements) < len(elements_files_info):
+                        uid = elements_files_info[elements_meta.index(elements)]["uid"]
                         elem_list.append({key: get_element_info(key, uid)})
     return elem_list
 
@@ -437,7 +439,7 @@ def get_elements(output_url):
 def get_value(input_url: str, uid: str):
     input_url_list = input_url.split("/")
     key = input_url_list[0]
-    for elements in elements_json:
+    for elements in HydraParametersInfo().get_elements_values():
         if key in elements.values and elements.uid == uid:
             return find_value_in_dict(elements.values, input_url_list)
 
@@ -463,16 +465,18 @@ def set_value(input_url: str, uid: str, value: str):
     logger.debug(f"post {value} in {input_url}")
     input_url_list = input_url.split("/")
     key = input_url_list[0]
-    for elements in elements_json:
+    for elements in HydraParametersInfo().get_elements_values():
         if key in elements.values and elements.uid == uid:
             set_value_in_dict(elements.values, value, input_url_list, elements.type)
             return write_file(elements.values, elements.path, elements.type, input_url, value)
 
 
 def get_element_info(input_url, uid: str):
-    for elements in elements_yaml:
+    elements_meta = HydraParametersInfo().get_elements_metadata()
+    elements_files_info=HydraParametersInfo().get_elements_files_info()
+    for elements in elements_meta:
         for item in elements:
-            if input_url in item and elements_files_info[elements_yaml.index(elements)]["uid"] == uid:
+            if input_url in item and elements_files_info[elements_meta.index(elements)]["uid"] == uid:
                 element = item[input_url]
                 if len(element) == 0:
                     return None
@@ -486,11 +490,12 @@ def get_element_info(input_url, uid: str):
                             render_constraints.append(constraint_item)
                 try:
                     elem_info = ElemInfo(type=element["type"], description=element["description"],
-                                     sub_type=element["sub_type"],
-                                     readOnly=element["readonly"],
-                                     display_name=render_dict["display_name"], control=render_dict["control"],
-                                     constraints=render_constraints, value=get_value(input_url, uid),
-                                     file_id=uid)
+                                         sub_type=element["sub_type"],
+                                         readOnly=element["readonly"],
+                                         display_name=render_dict["display_name"], control=render_dict["control"],
+                                         constraints=render_constraints, value=get_value(input_url, uid),
+                                         file_id=uid)
                 except Exception as e:
-                    logger.error(f"Error {e} in file {elements_files_info[elements_yaml.index(elements)]['path']} in parameter {input_url}")
+                    logger.error(
+                        f"Error {e} in file {elements_files_info[elements_meta.index(elements)]['path']} in parameter {input_url}")
                 return elem_info
