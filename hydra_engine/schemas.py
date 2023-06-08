@@ -489,11 +489,11 @@ def get_element_info(input_url, uid: str):
                             constraint_item = ConstraintItem(value=constraint[key], type=key)
                             render_constraints.append(constraint_item)
                 try:
-                    elem_info = ElemInfo(type=element["type"], description=element["description"],
+                    elem_info = ElemInfo(value=get_value(input_url, uid),type=element["type"], description=element["description"], 
                                          sub_type=element["sub_type"],
                                          readOnly=element["readonly"],
                                          display_name=render_dict["display_name"], control=render_dict["control"],
-                                         constraints=render_constraints, value=get_value(input_url, uid),
+                                         constraints=render_constraints,
                                          file_id=uid)
                 except Exception as e:
                     logger.error(
