@@ -69,13 +69,7 @@ def read_controls_file(directory):
     """
         Reads meta file of tree and creates structured tree
     """
-    input_url_pattern = r'^[a-zA-Z0-9_/\\.-]+:$'
-    display_name_pattern = r"\s*display_name:\s*[\"'].*[\"']"
-    description_pattern = r"\s*description:\s*[\"'].*[\"']"
-    type_pattern = r"\s*type:\s*[\"'].*[\"']"
-    id_pattern = r"\s*id:\s*.*"
     HydraParametersInfo().tree.clear()
-    path = ""
     for root, dirs, files in os.walk(directory):
         for name in files:
             if name == "ui.meta":
