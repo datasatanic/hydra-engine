@@ -66,7 +66,7 @@ def parse_meta_params():
     elements_yaml.clear()
     for root, dirs, files in os.walk("files"):
         for filename in files:
-            if "meta" in filename and filename != "controls.meta" and "terragrunt-cache" not in root:
+            if "meta" in filename and filename != "ui.meta" and "terragrunt-cache" not in root:
                 with open(os.path.join(root, filename), 'r') as stream:
                     data_loaded = yaml.safe_load(stream)
                     _elements = data_loaded["PARAMS"]
@@ -84,7 +84,7 @@ def parse_elements_fileinfo():
     elements_files_info.clear()
     for root, dirs, files in os.walk("files"):
         for filename in files:
-            if "meta" in filename and filename != "controls.meta" and "terragrunt-cache" not in root:
+            if "meta" in filename and filename != "ui.meta" and "terragrunt-cache" not in root:
                 if os.path.isfile(os.path.join(root, filename)):
                     with open(os.path.join(root, filename), 'r') as stream:
                         data_loaded = yaml.safe_load(stream)

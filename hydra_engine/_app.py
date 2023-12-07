@@ -78,7 +78,7 @@ def read_controls_file(directory):
     path = ""
     for root, dirs, files in os.walk(directory):
         for name in files:
-            if name == "controls.meta" and "terragrunt-cache" not in root:
+            if name == "ui.meta" and "terragrunt-cache" not in root:
                 try:
                     f = open(os.path.join(root, name))
                     for line in f:
@@ -97,5 +97,5 @@ def read_controls_file(directory):
                                     raise ValueError(f"Not valid line {line.strip()}")
                     break
                 except Exception as e:
-                    logger.error(f"Error in parsing 'controls.meta' {e}")
+                    logger.error(f"Error in parsing 'ui.meta' {e}")
                     return

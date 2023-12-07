@@ -23,7 +23,7 @@ class Config(BaseSettings):
 
     # index
     filespath: str = Field('files/', env='FILES_PATH')
-    tree_filename: str = Field('controls.meta', env='TREE_FILENAME')
+    tree_filename: str = Field('ui.meta', env='TREE_FILENAME')
     index_path: str = Field('hydra_engine/files/index/', env='INDEX_PATH')
     accessible_when_reindex: bool = Field(True, env='ACCESSIBLE_WHEN_REINDEX')
     use_ram_storage: bool = Field(False, env='USE_RAM_STORAGE')
