@@ -13,7 +13,7 @@ PARAMS:
       sub_type: # optional for array
       readonly: False
       description: "REx connection string"
-      output_url: "root/constr/service"
+      id: 6
       render:
         control: input_control
         display_name: "Rex conn url"
@@ -26,7 +26,7 @@ PARAMS:
       sub_type: string
       readonly: False
       description: "Allowed hosts in infras"
-      output_url: "root/constr/infras"
+      id: 5
       render:
         control: input_control
         display_name: "allowed hosts"
@@ -37,7 +37,7 @@ PARAMS:
       readonly: False
       sub_type: # optional for array
       description: "auth info"
-      output_url: "root/constr"
+      id: 2
       render:
         control: checkbox_control
         display_name: "auth require https Metadata"
@@ -47,7 +47,7 @@ PARAMS:
       readonly: False
       sub_type: datetime
       description: "auth info"
-      output_url: "root/constr"
+      id: 2
       render:
         control: datetime_control
         display_name: "Datetime array"

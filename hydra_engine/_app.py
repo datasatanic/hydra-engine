@@ -3,6 +3,8 @@ import os
 import json
 import uuid
 import re
+
+import yaml
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -54,12 +56,9 @@ def get_template_statics(url: str):
 @app_static.on_event("startup")
 async def startup_event():
     logger.debug("Start parsing directory")
-    try:
-        parse_config_files()
-        read_controls_file("files")
-        logger.debug("Directory has been parsed successfully")
-    except Exception as e:
-        logger.error(f"Error in parsing files with {e}")
+    parse_config_files()
+    read_controls_file("files")
+    logger.debug("Directory has been parsed successfully")
     await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
 
 
@@ -74,28 +73,18 @@ def read_controls_file(directory):
     display_name_pattern = r"\s*display_name:\s*[\"'].*[\"']"
     description_pattern = r"\s*description:\s*[\"'].*[\"']"
     type_pattern = r"\s*type:\s*[\"'].*[\"']"
+    id_pattern = r"\s*id:\s*.*"
     HydraParametersInfo().tree.clear()
     path = ""
     for root, dirs, files in os.walk(directory):
         for name in files:
-            if name == "ui.meta" and "terragrunt-cache" not in root:
-                try:
-                    f = open(os.path.join(root, name))
-                    for line in f:
-                        str_list = list(filter(lambda x: len(x), line.replace('\n', '').strip().split(":")))
-                        if line != '\n':
-                            if re.match(input_url_pattern, line.strip()):
-                                path = str_list[0]
-                                add_node(path.split("/"))
-                            else:
-                                description_match = re.match(description_pattern, line)
-                                display_name_match = re.match(display_name_pattern, line)
-                                type_match = re.match(type_pattern, line)
-                                if description_match or display_name_match or type_match:
-                                    add_additional_fields(path.split("/"), str_list)
-                                else:
-                                    raise ValueError(f"Not valid line {line.strip()}")
-                    break
-                except Exception as e:
-                    logger.error(f"Error in parsing 'ui.meta' {e}")
-                    return
+            if name == "ui.meta":
+                with open(os.path.join(root, name), 'r') as stream:
+                    data_loaded = yaml.safe_load(stream)
+                    for obj in data_loaded:
+                        path = obj.split("/")
+                        add_node(path,int(data_loaded[obj]["id"]))
+                        add_additional_fields(path, "display_name", data_loaded[obj]["display_name"])
+                        if "description" in data_loaded[obj]:
+                            add_additional_fields(path, "description", data_loaded[obj]["description"])
+                        add_additional_fields(path, "type", data_loaded[obj]["type"])

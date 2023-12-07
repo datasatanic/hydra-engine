@@ -10,7 +10,7 @@ PARAMS:
       sub_type: # optional for array
       readonly: False
       description: "Docker image name"
-      output_url: "root/constr/service"
+      id: 6
       render:
         control: input_control
         display_name: "Docker image name"
@@ -21,7 +21,7 @@ PARAMS:
       sub_type: # optional for array
       readonly: False
       description: "Name of the docker container to deploy"
-      output_url: "root/constr/service"
+      id: 6
       render:
         control: input_control
         display_name: "Docker container name"
@@ -32,7 +32,7 @@ PARAMS:
       sub_type: # optional for array
       readonly: False
       description: "Docker image tag"
-      output_url: "root/constr/service"
+      id: 6
       render:
         control: input_control
         display_name: "Tag of image"
@@ -43,7 +43,7 @@ PARAMS:
       sub_type: # optional for array
       readonly: False
       description: "Map of Env variables to set for container"
-      output_url: "root/constr/service"
+      id: 6
       render:
         control: input_control
         display_name: "Env name"
@@ -53,7 +53,7 @@ PARAMS:
       sub_type: range
       readonly: False
       description: "Ports"
-      output_url: "root/constr/service"
+      id: 6
       render:
         control: range_control
         display_name: "Ports"

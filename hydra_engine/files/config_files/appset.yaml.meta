@@ -10,7 +10,7 @@ PARAMS:
       sub_type: # optional for array
       readonly: False
       description: "Username in PG"
-      output_url: "root/constr/infras"
+      id: 5
       render:
         control: input_control
         display_name: "PG username"

@@ -10,7 +10,7 @@ PARAMS:
       sub_type: # optional for array
       readonly: False
       description: "REx connection string"
-      output_url: "root1/constr/service"
+      id: 13
       render:
         control: input_control
         display_name: "rex conn url"
@@ -21,7 +21,7 @@ PARAMS:
       readonly: True
       sub_type: # optional for array
       description: "default logging info"
-      output_url: "root1/constr/infras"
+      id: 12
       render:
         control: input_control
         display_name: "default logging"

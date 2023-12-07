@@ -379,18 +379,18 @@ class Node(BaseModel):
         extra = Extra.allow
 
 
-def add_node(_list):
+def add_node(_list, path_id):
     level = len(_list)
     if level == 1:
         node = Node(elem=[], child={})
-        node.elem = get_elements("/".join(_list))
+        node.elem = get_elements(path_id)
         d = {_list[0]: node}
         tree.update(d)
     else:
-        add_node_subtree(tree, 0, _list)
+        add_node_subtree(tree, 0, _list, path_id)
 
 
-def add_node_subtree(subtree, j, _list):
+def add_node_subtree(subtree, j, _list, path_id):
     n = len(subtree)
     for i in range(0, n):
         if _list[j] in subtree:
@@ -398,18 +398,18 @@ def add_node_subtree(subtree, j, _list):
             j += 1
             if j == len(_list) - 1:
                 node = Node(elem=[], child={})
-                node.elem = get_elements("/".join(_list))
+                node.elem = get_elements(path_id)
                 d = {_list[j]: node}
                 subtree.update(d)
                 return
-            add_node_subtree(subtree, j, _list)
+            add_node_subtree(subtree, j, _list, path_id)
 
 
-def add_additional_fields(node_list, field_list):
+def add_additional_fields(node_list, additional_key, additional_value):
     node = find_node(node_list)
-    if field_list[0] in node.__dict__:
+    if additional_key in node.__dict__:
         raise ValueError("Not valid file")
-    node.__dict__[field_list[0]] = field_list[1].replace('"', '').strip()
+    node.__dict__[additional_key] = additional_value.replace('"', '').strip()
 
 
 def find_node(node_list):
@@ -421,7 +421,7 @@ def find_node(node_list):
     return find
 
 
-def get_elements(output_url):
+def get_elements(path_id):
     elem_list = []
     elements_meta = HydraParametersInfo().get_elements_metadata()
     elements_files_info = HydraParametersInfo().get_elements_files_info()
@@ -429,7 +429,7 @@ def get_elements(output_url):
         for item in elements:
             keys = list(item)
             for key in keys:
-                if item[key]["output_url"] == output_url:
+                if item[key]["id"] == path_id:
                     if elements_meta.index(elements) < len(elements_files_info):
                         uid = elements_files_info[elements_meta.index(elements)]["uid"]
                         elem_list.append({key: get_element_info(key, uid)})
@@ -473,7 +473,7 @@ def set_value(input_url: str, uid: str, value: str):
 
 def get_element_info(input_url, uid: str):
     elements_meta = HydraParametersInfo().get_elements_metadata()
-    elements_files_info=HydraParametersInfo().get_elements_files_info()
+    elements_files_info = HydraParametersInfo().get_elements_files_info()
     for elements in elements_meta:
         for item in elements:
             if input_url in item and elements_files_info[elements_meta.index(elements)]["uid"] == uid:
@@ -489,7 +489,8 @@ def get_element_info(input_url, uid: str):
                             constraint_item = ConstraintItem(value=constraint[key], type=key)
                             render_constraints.append(constraint_item)
                 try:
-                    elem_info = ElemInfo(value=get_value(input_url, uid),type=element["type"], description=element["description"], 
+                    elem_info = ElemInfo(value=get_value(input_url, uid), type=element["type"],
+                                         description=element["description"],
                                          sub_type=element["sub_type"],
                                          readOnly=element["readonly"],
                                          display_name=render_dict["display_name"], control=render_dict["control"],
