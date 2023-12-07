@@ -12,7 +12,7 @@ PARAMS:
       description: "Username in PG"
       output_url: "root/constr/infras"
       render:
-        ??? control: input_control
+        control: input_control
         display_name: "PG username"
         constraints:
             - maxlength: 30

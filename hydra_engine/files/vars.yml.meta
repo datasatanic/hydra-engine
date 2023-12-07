@@ -12,7 +12,7 @@ PARAMS:
       description: "Docker image name"
       output_url: "root/constr/service"
       render:
-        ??? control: input_control
+        control: input_control
         display_name: "Docker image name"
         constraints:
           
@@ -23,7 +23,7 @@ PARAMS:
       description: "Name of the docker container to deploy"
       output_url: "root/constr/service"
       render:
-        ??? control: input_control
+        control: input_control
         display_name: "Docker container name"
         constraints:
           
@@ -34,7 +34,7 @@ PARAMS:
       description: "Docker image tag"
       output_url: "root/constr/service"
       render:
-        ??? control: input_control
+        control: input_control
         display_name: "Tag of image"
         constraints:
           
@@ -45,7 +45,7 @@ PARAMS:
       description: "Map of Env variables to set for container"
       output_url: "root/constr/service"
       render:
-        ??? control: input_control
+        control: input_control
         display_name: "Env name"
         constraints:
   - ports: # Input_URL
@@ -55,7 +55,7 @@ PARAMS:
       description: "Ports"
       output_url: "root/constr/service"
       render:
-        ??? control: range_control
+        control: range_control
         display_name: "Ports"
         constraints:
           

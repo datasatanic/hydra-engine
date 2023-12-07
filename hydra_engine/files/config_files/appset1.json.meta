@@ -12,7 +12,7 @@ PARAMS:
       description: "REx connection string"
       output_url: "root1/constr/service"
       render:
-        ??? control: input_control
+        control: input_control
         display_name: "rex conn url"
         constraints:
         additional: # specified info
@@ -23,6 +23,6 @@ PARAMS:
       description: "default logging info"
       output_url: "root1/constr/infras"
       render:
-        ??? control: input_control
+        control: input_control
         display_name: "default logging"
         constraints:

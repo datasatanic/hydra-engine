@@ -103,19 +103,6 @@
             }
         </div>
     </div>
-    <Modal Model="Model" @ref="PlanModalWindow" OnSubmit="ApplyCallback">
-        <Header>
-            <h2 class="title">Terraform Plan</h2>
-            <img @onclick="ModalClose" alt=""/>
-        </Header>
-        <Body>
-        <div id="graph">
-        </div>
-        </Body>
-        <Footer>
-            <button type="submit">Apply</button>
-        </Footer>
-    </Modal>
     <Modal Model="ResetModel" @ref="ResetModalWindow" OnSubmit="ResetInfrastructure">
         <Header>
             <h2 class="title">@ResetModel.Title</h2>
@@ -193,20 +180,8 @@
     private async Task SaveValues()
     {
         if (changeElements.Exists(item => !item.Value.isValid)) return;
-        plan_loader = true;
-        plan_title = "Forming plan";
-        var responseMessage=new HttpResponseMessage();
-        responseMessage=await SettingsContainer.SetValues(changeElements);
+        await SettingsContainer.SetValues(changeElements);
         changeElements.Clear();
-        if (responseMessage.IsSuccessStatusCode)
-        {
-            Model.PlanText = await responseMessage.Content.ReadAsStringAsync();
-            await _module.InvokeVoidAsync("AddGraph",Model.PlanText);
-            await _module.InvokeVoidAsync("MakeHighlight");
-            await PlanModalWindow.Open();
-            
-        }
-        plan_loader = false;
     }
 
     private void SearchCallback(ChangeEventArgs obj)
@@ -252,25 +227,6 @@
         await ResetModalWindow.Close();
         await _module.InvokeVoidAsync("ReloadPage");
     }
-
-    private async Task ApplyCallback()
-    {
-        plan_loader = true;
-        plan_title = "Applying plan. It can take a few minutes";
-        await _module.InvokeVoidAsync("RemoveGraph");
-        await PlanModalWindow.Close();
-        var result=await SettingsContainer.ApplyPlan();
-        if (result.IsSuccessStatusCode)
-        {
-            _toastService.ShowSuccess("Apply complete");
-        }
-        else
-        {
-            _toastService.ShowError("Error in applying plan");
-        }
-        plan_loader = false;
-
-    }
     private async void OnSearchFinish(object? source, ElapsedEventArgs e)
     {
         if (string.IsNullOrEmpty(searchValue)){ return;}
@@ -291,12 +247,6 @@
     {
         visibility = false;
         StateHasChanged();
-    }
-
-    private async Task ModalClose()
-    {
-        await _module.InvokeVoidAsync("RemoveGraph");
-        await PlanModalWindow.Close();
     }
 
 }
