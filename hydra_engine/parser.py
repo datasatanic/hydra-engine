@@ -4,8 +4,6 @@ import logging
 import ruamel.yaml
 import os
 
-from commentjson import commentjson
-
 logger = logging.getLogger("common_logger")
 yaml = ruamel.yaml.YAML(typ="rt")
 
@@ -114,7 +112,7 @@ def parse_value_files():
     for file in elements_files_info:
         if file["type"] == "json":
             with open(os.path.join(base_dir, file["path"]), 'r') as stream:
-                data_loaded = commentjson.load(stream)
+                data_loaded = json.load(stream)
                 value_instance = ValuesInstance(file["type"], file["path"],
                                                 hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
                                                 data_loaded)
@@ -132,7 +130,7 @@ def write_file(data, file_path, file_type, key, value):
     try:
         with open(os.path.join(base_dir, file_path), 'w') as file:
             if file_type == "json":
-                commentjson.dump(data, file, indent=2)
+                json.dump(data, file, indent=2)
             if file_type == "yaml":
                 yaml.dump(data, file)
         logger.info(f"File {file_path} was modified to value {value} in parameter {key}")

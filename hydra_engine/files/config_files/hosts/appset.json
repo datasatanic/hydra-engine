@@ -12,7 +12,7 @@
   ],
   "Auth": {
     "Authority": "https://192.168.75.196/realms/CCFA",
-    "RequireHttpsMetadata": true,
+    "RequireHttpsMetadata": false,
     "Audience": "W12321"
   },
   "ConnectionStrings": {
