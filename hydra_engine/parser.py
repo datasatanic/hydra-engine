@@ -65,17 +65,26 @@ def parse_meta_params():
         Parse files with metadata and get info about meta info of different parameters
     """
     elements_yaml.clear()
+    ui_meta_data = {}
+    with open(os.path.join(base_dir, "files/ui.meta"), 'r') as stream:
+        data = yaml.safe_load(stream)
+        for key in data:
+            ui_meta_data[data[key]["id"]] = key
     for root, dirs, files in os.walk(os.path.join(base_dir, "files")):
         for filename in files:
-            if "meta" in filename and filename != "ui.meta" and "terragrunt-cache" not in root:
+            if "meta" in filename and filename != "ui.meta":
                 with open(os.path.join(root, filename), 'r') as stream:
                     data_loaded = yaml.safe_load(stream)
                     _elements = data_loaded["PARAMS"]
+                    for el in _elements:
+                        for key in el:
+                            if el[key]["id"] in ui_meta_data:
+                                el[key]["output_url"] = ui_meta_data[el[key]["id"]]
                     for element in elements_json:
                         for file_info in elements_files_info:
                             if element.path == file_info["path"]:
                                 file_info["uid"] = element.uid
-                elements_yaml.append(_elements)
+                    elements_yaml.append(_elements)
 
 
 def parse_elements_fileinfo():
