@@ -1,7 +1,7 @@
 {
   "entryAssembly": "hydra_engine_blazor",
   "resources": {
-    "hash": "sha256-abSPaZKpSx3i1wRvjUMSNdQsBe0akH/NEfTiqEl7Af8=",
+    "hash": "sha256-AIInxKoQHclfMYU8o6yUwMC6MmZlYJTwsXTtFUV/Qmg=",
     "runtime": {
       "dotnet.6.0.25.w7yoskez1c.js": "sha256-1jUGCCSGH9JWhkqbHdQk8JBjBI8K/VC63En5zlypVps=",
       "dotnet.timezones.blat": "sha256-KsGUR9nqtXb3Hy6IrNlnc1HoSS+AFlsXTX9rq4oChtA=",
@@ -12,7 +12,7 @@
     },
     "assembly": {
       "Blazored.Toast.dll": "sha256-GXXa2A08YD6PhpIFoBX+kgnsZS1fcddkt/Sv5IUHdz8=",
-      "hydra_engine_blazor.dll": "sha256-rJEFEuBO0Y5d78qhNNPhxHsIyO47mAlLOIkDjdnpoX4=",
+      "hydra_engine_blazor.dll": "sha256-C4MO2BFRE6v+/sCQcJL0fJ5QNnqtx4Le2aW0UwgwxqQ=",
       "Microsoft.AspNetCore.Components.dll": "sha256-Q+mG2N3e8z2t7pxKsilxbPrpLrD4CDhhx7T3//4ugqo=",
       "Microsoft.AspNetCore.Components.Forms.dll": "sha256-aQL1K4wB2eInGCZryVHZXd+G+QD4IiTJY9mn8LKlSjc=",
       "Microsoft.AspNetCore.Components.Web.dll": "sha256-IrsY50p92msPsDy0DVfsrcchqaicRaCqBu9o/HDUC/4=",

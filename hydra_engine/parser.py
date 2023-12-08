@@ -31,7 +31,7 @@ class HydraParametersInfo(metaclass=SingletonMeta):
 
     def get_elements_metadata(self):
         return self.elements_meta
-    
+
     def get_tree_structure(self):
         return self.tree
 
@@ -41,6 +41,7 @@ class HydraParametersInfo(metaclass=SingletonMeta):
         self.elements_meta = l3
 
 
+base_dir = os.path.dirname(os.path.abspath(__file__))
 elements_files_info = []
 elements_json = []
 elements_yaml = []
@@ -64,7 +65,7 @@ def parse_meta_params():
         Parse files with metadata and get info about meta info of different parameters
     """
     elements_yaml.clear()
-    for root, dirs, files in os.walk("files"):
+    for root, dirs, files in os.walk(os.path.join(base_dir, "files")):
         for filename in files:
             if "meta" in filename and filename != "ui.meta" and "terragrunt-cache" not in root:
                 with open(os.path.join(root, filename), 'r') as stream:
@@ -82,7 +83,7 @@ def parse_elements_fileinfo():
         Parse files with metadata and get info about configuration files paths and formats
     """
     elements_files_info.clear()
-    for root, dirs, files in os.walk("files"):
+    for root, dirs, files in os.walk(os.path.join(base_dir, "files")):
         for filename in files:
             if "meta" in filename and filename != "ui.meta":
                 if os.path.isfile(os.path.join(root, filename)):
@@ -100,14 +101,14 @@ def parse_value_files():
     elements_json.clear()
     for file in elements_files_info:
         if file["type"] == "json":
-            with open(os.path.join("", file["path"]), 'r') as stream:
+            with open(os.path.join(base_dir, file["path"]), 'r') as stream:
                 data_loaded = json.load(stream)
                 value_instance = ValuesInstance(file["type"], file["path"],
                                                 hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
                                                 data_loaded)
                 elements_json.append(value_instance)
         if file["type"] == "yaml":
-            with open(os.path.join("", file["path"]), 'r') as stream:
+            with open(os.path.join(base_dir, file["path"]), 'r') as stream:
                 data_loaded = yaml.safe_load(stream)
                 value_instance = ValuesInstance(file["type"], file["path"],
                                                 hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
@@ -117,7 +118,7 @@ def parse_value_files():
 
 def write_file(data, file_path, file_type, key, value):
     try:
-        with open(os.path.join("", file_path), 'w') as file:
+        with open(os.path.join(base_dir, file_path), 'w') as file:
             if file_type == "json":
                 file.write(json.dumps(data, sort_keys=False))
             if file_type == "yaml":

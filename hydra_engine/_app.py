@@ -57,12 +57,12 @@ def get_template_statics(url: str):
 async def startup_event():
     logger.debug("Start parsing directory")
     parse_config_files()
-    read_controls_file("files")
+    read_controls_file(os.path.join(base_dir, "files"))
     logger.debug("Directory has been parsed successfully")
     await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
 
 
-app_static.mount("/", StaticFiles(directory="wwwroot", html=True), "client")
+app_static.mount("/", StaticFiles(directory=os.path.join(base_dir, "wwwroot"), html=True), "client")
 
 
 def read_controls_file(directory):
@@ -77,7 +77,7 @@ def read_controls_file(directory):
                     data_loaded = yaml.safe_load(stream)
                     for obj in data_loaded:
                         path = obj.split("/")
-                        add_node(path,int(data_loaded[obj]["id"]))
+                        add_node(path, int(data_loaded[obj]["id"]))
                         add_additional_fields(path, "display_name", data_loaded[obj]["display_name"])
                         if "description" in data_loaded[obj]:
                             add_additional_fields(path, "description", data_loaded[obj]["description"])
