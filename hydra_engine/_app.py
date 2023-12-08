@@ -77,8 +77,7 @@ def read_controls_file(directory):
                     data_loaded = yaml.safe_load(stream)
                     for obj in data_loaded:
                         path = obj.split("/")
-                        add_node(path, int(data_loaded[obj]["id"]))
+                        add_node(path, int(data_loaded[obj]["id"]), data_loaded[obj]["type"])
                         add_additional_fields(path, "display_name", data_loaded[obj]["display_name"])
                         if "description" in data_loaded[obj]:
                             add_additional_fields(path, "description", data_loaded[obj]["description"])
-                        add_additional_fields(path, "type", data_loaded[obj]["type"])

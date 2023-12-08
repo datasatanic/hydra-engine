@@ -20,7 +20,7 @@ root/constr/form/group:
 root/constr/infras:
   description: Connection strings for infrastructions services
   display_name: Infrastructure
-  type: form
+  type: group
   id: 5
 root/constr/service:
   description: Connection strings for logical services

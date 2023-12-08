@@ -4,8 +4,9 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from hydra_engine._app import parse_config_files, read_controls_file
 
-
 base_dir = os.path.dirname(os.path.abspath(__file__))
+
+
 class EventHandler(FileSystemEventHandler):
 
     def on_any_event(self, event):

@@ -374,35 +374,38 @@ def get_control_constraints(control: controls):
 class Node(BaseModel):
     child: dict = {}
     elem: List = []
+    type: str
 
     class Config:
         extra = Extra.allow
 
 
-def add_node(_list, path_id):
+def add_node(_list, path_id, node_type):
     level = len(_list)
     if level == 1:
-        node = Node(elem=[], child={})
+        node = Node(elem=[], child={}, type=node_type)
         node.elem = get_elements(path_id)
         d = {_list[0]: node}
         tree.update(d)
     else:
-        add_node_subtree(tree, 0, _list, path_id)
+        add_node_subtree(tree, 0, _list, path_id,node_type)
 
 
-def add_node_subtree(subtree, j, _list, path_id):
+def add_node_subtree(subtree, j, _list, path_id, node_type):
     n = len(subtree)
     for i in range(0, n):
         if _list[j] in subtree:
+            if subtree[_list[j]].type == "group":
+                raise ValueError(f"Node {'/'.join(_list[0:j+1])} with type group can't have children")
             subtree = subtree[_list[j]].child
             j += 1
             if j == len(_list) - 1:
-                node = Node(elem=[], child={})
+                node = Node(elem=[], child={}, type=node_type)
                 node.elem = get_elements(path_id)
                 d = {_list[j]: node}
                 subtree.update(d)
                 return
-            add_node_subtree(subtree, j, _list, path_id)
+            add_node_subtree(subtree, j, _list, path_id,node_type)
 
 
 def add_additional_fields(node_list, additional_key, additional_value):
