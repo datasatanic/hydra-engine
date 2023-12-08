@@ -42,13 +42,3 @@ PARAMS:
         control: checkbox_control
         display_name: "auth require https Metadata"
         constraints:
-  - key1:
-      type: array
-      readonly: False
-      sub_type: datetime
-      description: "auth info"
-      id: 2
-      render:
-        control: datetime_control
-        display_name: "Datetime array"
-        constraints:

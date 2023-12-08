@@ -1,9 +1,9 @@
-image_name: nginx
+image_name: nginx  #image name
 image_tag: latest
-container_name: nginx_conrainer
+container_name: nginx_container      # this parameter
 ports:
 - from: 8000
-  to: 81
+  to: 83
 - from: 60000
   to: 800
 env:

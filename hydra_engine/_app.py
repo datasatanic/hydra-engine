@@ -1,10 +1,6 @@
 import logging
 import os
-import json
-import uuid
-import re
-
-import yaml
+import ruamel.yaml
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -18,6 +14,7 @@ from hydra_engine.schemas import add_node, HydraParametersInfo, add_additional_f
 from hydra_engine.search.index_schema import HydraIndexScheme
 from hydra_engine.search.searcher import HydraSearcher
 
+yaml = ruamel.yaml.YAML(typ="rt")
 logger = logging.getLogger("common_logger")
 base_dir = os.path.dirname(os.path.abspath(__file__))
 app_static = FastAPI()
@@ -74,7 +71,7 @@ def read_controls_file(directory):
         for name in files:
             if name == "ui.meta":
                 with open(os.path.join(root, name), 'r') as stream:
-                    data_loaded = yaml.safe_load(stream)
+                    data_loaded = yaml.load(stream)
                     for obj in data_loaded:
                         path = obj.split("/")
                         add_node(path, int(data_loaded[obj]["id"]), data_loaded[obj]["type"])

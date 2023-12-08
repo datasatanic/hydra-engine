@@ -1,10 +1,13 @@
-import json
+import commentjson as json
 import hashlib
 import logging
-import yaml
+import ruamel.yaml
 import os
 
+from commentjson import commentjson
+
 logger = logging.getLogger("common_logger")
+yaml = ruamel.yaml.YAML(typ="rt")
 
 
 class SingletonMeta(type):
@@ -67,14 +70,14 @@ def parse_meta_params():
     elements_yaml.clear()
     ui_meta_data = {}
     with open(os.path.join(base_dir, "files/ui.meta"), 'r') as stream:
-        data = yaml.safe_load(stream)
+        data = yaml.load(stream)
         for key in data:
             ui_meta_data[data[key]["id"]] = key
     for root, dirs, files in os.walk(os.path.join(base_dir, "files")):
         for filename in files:
             if "meta" in filename and filename != "ui.meta":
                 with open(os.path.join(root, filename), 'r') as stream:
-                    data_loaded = yaml.safe_load(stream)
+                    data_loaded = yaml.load(stream)
                     _elements = data_loaded["PARAMS"]
                     for el in _elements:
                         for key in el:
@@ -97,7 +100,7 @@ def parse_elements_fileinfo():
             if "meta" in filename and filename != "ui.meta":
                 if os.path.isfile(os.path.join(root, filename)):
                     with open(os.path.join(root, filename), 'r') as stream:
-                        data_loaded = yaml.safe_load(stream)
+                        data_loaded = yaml.load(stream)
                         if data_loaded is not None:
                             _elements = data_loaded["FILE"]
                             elements_files_info.append(_elements)
@@ -111,14 +114,14 @@ def parse_value_files():
     for file in elements_files_info:
         if file["type"] == "json":
             with open(os.path.join(base_dir, file["path"]), 'r') as stream:
-                data_loaded = json.load(stream)
+                data_loaded = commentjson.load(stream)
                 value_instance = ValuesInstance(file["type"], file["path"],
                                                 hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
                                                 data_loaded)
                 elements_json.append(value_instance)
         if file["type"] == "yaml":
             with open(os.path.join(base_dir, file["path"]), 'r') as stream:
-                data_loaded = yaml.safe_load(stream)
+                data_loaded = yaml.load(stream)
                 value_instance = ValuesInstance(file["type"], file["path"],
                                                 hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
                                                 data_loaded)
@@ -129,9 +132,9 @@ def write_file(data, file_path, file_type, key, value):
     try:
         with open(os.path.join(base_dir, file_path), 'w') as file:
             if file_type == "json":
-                file.write(json.dumps(data, sort_keys=False))
+                commentjson.dump(data, file, indent=2)
             if file_type == "yaml":
-                file.write(yaml.safe_dump(data, sort_keys=False))
+                yaml.dump(data, file)
         logger.info(f"File {file_path} was modified to value {value} in parameter {key}")
         file.close()
     except Exception as e:
