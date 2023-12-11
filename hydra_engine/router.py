@@ -2,25 +2,23 @@ import copy
 import logging
 import subprocess
 
-from schemas import ParameterSaveInfo
-
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Query
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 
-from hydra_engine.schemas import tree, get_element_info, set_value, get_value
+from hydra_engine.schemas import set_value, HydraParametersInfo, ParameterSaveInfo,filter_tree,find_form
 from hydra_engine.search.searcher import HydraSearcher
 
 logger = logging.getLogger("common_logger")
-router = APIRouter(prefix="/hydra")
+router = APIRouter(prefix="/hydra", tags=["hydra"])
 templates = Jinja2Templates(directory="hydra_engine/static")
 
 
 @router.get("/tree")
 def get_forms():
     try:
-        forms = filter_tree(copy.deepcopy(tree))
+        forms = filter_tree(copy.deepcopy(HydraParametersInfo().get_tree_structure()))
         return JSONResponse(content=jsonable_encoder(forms), status_code=200)
     except FileNotFoundError:
         return JSONResponse(content={"detail": "File or directory not found"}, status_code=400)
@@ -28,18 +26,8 @@ def get_forms():
 
 @router.get("/tree/{name:path}")
 def get_form_info(name: str):
-    groups = find_groups(name.split("/"), copy.deepcopy(tree))
-    return JSONResponse(content=jsonable_encoder(groups), status_code=200)
-
-
-@router.get("/elements/info/{input_url:path}")
-def get_element(input_url: str, file_path):
-    return JSONResponse(get_element_info(input_url, file_path).__dict__)
-
-
-@router.get("/element/value/{file_id}/{input_url:path}")
-def get_element_value(input_url: str, file_id: str):
-    return get_value(input_url, file_id)
+    form = find_form(name.split("/"), copy.deepcopy(HydraParametersInfo().get_tree_structure()))
+    return JSONResponse(content=jsonable_encoder(form), status_code=200)
 
 
 @router.post("/elements/values")
@@ -60,7 +48,7 @@ def reset():
 
 @router.post("/debug_s1")
 def debug1():
-    return tree
+    return HydraParametersInfo().get_tree_structure()
 
 
 @router.get("/search")
@@ -73,34 +61,3 @@ async def search(q,
     results = await HydraSearcher().perform_search(q, pagenum, pagelen)
     return JSONResponse(content=results) if results != 'not exists' else JSONResponse(content={'index': results})
 
-
-def filter_tree(all_tree):
-    """
-        Deletes empty nodes with no child elements
-    """
-    tree_filter = all_tree
-    keys = list(tree_filter)
-    for key in keys:
-        tree_filter[key].elem.clear()
-        if tree_filter[key].type == "group":
-            tree_filter.pop(key)
-        else:
-            filter_tree(tree_filter[key].child)
-    return tree_filter
-
-
-def find_groups(path, all_tree):
-    """
-        Find child forms and groups of current form
-    """
-    name = path[0]
-    if name in all_tree:
-        if len(path) > 1:
-            path.remove(name)
-            return find_groups(path, all_tree[name].child)
-        else:
-            for child_name in all_tree[name].child:
-                if all_tree[name].child[child_name].type == "form":
-                    all_tree[name].child[child_name].elem.clear()
-                    all_tree[name].child[child_name].child.clear()
-            return {name: all_tree[name]}

@@ -1,0 +1,21 @@
+root:
+  display_name: Main
+  description: Main window
+  type: form
+  id: w1
+root/service1:
+  display_name: Service1
+  type: form
+  id: w2
+  condition:
+    - root:
+        equals:
+          - service1
+root/service2:
+  display_name: Service2
+  type: form
+  id: w3
+  condition:
+    - root:
+        equals:
+          - service2

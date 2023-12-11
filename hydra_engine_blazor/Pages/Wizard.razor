@@ -1,0 +1,18 @@
+﻿@using hydra_engine_blazor.Models
+@inject WizardContainer WizardContainer
+
+@page "/wizard/{*Output_URL}"
+<h3>Wizard</h3>
+
+@code {
+    [Parameter]
+    public string Output_URL { get; set; }
+    private ControlsMeta currentControlsMeta=new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var query = WizardContainer.GetFormInfo(Output_URL);
+        if (query != null) JsonParser.DeserializeTree(query.ToString(),currentControlsMeta,currentControlsMeta.Child);
+    }
+
+}

@@ -6,11 +6,11 @@ import ruamel.yaml
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette_prometheus import metrics, PrometheusMiddleware
 
-from hydra_engine import router
+from schemas import Condition
+from hydra_engine import router, wizard_router
 from hydra_engine.parser import parse_config_files
 from hydra_engine.schemas import add_node, HydraParametersInfo, add_additional_fields
 from hydra_engine.search.index_schema import HydraIndexScheme
@@ -25,7 +25,8 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 async def startup_event(app: FastAPI):
     logger.debug("Start parsing directory")
     parse_config_files()
-    read_controls_file(os.path.join(base_dir, "files"))
+    read_ui_file(os.path.join(base_dir, "files"))
+    read_wizard_file(os.path.join(base_dir, "files"))
     logger.debug("Directory has been parsed successfully")
     await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
     yield
@@ -46,7 +47,7 @@ app_static.add_middleware(PrometheusMiddleware)
 app_static.get("/metrics", name='metrics')(metrics)
 app = FastAPI()
 app.include_router(router=router.router)
-
+app.include_router(router=wizard_router.router)
 app_static.mount("/api", app, "hydra_engine_api")
 templates = Jinja2Templates(directory="hydra_engine/static")
 
@@ -59,7 +60,7 @@ async def stats():
 app_static.mount("/", StaticFiles(directory=os.path.join(base_dir, "wwwroot"), html=True), "client")
 
 
-def read_controls_file(directory):
+def read_ui_file(directory):
     """
         Reads meta file of tree and creates structured tree
     """
@@ -71,7 +72,33 @@ def read_controls_file(directory):
                     data_loaded = yaml.load(stream)
                     for obj in data_loaded:
                         path = obj.split("/")
-                        add_node(path, int(data_loaded[obj]["id"]), data_loaded[obj]["type"])
+                        add_node(path, data_loaded[obj]["id"], data_loaded[obj]["type"])
                         add_additional_fields(path, "display_name", data_loaded[obj]["display_name"])
                         if "description" in data_loaded[obj]:
                             add_additional_fields(path, "description", data_loaded[obj]["description"])
+
+
+def read_wizard_file(directory):
+    """
+        Reads meta file of wizard tree and creates structured tree
+    """
+    HydraParametersInfo().wizard_tree.clear()
+    for root, dirs, files in os.walk(directory):
+        for name in files:
+            if name == "wizard.meta":
+                with open(os.path.join(root, name), 'r') as stream:
+                    data_loaded = yaml.load(stream)
+                    for obj in data_loaded:
+                        path = obj.split("/")
+                        condition_list = []
+                        if "condition" in data_loaded[obj]:
+                            condition_data = data_loaded[obj]["condition"]
+                            for condition in condition_data:
+                                for key in condition:
+                                    condition_schema = Condition(key=key, allow=condition[key])
+                                    condition_list.append(condition_schema)
+                        add_node(path, data_loaded[obj]["id"], data_loaded[obj]["type"], condition=condition_list,
+                                 is_wizard=True)
+                        add_additional_fields(path, "display_name", data_loaded[obj]["display_name"], is_wizard=True)
+                        if "description" in data_loaded[obj]:
+                            add_additional_fields(path, "description", data_loaded[obj]["description"], is_wizard=True)

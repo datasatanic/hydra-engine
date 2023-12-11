@@ -2,7 +2,7 @@ import os
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from hydra_engine._app import parse_config_files, read_controls_file
+from hydra_engine._app import parse_config_files, read_ui_file,read_wizard_file
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -12,7 +12,8 @@ class EventHandler(FileSystemEventHandler):
     def on_any_event(self, event):
         if not event.is_directory:
             parse_config_files()
-            read_controls_file(os.path.join(base_dir, "files"))
+            read_ui_file(os.path.join(base_dir, "files"))
+            read_wizard_file(os.path.join(base_dir, "files"))
 
 
 def start_monitoring_files():

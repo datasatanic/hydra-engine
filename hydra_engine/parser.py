@@ -20,6 +20,7 @@ class SingletonMeta(type):
 class HydraParametersInfo(metaclass=SingletonMeta):
     def __init__(self):
         self.tree = {}
+        self.wizard_tree = {}
         self.elements_files_info = None
         self.elements_values = None
         self.elements_meta = None
@@ -35,6 +36,9 @@ class HydraParametersInfo(metaclass=SingletonMeta):
 
     def get_tree_structure(self):
         return self.tree
+
+    def get_wizard_tree_structure(self):
+        return self.wizard_tree
 
     def set_lists(self, l1, l2, l3):
         self.elements_files_info = l1
@@ -73,7 +77,7 @@ def parse_meta_params():
             ui_meta_data[data[key]["id"]] = key
     for root, dirs, files in os.walk(os.path.join(base_dir, "files")):
         for filename in files:
-            if "meta" in filename and filename != "ui.meta":
+            if "meta" in filename and filename != "ui.meta" and filename != "wizard.meta":
                 with open(os.path.join(root, filename), 'r') as stream:
                     data_loaded = yaml.load(stream)
                     _elements = data_loaded["PARAMS"]
@@ -95,7 +99,7 @@ def parse_elements_fileinfo():
     elements_files_info.clear()
     for root, dirs, files in os.walk(os.path.join(base_dir, "files")):
         for filename in files:
-            if "meta" in filename and filename != "ui.meta":
+            if "meta" in filename and filename != "ui.meta" and filename != "wizard.meta":
                 if os.path.isfile(os.path.join(root, filename)):
                     with open(os.path.join(root, filename), 'r') as stream:
                         data_loaded = yaml.load(stream)

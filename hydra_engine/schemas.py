@@ -1,13 +1,14 @@
 import json
 import yaml
 import maya
-from typing import List, Literal
+from typing import List, Literal, Dict
 from pydantic import BaseModel, validator, Extra, root_validator
 from hydra_engine.parser import write_file, HydraParametersInfo
 import logging
 import re
 
 tree = HydraParametersInfo().tree
+wizard_tree = HydraParametersInfo().wizard_tree
 logger = logging.getLogger('common_logger')
 
 types = Literal["string", "int", "bool", "datetime", "range", "array"]
@@ -386,18 +387,34 @@ class Node(BaseModel):
         extra = Extra.allow
 
 
-def add_node(_list, path_id, node_type):
+class Condition(BaseModel):
+    key: str
+    allow: Dict[str, list]
+
+
+class WizardNode(Node):
+    condition: list[Condition]
+
+
+def add_node(_list, path_id, node_type, condition=None, is_wizard=False):
     level = len(_list)
     if level == 1:
-        node = Node(elem=[], child={}, type=node_type)
+        if not is_wizard:
+            node = Node(elem=[], child={}, type=node_type)
+        else:
+            node = WizardNode(elem=[], child={}, type=node_type, condition=condition)
         node.elem = get_elements(path_id)
         d = {_list[0]: node}
-        tree.update(d)
+        tree.update(d) if not is_wizard else wizard_tree.update(d)
     else:
-        add_node_subtree(tree, 0, _list, path_id, node_type)
+        add_node_subtree(tree, 0, _list, path_id, node_type) if not is_wizard else add_node_subtree(wizard_tree, 0,
+                                                                                                    _list, path_id,
+                                                                                                    node_type,
+                                                                                                    condition=condition,
+                                                                                                    is_wizard=True)
 
 
-def add_node_subtree(subtree, j, _list, path_id, node_type):
+def add_node_subtree(subtree, j, _list, path_id, node_type, condition=None, is_wizard=False):
     n = len(subtree)
     for i in range(0, n):
         if _list[j] in subtree:
@@ -406,23 +423,26 @@ def add_node_subtree(subtree, j, _list, path_id, node_type):
             subtree = subtree[_list[j]].child
             j += 1
             if j == len(_list) - 1:
-                node = Node(elem=[], child={}, type=node_type)
+                if not is_wizard:
+                    node = Node(elem=[], child={}, type=node_type)
+                else:
+                    node = WizardNode(elem=[], child={}, type=node_type, condition=condition)
                 node.elem = get_elements(path_id)
                 d = {_list[j]: node}
                 subtree.update(d)
                 return
-            add_node_subtree(subtree, j, _list, path_id, node_type)
+            add_node_subtree(subtree, j, _list, path_id, node_type, condition, is_wizard)
 
 
-def add_additional_fields(node_list, additional_key, additional_value):
-    node = find_node(node_list)
+def add_additional_fields(node_list, additional_key, additional_value, is_wizard=False):
+    node = find_node(node_list, is_wizard)
     if additional_key in node.__dict__:
         raise ValueError("Not valid file")
     node.__dict__[additional_key] = additional_value.replace('"', '').strip()
 
 
-def find_node(node_list):
-    subtree = tree
+def find_node(node_list, is_wizard=False):
+    subtree = tree if not is_wizard else wizard_tree
     find = {}
     for node in node_list:
         find = subtree[node] if node in subtree else find
@@ -509,3 +529,35 @@ def get_element_info(input_url, uid: str):
                     logger.error(
                         f"Error {e} in file {elements_files_info[elements_meta.index(elements)]['path']} in parameter {input_url}")
                 return elem_info
+
+
+def filter_tree(all_tree):
+    """
+        Deletes empty nodes with no child elements
+    """
+    tree_filter = all_tree
+    keys = list(tree_filter)
+    for key in keys:
+        tree_filter[key].elem.clear()
+        if tree_filter[key].type == "group":
+            tree_filter.pop(key)
+        else:
+            filter_tree(tree_filter[key].child)
+    return tree_filter
+
+
+def find_form(path, all_tree):
+    """
+        Find child forms and groups of current form
+    """
+    name = path[0]
+    if name in all_tree:
+        if len(path) > 1:
+            path.remove(name)
+            return find_form(path, all_tree[name].child)
+        else:
+            for child_name in all_tree[name].child:
+                if all_tree[name].child[child_name].type == "form":
+                    all_tree[name].child[child_name].elem.clear()
+                    all_tree[name].child[child_name].child.clear()
+            return {name: all_tree[name]}

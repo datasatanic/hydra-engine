@@ -1,5 +1,5 @@
 import typer
-from _app import read_controls_file, parse_config_files
+from _app import read_ui_file, parse_config_files
 from schemas import ElemInfo
 
 validator = typer.Typer()
@@ -8,4 +8,4 @@ validator = typer.Typer()
 @validator.command()
 def validate():
     parse_config_files()
-    read_controls_file("files")
+    read_ui_file("files")
