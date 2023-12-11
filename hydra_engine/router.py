@@ -1,13 +1,12 @@
 import copy
 import logging
-import json
 import subprocess
-import os
-import uuid
+
+from schemas import ParameterSaveInfo
 
 from fastapi import APIRouter, Query, Request
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, FileResponse, PlainTextResponse, HTMLResponse
+from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from hydra_engine.schemas import tree, get_element_info, set_value, get_value
@@ -43,10 +42,10 @@ def get_element_value(input_url: str, file_id: str):
     return get_value(input_url, file_id)
 
 
-@router.post("/elements/values", response_class=HTMLResponse)
-async def set_values(content: list):
+@router.post("/elements/values")
+async def set_values(content: list[ParameterSaveInfo]):
     for item in content:
-        set_value(item["Value"]["Key"], item["Key"], item["Value"]["Value"])
+        set_value(item.input_url, item.file_id, item.value)
 
 
 @router.post("/configuration")

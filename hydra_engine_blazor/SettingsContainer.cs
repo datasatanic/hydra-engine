@@ -95,7 +95,7 @@ public class SettingsContainer
     /// <param name="FilePath"></param>
     public async Task<HttpResponseMessage> SetValues(List<KeyValuePair<string,ElemInfo>> changeElements)
     {
-        var saveElements = changeElements.Select(element => new KeyValuePair<string, KeyValuePair<string, object>>(element.Value.fileId, new KeyValuePair<string, object>(element.Key, element.Value.value))).ToList();
+        var saveElements = changeElements.Select(element => new ParameterSaveInfo(){File_id = element.Value.fileId,Input_url = element.Key,Value = element.Value.value}).ToList();
         var json = JsonSerializer.Serialize(saveElements, options);
         HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
         return await _client.PostAsync($"api/hydra/elements/values",content);

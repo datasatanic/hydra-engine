@@ -1,5 +1,7 @@
 import logging
 import os
+from contextlib import asynccontextmanager
+
 import ruamel.yaml
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,7 +19,19 @@ from hydra_engine.search.searcher import HydraSearcher
 yaml = ruamel.yaml.YAML(typ="rt")
 logger = logging.getLogger("common_logger")
 base_dir = os.path.dirname(os.path.abspath(__file__))
-app_static = FastAPI()
+
+
+@asynccontextmanager
+async def startup_event(app: FastAPI):
+    logger.debug("Start parsing directory")
+    parse_config_files()
+    read_controls_file(os.path.join(base_dir, "files"))
+    logger.debug("Directory has been parsed successfully")
+    await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
+    yield
+
+
+app_static = FastAPI(lifespan=startup_event)
 
 app_static.add_middleware(
     CORSMiddleware,
@@ -40,23 +54,6 @@ templates = Jinja2Templates(directory="hydra_engine/static")
 @app_static.get('/health')
 async def stats():
     return {'service': 'hydra-engine', 'status': 'Serve'}
-
-
-@app_static.get("/hydra_engine/static/{url:path}", response_class=FileResponse)
-def get_template_statics(url: str):
-    for root, dirs, files in os.walk("/code/hydra_engine/static"):
-        for file in files:
-            if os.path.join(root, file) == os.path.join("/code/hydra_engine/static", url):
-                return os.path.join(root, file)
-
-
-@app_static.on_event("startup")
-async def startup_event():
-    logger.debug("Start parsing directory")
-    parse_config_files()
-    read_controls_file(os.path.join(base_dir, "files"))
-    logger.debug("Directory has been parsed successfully")
-    await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
 
 
 app_static.mount("/", StaticFiles(directory=os.path.join(base_dir, "wwwroot"), html=True), "client")
