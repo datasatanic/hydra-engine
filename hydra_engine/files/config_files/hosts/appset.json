@@ -6,10 +6,13 @@
       "Microsoft.Hosting.Lifetime": "Information"
     }
   },
-  "AllowedHosts": "[\"host1\",\"host2\"]",
+  "AllowedHosts": [
+    "host1",
+    "host2"
+  ],
   "Auth": {
     "Authority": "https://192.168.75.196/realms/CCFA",
-    "RequireHttpsMetadata": false,
+    "RequireHttpsMetadata": true,
     "Audience": "W12321"
   },
   "ConnectionStrings": {

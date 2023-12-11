@@ -125,9 +125,7 @@
     [Parameter]
     public string Output_URL { get; set; }
     IJSObjectReference? _module;
-    private Modal PlanModalWindow { get; set; } = new();
     private Modal ResetModalWindow { get; set; } = new();
-    private PlanModel Model{get;}=new();
     private ResetModel ResetModel { get; } = new();
     private List<ControlsMeta> groups;
     private List<ControlsMeta> forms;

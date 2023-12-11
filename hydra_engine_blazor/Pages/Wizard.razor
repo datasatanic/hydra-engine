@@ -1,18 +1,52 @@
 ﻿@using hydra_engine_blazor.Models
+@using DefaultNamespace
 @inject WizardContainer WizardContainer
+@inject NavigationManager Navigation
 
 @page "/wizard/{*Output_URL}"
-<h3>Wizard</h3>
+<button @onclick="async ()=> await WizardModal.Open()">Open</button>
+<Modal Model="WizardModel" @ref="WizardModal">
+    <Header>
+        <h2 class="title">@WizardModel.Title</h2>
+    </Header>
+    <Body>
+    @foreach (var item in currentControlsMeta.Child.Where(item => item.Type.Equals("form")))
+    {
+        <div class="forms-link-container">
+            @{var href = "/wizard/"+ Output_URL + "/" + item.Name;}
+            <a class="path" href="@href">Link to @item.DisplayName</a>
+        </div>
+    }
+    </Body>
+    <Footer>
+        <button type="reset" @onclick="PrevCallback">Back</button>
+        <button type="submit">Next</button>
+    </Footer>
+</Modal>
 
 @code {
     [Parameter]
     public string Output_URL { get; set; }
-    private ControlsMeta currentControlsMeta=new();
+
+    private ControlsMeta currentControlsMeta = new();
+    private WizardModel WizardModel = new();
+    private Modal WizardModal = new();
 
     protected override async Task OnParametersSetAsync()
     {
-        var query = WizardContainer.GetFormInfo(Output_URL);
+        currentControlsMeta = new ControlsMeta();
+        var query = await WizardContainer.GetFormInfo(Output_URL);
         if (query != null) JsonParser.DeserializeTree(query.ToString(),currentControlsMeta,currentControlsMeta.Child);
+        WizardModel.Title = currentControlsMeta.DisplayName;
+    }
+
+    private async Task PrevCallback()
+    {
+        var urlList = Output_URL.Split("/").ToList();
+        urlList.Remove(urlList.Last());
+        if (urlList.Count == 0) await WizardModal.Close();
+        Output_URL = string.Join("/", urlList);
+        Navigation.NavigateTo($"/wizard/{Output_URL}");
     }
 
 }

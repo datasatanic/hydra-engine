@@ -14,5 +14,6 @@ builder.Services
 
 
 builder.Services.AddSingleton<SettingsContainer>();
+builder.Services.AddSingleton<WizardContainer>();
 builder.Services.AddBlazoredToast();
 await builder.Build().RunAsync();

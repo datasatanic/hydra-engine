@@ -21,14 +21,19 @@ public class ControlsMeta
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [JsonPropertyName("display_name")]
     public string DisplayName { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [JsonPropertyName("condition")]
+    public List<Condition> Condition{ get; set; }
 
-    public ControlsMeta(string name,List<ControlsMeta> child, List<Dictionary<string,ElemInfo>> elem, string description,string displayName)
+    public ControlsMeta(string name,List<ControlsMeta> child, List<Dictionary<string,ElemInfo>> elem, string description,string displayName,List<Condition> condition)
     {
         Name = name;
         Child = child;
         Description = description;
         DisplayName = displayName;
         Elem = elem;
+        Condition = condition;
     }
 
     public ControlsMeta()
