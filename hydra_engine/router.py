@@ -99,4 +99,8 @@ def find_groups(path, all_tree):
             path.remove(name)
             return find_groups(path, all_tree[name].child)
         else:
+            for child_name in all_tree[name].child:
+                if all_tree[name].child[child_name].type == "form":
+                    all_tree[name].child[child_name].elem.clear()
+                    all_tree[name].child[child_name].child.clear()
             return {name: all_tree[name]}

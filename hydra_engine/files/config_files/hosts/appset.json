@@ -13,7 +13,7 @@
     "Audience": "W12321"
   },
   "ConnectionStrings": {
-    "Rex": "http://192.168.75.214",
+    "Rex": "http://192.168.75.2147",
     "CONSUL_ADDR": "http://127.0.0.1:8500"
   },
   "PG": {
