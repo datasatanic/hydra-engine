@@ -4,7 +4,7 @@ root:
   type: form
   id: w1
 root/service1:
-  display_name: Service1
+  display_name: form1
   type: form
   id: w2
   condition:
@@ -12,11 +12,11 @@ root/service1:
         equals:
           - service1
           - service
-root/service2:
-  display_name: Service2
+root/service1/service2:
+  display_name: form2
   type: form
   id: w3
-  condition:
-    - PG/ClusterName:
-        equals:
-          - service2
+root/service1/service2/service3:
+  display_name: form3
+  type: form
+  id: w4

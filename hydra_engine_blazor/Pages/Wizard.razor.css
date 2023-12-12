@@ -1,0 +1,16 @@
+﻿::deep .modal-header,::deep .modal-body,::deep .modal-footer{
+    min-width: 560px;
+    max-width: 75vw;
+}
+::deep .modal-body{
+    max-height: 50vh;
+}
+.prev-next-container{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.next-button{
+    margin-left: auto;
+}

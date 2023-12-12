@@ -6,36 +6,50 @@
 
 @page "/wizard/{*Output_URL}"
 <button @onclick="async ()=> await WizardModal.Open()">Open</button>
-<Modal Model="WizardModel" @ref="WizardModal">
-    <Header>
-        <h2 class="title">@WizardModel.Title</h2>
-    </Header>
-    <Body>
-    @foreach (var elem in currentControlsMeta.Elem)
-    {
-        var id = elem.Keys.ToList()[0];
-        <div>
-            @foreach (var kvp in elem)
+<div class="wizard-container">
+    <Modal Model="WizardModel" @ref="WizardModal">
+        <Header>
+            <h2 class="title">@WizardModel.Title</h2>
+        </Header>
+        <Body>
+        @foreach (var elem in currentControlsMeta.Elem)
+        {
+            var id = elem.Keys.ToList()[0];
+            <div>
+                @foreach (var kvp in elem)
+                {
+                    <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
+                    </ElemComponent>
+                }
+            </div>
+        }
+        @foreach (var item in currentControlsMeta.Child.Where(item => item.Type.Equals("form")))
+        {
+            @if (currentControlsMeta.Child.Count(x => x.Type.Equals("form")) <= 1)
             {
-                <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
-                </ElemComponent>
+                continue;
             }
-        </div>
-    }
-    @foreach (var item in currentControlsMeta.Child.Where(item => item.Type.Equals("form")))
-    {
-        <div>
-            <input type="radio" checked="@($"{Output_URL}/{item.Name}" == nextFormUrl)" value="@item.DisplayName" @onchange="@(() => SelectForm(@item.Name))"/>
-            <p>@item.DisplayName</p>
-        </div>
-
-    }
-    </Body>
-    <Footer>
-        <button type="reset" @onclick="PrevCallback">Back</button>
-        <button type="submit" @onclick="NextCallback">Next</button>
-    </Footer>
-</Modal>
+            <div>
+                <input type="radio" checked="@($"{Output_URL}/{item.Name}" == nextFormUrl)" value="@item.DisplayName" @onchange="@(() => SelectForm(@item.Name))"/>
+                <p>@item.DisplayName</p>
+            </div>
+        }
+        </Body>
+        <Footer>
+            <div class="prev-next-container">
+                @if (Output_URL.Split("/").Length > 1)
+                {
+                    <button type="reset" @onclick="PrevCallback">Back</button>
+                }
+                @if (currentControlsMeta.Child.Count > 0)
+                {
+                    <button type="submit" class="next-button" @onclick="NextCallback">Next</button>
+                }
+            </div>
+            
+        </Footer>
+    </Modal>
+</div>
 
 @code {
     [Parameter]
@@ -54,6 +68,15 @@
         var query = await WizardContainer.GetFormInfo(Output_URL);
         if (query != null) JsonParser.DeserializeTree(query.ToString(),currentControlsMeta,currentControlsMeta.Child);
         WizardModel.Title = currentControlsMeta.DisplayName;
+        if (currentControlsMeta.Child.Count > 0)
+        {
+            nextFormUrl = Output_URL + "/" + currentControlsMeta.Child.Where(item => item.Type == "form").ToList()[0].Name;
+        }
+        else
+        {
+            nextFormUrl = "";
+        }
+        
     }
 
     private async Task PrevCallback()
