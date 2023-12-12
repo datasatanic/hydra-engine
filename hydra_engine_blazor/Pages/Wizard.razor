@@ -1,5 +1,6 @@
 ﻿@using hydra_engine_blazor.Models
 @using DefaultNamespace
+@using System.Text.Json
 @inject WizardContainer WizardContainer
 @inject NavigationManager Navigation
 
@@ -71,10 +72,33 @@
 
     private async Task NextCallback()
     {
-        var allow = new Dictionary<string, List<object>>();
-        allow.Add("equals", new List<object>(){"service1"});
         var condition = new List<Condition>();
-        condition.Add(new Condition() { Key = Output_URL.Split("/")[^1], Allow = allow });
+        var conditions = currentControlsMeta.Child.Find(item => Output_URL + "/" + item.Name == nextFormUrl)?.Condition;
+        if (conditions != null)
+            foreach (var cond in conditions)
+            {
+                var values = new List<object>();
+                var allow = new Dictionary<string, List<object>>();
+                foreach (var elem in currentControlsMeta.Elem.Where(item => item.ContainsKey(cond.Key)))
+                {
+                    foreach (var kvp in elem)
+                    {
+                        var findEl = changeElements.Find(item => item.Key == kvp.Key);
+                        if (!string.IsNullOrEmpty(findEl.Key))
+                        {
+                            values.Add(findEl.Value.value);
+                            allow.Add("equals", values);
+                            condition.Add(new Condition() { Key = findEl.Key, Allow = allow });
+                        }
+                        else
+                        {
+                            values.Add(kvp.Value.value);
+                            allow.Add("equals", values);
+                            condition.Add(new Condition() { Key = kvp.Key, Allow = allow });
+                        }
+                    }
+                }
+            }
         var response = await WizardContainer.CheckCondition(nextFormUrl, condition);
         if (response.IsSuccessStatusCode)
         {

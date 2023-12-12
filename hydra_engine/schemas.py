@@ -395,10 +395,11 @@ class Condition(BaseModel):
         if self.key == other.key:
             for k in self.allow:
                 if k in other.allow:
-
-                    continue
-                else:
-                    return False
+                    for el in other.allow[k]:
+                        if el in self.allow[k]:
+                            continue
+                        else:
+                            return False
             return True
         else:
             return False
