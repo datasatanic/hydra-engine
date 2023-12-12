@@ -42,3 +42,13 @@ PARAMS:
         control: checkbox_control
         display_name: "auth require https Metadata"
         constraints:
+  - PG/ClusterName:
+      type: string
+      readonly: False
+      sub_type:
+      description: "Cluster name"
+      id: w1
+      render:
+        control: input_control
+        display_name: "Cluster name"
+        constraints:

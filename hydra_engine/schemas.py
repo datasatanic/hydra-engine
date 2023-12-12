@@ -391,6 +391,18 @@ class Condition(BaseModel):
     key: str
     allow: Dict[str, list]
 
+    def __eq__(self, other):
+        if self.key == other.key:
+            for k in self.allow:
+                if k in other.allow:
+
+                    continue
+                else:
+                    return False
+            return True
+        else:
+            return False
+
 
 class WizardNode(Node):
     condition: list[Condition]

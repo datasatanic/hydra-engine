@@ -5,7 +5,7 @@ from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
-from hydra_engine.schemas import HydraParametersInfo, find_form
+from hydra_engine.schemas import HydraParametersInfo, find_form, Condition
 
 logger = logging.getLogger("common_logger")
 router = APIRouter(prefix="/wizard", tags=["wizard"])
@@ -24,3 +24,12 @@ def get_wizard_tree():
 def get_wizard_form(name: str):
     form = find_form(name.split("/"), copy.deepcopy(HydraParametersInfo().get_wizard_tree_structure()))
     return JSONResponse(content=jsonable_encoder(form), status_code=200)
+
+
+@router.post("/form/condition")
+def check_condition(path, condition: list[Condition]):
+    form = find_form(path.split("/"), copy.deepcopy(HydraParametersInfo().get_wizard_tree_structure()))
+    form_condition = form[path.split("/")[-1]].condition
+    if form_condition == condition:
+        return JSONResponse(content={"equals": True}, status_code=200)
+    return JSONResponse(content={"info": "Not valid form condition"}, status_code=400)

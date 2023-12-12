@@ -8,14 +8,15 @@ root/service1:
   type: form
   id: w2
   condition:
-    - root:
+    - PG/ClusterName:
         equals:
           - service1
+          - service
 root/service2:
   display_name: Service2
   type: form
   id: w3
   condition:
-    - root:
+    - PG/ClusterName:
         equals:
           - service2

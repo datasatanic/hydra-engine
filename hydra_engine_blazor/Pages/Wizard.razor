@@ -10,17 +10,29 @@
         <h2 class="title">@WizardModel.Title</h2>
     </Header>
     <Body>
+    @foreach (var elem in currentControlsMeta.Elem)
+    {
+        var id = elem.Keys.ToList()[0];
+        <div>
+            @foreach (var kvp in elem)
+            {
+                <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
+                </ElemComponent>
+            }
+        </div>
+    }
     @foreach (var item in currentControlsMeta.Child.Where(item => item.Type.Equals("form")))
     {
-        <div class="forms-link-container">
-            @{var href = "/wizard/"+ Output_URL + "/" + item.Name;}
-            <a class="path" href="@href">Link to @item.DisplayName</a>
+        <div>
+            <input type="radio" checked="@($"{Output_URL}/{item.Name}" == nextFormUrl)" value="@item.DisplayName" @onchange="@(() => SelectForm(@item.Name))"/>
+            <p>@item.DisplayName</p>
         </div>
+
     }
     </Body>
     <Footer>
         <button type="reset" @onclick="PrevCallback">Back</button>
-        <button type="submit">Next</button>
+        <button type="submit" @onclick="NextCallback">Next</button>
     </Footer>
 </Modal>
 
@@ -31,10 +43,13 @@
     private ControlsMeta currentControlsMeta = new();
     private WizardModel WizardModel = new();
     private Modal WizardModal = new();
+    private string nextFormUrl = "";
+    private List<KeyValuePair<string, ElemInfo>> changeElements = new();
 
     protected override async Task OnParametersSetAsync()
     {
         currentControlsMeta = new ControlsMeta();
+        changeElements.Clear();
         var query = await WizardContainer.GetFormInfo(Output_URL);
         if (query != null) JsonParser.DeserializeTree(query.ToString(),currentControlsMeta,currentControlsMeta.Child);
         WizardModel.Title = currentControlsMeta.DisplayName;
@@ -47,6 +62,40 @@
         if (urlList.Count == 0) await WizardModal.Close();
         Output_URL = string.Join("/", urlList);
         Navigation.NavigateTo($"/wizard/{Output_URL}");
+    }
+
+    private void SelectForm(string formName)
+    {
+        nextFormUrl = $"{Output_URL}/{formName}";
+    }
+
+    private async Task NextCallback()
+    {
+        var allow = new Dictionary<string, List<object>>();
+        allow.Add("equals", new List<object>(){"service1"});
+        var condition = new List<Condition>();
+        condition.Add(new Condition() { Key = Output_URL.Split("/")[^1], Allow = allow });
+        var response = await WizardContainer.CheckCondition(nextFormUrl, condition);
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo($"/wizard/{nextFormUrl}");
+        }
+    }
+    private void ChangeValue(ElemInfo obj,string key)
+    {
+        var elem = new KeyValuePair<string, ElemInfo>(key, obj);
+        if (changeElements.Exists(item=>item.Key.Equals(elem.Key)))
+        {
+            var existElem = changeElements.Find(item => item.Key.Equals(elem.Key));
+            var index = changeElements.IndexOf(existElem);
+            changeElements.RemoveAt(index);
+            changeElements.Insert(index,elem);
+        }
+        else
+        {
+            changeElements.Add(elem);
+        }
+        
     }
 
 }
