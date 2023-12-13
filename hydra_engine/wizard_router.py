@@ -22,7 +22,13 @@ def get_wizard_tree():
 
 @router.get("/tree/{name:path}")
 def get_wizard_form(name: str):
-    form = find_form(name.split("/"), copy.deepcopy(HydraParametersInfo().get_wizard_tree_structure()))
+    if name is None or name == "":
+        root = copy.deepcopy(HydraParametersInfo().get_wizard_tree_structure())
+        [root[key].child.clear() for key in root]
+        [root[key].elem.clear() for key in root]
+        return JSONResponse(content=jsonable_encoder(root),
+                            status_code=200)
+    form = find_form(name.split("/"), copy.deepcopy(HydraParametersInfo().get_wizard_tree_structure()), is_wizard=True)
     return JSONResponse(content=jsonable_encoder(form), status_code=200)
 
 

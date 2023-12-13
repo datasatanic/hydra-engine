@@ -559,7 +559,7 @@ def filter_tree(all_tree):
     return tree_filter
 
 
-def find_form(path, all_tree):
+def find_form(path, all_tree,is_wizard=False):
     """
         Find child forms and groups of current form
     """
@@ -573,4 +573,7 @@ def find_form(path, all_tree):
                 if all_tree[name].child[child_name].type == "form":
                     all_tree[name].child[child_name].elem.clear()
                     all_tree[name].child[child_name].child.clear()
+                    if is_wizard:
+                        condition = all_tree[name].child[child_name].condition
+                        [cond.allow.clear() for cond in condition]
             return {name: all_tree[name]}

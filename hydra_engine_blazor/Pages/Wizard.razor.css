@@ -14,3 +14,9 @@
 .next-button{
     margin-left: auto;
 }
+.open-wizard-button{
+    height: 38px;
+    background: var(--hydra-blue-default);
+    color:var(--hydra-background-white);
+    padding:5px;
+}

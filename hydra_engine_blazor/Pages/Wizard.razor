@@ -1,11 +1,12 @@
 ﻿@using hydra_engine_blazor.Models
 @using DefaultNamespace
 @using System.Text.Json
+@using System.Runtime.InteropServices
 @inject WizardContainer WizardContainer
 @inject NavigationManager Navigation
 
-@page "/wizard/{*Output_URL}"
-<button @onclick="async ()=> await WizardModal.Open()">Open</button>
+@page "/wizard"
+<button class="open-wizard-button" @onclick="async ()=> await WizardModal.Open()">Open Wizard</button>
 <div class="wizard-container">
     <Modal Model="WizardModel" @ref="WizardModal">
         <Header>
@@ -14,7 +15,6 @@
         <Body>
         @foreach (var elem in currentControlsMeta.Elem)
         {
-            var id = elem.Keys.ToList()[0];
             <div>
                 @foreach (var kvp in elem)
                 {
@@ -30,14 +30,14 @@
                 continue;
             }
             <div>
-                <input type="radio" checked="@($"{Output_URL}/{item.Name}" == nextFormUrl)" value="@item.DisplayName" @onchange="@(() => SelectForm(@item.Name))"/>
+                <input type="radio" checked="@($"{item.Name}" == nextFormUrl.Split("/")[^1])" value="@item.DisplayName" @onchange="@(() => SelectForm(@item.Name))"/>
                 <p>@item.DisplayName</p>
             </div>
         }
         </Body>
         <Footer>
             <div class="prev-next-container">
-                @if (Output_URL.Split("/").Length > 1)
+                @if (!string.IsNullOrEmpty(Output_URL))
                 {
                     <button type="reset" @onclick="PrevCallback">Back</button>
                 }
@@ -61,43 +61,32 @@
     private string nextFormUrl = "";
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
-        currentControlsMeta = new ControlsMeta();
-        changeElements.Clear();
-        var query = await WizardContainer.GetFormInfo(Output_URL);
-        if (query != null) JsonParser.DeserializeTree(query.ToString(),currentControlsMeta,currentControlsMeta.Child);
-        WizardModel.Title = currentControlsMeta.DisplayName;
-        if (currentControlsMeta.Child.Count > 0)
-        {
-            nextFormUrl = Output_URL + "/" + currentControlsMeta.Child.Where(item => item.Type == "form").ToList()[0].Name;
-        }
-        else
-        {
-            nextFormUrl = "";
-        }
-        
+        await UpdateWizardData();
     }
 
     private async Task PrevCallback()
     {
         var urlList = Output_URL.Split("/").ToList();
         urlList.Remove(urlList.Last());
-        if (urlList.Count == 0) await WizardModal.Close();
+        if (urlList.Count == 0) Output_URL = "";
         Output_URL = string.Join("/", urlList);
-        Navigation.NavigateTo($"/wizard/{Output_URL}");
+        await UpdateWizardData();
     }
 
     private void SelectForm(string formName)
     {
-        nextFormUrl = $"{Output_URL}/{formName}";
+        nextFormUrl = !string.IsNullOrEmpty(Output_URL) ? $"{Output_URL}/{formName}" : formName;
+        Console.WriteLine(nextFormUrl);
     }
 
     private async Task NextCallback()
     {
         var condition = new List<Condition>();
-        var conditions = currentControlsMeta.Child.Find(item => Output_URL + "/" + item.Name == nextFormUrl)?.Condition;
+        var conditions = currentControlsMeta.Child.Find(item => item.Name == nextFormUrl.Split("/")[^1])?.Condition;
         if (conditions != null)
+        {
             foreach (var cond in conditions)
             {
                 var values = new List<object>();
@@ -122,10 +111,12 @@
                     }
                 }
             }
+        }
         var response = await WizardContainer.CheckCondition(nextFormUrl, condition);
         if (response.IsSuccessStatusCode)
         {
-            Navigation.NavigateTo($"/wizard/{nextFormUrl}");
+            Output_URL = nextFormUrl;
+            await UpdateWizardData();
         }
     }
     private void ChangeValue(ElemInfo obj,string key)
@@ -143,6 +134,26 @@
             changeElements.Add(elem);
         }
         
+    }
+
+    private async Task UpdateWizardData()
+    {
+        currentControlsMeta = new ControlsMeta();
+        changeElements.Clear();
+        if (string.IsNullOrEmpty(Output_URL)) currentControlsMeta.Name = "tree";
+        var query = await WizardContainer.GetFormInfo(Output_URL);
+        if (query != null) JsonParser.DeserializeTree(query.ToString(),currentControlsMeta,currentControlsMeta.Child);
+        WizardModel.Title = !string.IsNullOrEmpty(Output_URL) ? currentControlsMeta.DisplayName : "Main window";
+        if (string.IsNullOrEmpty(Output_URL)) currentControlsMeta.Name = string.Empty;
+        if (currentControlsMeta.Child.Count > 0)
+        {
+            nextFormUrl = (!string.IsNullOrEmpty(Output_URL) ? $"{Output_URL}/" : "") + currentControlsMeta.Child.Where(item => item.Type == "form").ToList()[0].Name;
+            Console.WriteLine(nextFormUrl);
+        }
+        else
+        {
+            nextFormUrl = "";
+        }
     }
 
 }

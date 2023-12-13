@@ -32,7 +32,6 @@ public class WizardContainer
     {
         return await _client.GetFromJsonAsync<object>($"api/wizard/tree/{url}");
     }
-
     public async Task<HttpResponseMessage> CheckCondition(string path, IEnumerable<Condition> condition)
     {
         var json = JsonSerializer.Serialize(condition, options);
