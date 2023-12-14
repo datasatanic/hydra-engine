@@ -1,0 +1,347 @@
+# File metadata
+
+FILE:
+  type: 'yaml'
+  path: 'files/common.yml' # Optional/ default: path w/o .meta
+
+PARAMS:
+    - site_name:
+        type: string
+        sub_type: # optional for array
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: input_control
+          display_name: "Site name"
+          constraints:
+    - ccfa_version:
+        type: string
+        sub_type: # optional for array
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: input_control
+          display_name: "CCFA version"
+          constraints:
+    - mgmt/state/host_number:
+        type: int
+        sub_type: # optional for array
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: number_control
+          display_name: "State host number"
+          constraints:
+    - mgmt/repos/repohost_number:
+        type: int
+        sub_type: # optional for array
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: number_control
+          display_name: "Repo host number"
+          constraints:
+    - site/avg_cpu_core_hz:
+        type: int
+        sub_type: # optional for array
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: number_control
+          display_name: "Avg_cpu_core_hz in site"
+          constraints:
+    - preset:
+        type: string
+        sub_type: # optional for array
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: input_control
+          display_name: "Preset"
+          constraints:
+    - providers/cloud:
+        type: string
+        sub_type: # optional for array
+        readonly: False
+        description: "Provider to deploy VMs and Networks"
+        id: 6
+        render:
+          control: input_control
+          display_name: "Cloud in providers"
+          constraints:
+    - dns/recursors:
+        type: array
+        sub_type: string
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: input_control
+          display_name: "DNS recursors"
+          constraints:
+    - dns/forwarded_zones:
+        type: array
+        sub_type: string
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: input_control
+          display_name: "DNS forwarded zones"
+          constraints:
+    - enabled_hosts:
+        type: array
+        sub_type: string
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: input_control
+          display_name: "Enabled hosts"
+          constraints:
+    - hosts/images/0/name:
+        type: string
+        sub_type:
+        readonly: False
+        description: "Description"
+        id: 6
+        render:
+          control: input_control
+          display_name: "First vm image name"
+          constraints:
+    - k8s/storage/volumes/capacity_gb:
+        type: array
+        sub_type: int
+        readonly: False
+        description: "Description"
+        id: 6
+        render:
+          control: input_control
+          display_name: "Capacities gb"
+          constraints:
+    - vsphere/datacenter:
+        type: string
+        sub_type:
+        readonly: False
+        description: "Datacenter name in vCenter"
+        id: 6
+        render:
+          control: input_control
+          display_name: "Vsphere datacenter"
+          constraints:
+    - vsphere/domain:
+        type: string
+        sub_type:
+        readonly: False
+        description: "Domain for VM configuration"
+        id: 6
+        render:
+          control: input_control
+          display_name: "Vsphere domain"
+          constraints:
+    - vsphere/domain_description:
+        type: string
+        sub_type:
+        readonly: False
+        description: "Domain name, used for VM description"
+        id: 6
+        render:
+          control: input_control
+          display_name: "Vsphere domain description"
+          constraints:
+    - vsphere/content_library_name:
+        type: string
+        sub_type:
+        readonly: False
+        description: "The name of content library to store and get templates"
+        id: 6
+        render:
+          control: input_control
+          display_name: "Content library name"
+          constraints:
+    - vsphere/vCenter_folder:
+        type: string
+        sub_type:
+        readonly: False
+        description: "Main folder, where VM should be placed. Should be exist before creation VM."
+        id: 6
+        render:
+          control: input_control
+          display_name: "vCenter folder"
+          constraints:
+    - vsphere/enable_memory_reservation:
+        type: bool
+        sub_type:
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: checkbox_control
+          display_name: "Enable memory reservation"
+          constraints:
+    - vsphere/resource_pool:
+        type: string
+        sub_type:
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: input_control
+          display_name: "Resource pool"
+          constraints:
+    - vcd/templates_catalog:
+        type: string
+        sub_type:
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: input_control
+          display_name: "Vcd templates catalog"
+          constraints:
+    - vm/subnet_name:
+        type: string
+        sub_type:
+        readonly: False
+        description: "Subnet name in vCenter, where VM will be placed"
+        id: 6
+        render:
+          control: input_control
+          display_name: "Subnet name"
+          constraints:
+    - networks/0/name:
+        type: string
+        sub_type:
+        readonly: False
+        description: ""
+        id: w6
+        render:
+          control: input_control
+          display_name: ""
+          constraints:
+    - networks/0/CIDR:
+        type: string
+        sub_type:
+        readonly: False
+        description: ""
+        id: w6
+        render:
+          control: input_control
+          display_name: ""
+          constraints:
+    - networks/1/CIDR:
+        type: string
+        sub_type:
+        readonly: False
+        description: ""
+        id: w6
+        render:
+          control: input_control
+          display_name: ""
+          constraints:
+    - networks/2/CIDR:
+        type: string
+        sub_type:
+        readonly: False
+        description: ""
+        id: w6
+        render:
+          control: input_control
+          display_name: ""
+          constraints:
+    - patroni/allowed_networks/0:
+        type: string
+        sub_type:
+        readonly: False
+        description: ""
+        id: w7
+        render:
+          control: input_control
+          display_name: ""
+          constraints:
+    - patroni/allowed_networks/1:
+        type: string
+        sub_type:
+        readonly: True
+        description: ""
+        id: w7
+        render:
+          control: input_control
+          display_name: ""
+          constraints:
+    - patroni/allowed_networks/2:
+        type: string
+        sub_type:
+        readonly: True
+        description: ""
+        id: w7
+        render:
+          control: input_control
+          display_name: ""
+          constraints:
+    - bash_rc_configs/clusterTag:
+        type: string
+        sub_type:
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: input_control
+          display_name: "Cluster tag"
+          constraints:
+    - opensearch/memory:
+        type: string
+        sub_type:
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: input_control
+          display_name: "Opensearch memory"
+          constraints:
+    - jobs/enabled_services/stateful:
+        type: array
+        sub_type: string
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: input_control
+          display_name: "Stateful enabled services"
+          constraints:
+    - jobs/enabled_services/stateless:
+        type: array
+        sub_type: string
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: input_control
+          display_name: "Stateless enabled services"
+          constraints:
+    - jobs/services_list/stateless:
+        type: array
+        sub_type: string
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: input_control
+          display_name: "Stateful services list"
+          constraints:
+    - ssh_users/users_dict:
+        type: array
+        sub_type: string
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: input_control
+          display_name: "Users dict"
+          constraints:

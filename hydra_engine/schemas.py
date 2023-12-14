@@ -1,5 +1,5 @@
 import json
-import yaml
+import ruamel.yaml
 import maya
 from typing import List, Literal, Dict
 from pydantic import BaseModel, validator, Extra, root_validator
@@ -10,6 +10,7 @@ import re
 tree = HydraParametersInfo().tree
 wizard_tree = HydraParametersInfo().wizard_tree
 logger = logging.getLogger('common_logger')
+yaml = ruamel.yaml.YAML(typ="rt")
 
 types = Literal["string", "int", "bool", "datetime", "range", "array"]
 sub_types = Literal["string", "int", "bool", "datetime", "range"]
@@ -488,17 +489,37 @@ def get_value(input_url: str, uid: str):
 
 def find_value_in_dict(elements, input_url_list):
     while len(input_url_list) > 0:
-        elements = elements[input_url_list[0]]
+        if input_url_list[0].isdigit():
+            elements = elements[int(input_url_list[0])]
+        elif isinstance(elements,list):
+            arr = []
+            for elem in elements:
+                arr.append(elem[input_url_list[0]])
+            elements = arr
+        else:
+            elements = elements[input_url_list[0]]
         input_url_list.pop(0)
     return elements
 
 
 def set_value_in_dict(elements, value, input_url_list, file_type):
     while len(input_url_list) > 1:
-        elements = elements[input_url_list[0]]
+        if input_url_list[0].isdigit():
+            elements = elements[int(input_url_list[0])]
+        elif isinstance(elements, list):
+            arr = []
+            for elem in elements:
+                arr.append(elem[input_url_list[0]])
+            elements = arr
+        else:
+            elements = elements[input_url_list[0]]
         input_url_list.pop(0)
     if file_type == "yaml":
-        elements[input_url_list[0]] = yaml.safe_load(value)
+        if isinstance(elements,list):
+            for val in value:
+                elements[value.index(val)][input_url_list[0]] = val
+        else:
+            elements[input_url_list[0]] = yaml.load(value)
     else:
         elements[input_url_list[0]] = value
 

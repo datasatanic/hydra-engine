@@ -8,6 +8,7 @@
     align-items: center;
     width: fit-content;
     width: -moz-fit-content;
+    max-width: 100%;
 }
 .elem-reverse{
     flex-direction: row-reverse !important;

@@ -15,7 +15,8 @@ article{
     gap:20px;
     padding: 30px;
     border-right: 1px solid var(--hydra-secondary-10);
-    position: relative;
+    position: sticky;
+    top:0;
     min-width: 460px;
     max-width: 70%;
 }

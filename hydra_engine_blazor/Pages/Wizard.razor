@@ -11,6 +11,7 @@
     <Modal Model="WizardModel" @ref="WizardModal">
         <Header>
             <h2 class="title">@WizardModel.Title</h2>
+            <img @onclick="async () => await WizardModal.Close()" alt=""/>
         </Header>
         <Body>
         @foreach (var elem in currentControlsMeta.Elem)
@@ -23,6 +24,28 @@
                 }
             </div>
         }
+        <div class="groups @(currentControlsMeta.Child.Where(item => item.Type.Equals("group")).ToList().Count == 0 ? "hide" : "")">
+            @foreach (var item in currentControlsMeta.Child.Where(item => item.Type.Equals("group")))
+            {
+                <div tabindex="1">
+                    <h2>@item.DisplayName</h2>
+                    <h4>@item.Description</h4>
+                    <div class="elements-container">
+                        @foreach (var elem in item.Elem)
+                        {
+                            var uid = elem.Keys.ToList()[0];
+                            <div class="elems-group">
+                                @foreach (var kvp in elem)
+                                {
+                                    <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
+                                    </ElemComponent>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
         @foreach (var item in currentControlsMeta.Child.Where(item => item.Type.Equals("form")))
         {
             @if (currentControlsMeta.Child.Count(x => x.Type.Equals("form")) <= 1)

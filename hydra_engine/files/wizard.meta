@@ -12,6 +12,14 @@ root/service1:
         equals:
           - service1
           - service
+root/service1/networks:
+  display_name: Networks
+  type: group
+  id: w6
+root/service1/allowed_networks:
+  display_name: Allowed networks
+  type: group
+  id: w7
 root/service1/service2:
   display_name: form2
   type: form
