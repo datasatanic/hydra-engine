@@ -96,7 +96,6 @@ public class SettingsContainer
     public async Task<HttpResponseMessage> SetValues(List<KeyValuePair<string,ElemInfo>> changeElements)
     {
         var saveElements = changeElements.Select(element => new ParameterSaveInfo(){File_id = element.Value.fileId,Input_url = element.Key,Value = element.Value.value}).ToList();
-        Console.WriteLine(saveElements[0].Value);
         var json = JsonSerializer.Serialize(saveElements);
         HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
         return await _client.PostAsync($"api/hydra/elements/values",content);

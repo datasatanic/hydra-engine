@@ -187,13 +187,10 @@
             new JsonStringEnumConverter()
         },
     };
-    protected override void OnParametersSet()
-    {
-        //Value = elemInfo.value;
-    }
 
     protected override void OnInitialized()
     {
+        Value = elemInfo.value;
         ElementAttributes = new Dictionary<string, object>
         {
             {"disabled",elemInfo?.readOnly},
@@ -201,7 +198,6 @@
             {"title",elemInfo?.description},
             {"validation-error",false}
         };
-        Value = elemInfo.value;
         if (elemInfo.type == ElemType.Array)
         {
             elemInfo.arrayItems = JsonSerializer.Deserialize<List<object>>(Value.ToString(),options);
@@ -480,22 +476,19 @@
     }
     private async Task HandleValue(ElemInfo obj, int j,string key)
     {
-        if (elemInfo != null && obj.isValid && elemInfo.isValid)
+        elemInfo.isValid = true;
+        var item = elemInfo.arrayItems[j];
+        var itemDict = JsonSerializer.Deserialize<Dictionary<string, object>>(item.ToString());
+        if (itemDict != null)
         {
-            var item = elemInfo.arrayItems[j];
-            var stringValue = item?.ToString();
-            if (!string.IsNullOrEmpty(stringValue))
+            itemDict[key] = obj.value;
+            elemInfo.arrayItems[j] = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize<object>(itemDict));
+            elemInfo.value = elemInfo.arrayItems;
+            if (!obj.isValid)
             {
-                var itemDict = JsonSerializer.Deserialize<Dictionary<string, object>>(stringValue);
-                if (itemDict != null)
-                {
-                    itemDict[key] = obj.value;
-                    elemInfo.arrayItems[j] = itemDict;
-                    elemInfo.value = elemInfo.arrayItems;
-                    await SendValue.InvokeAsync(elemInfo);
-                }
+                elemInfo.isValid = false;
             }
-
+            await SendValue.InvokeAsync(elemInfo);
         }
     }
 
