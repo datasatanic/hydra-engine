@@ -20,7 +20,7 @@ mgmt:
   state:
     subnet_name: mgmt
     dc: ccfa-mgmt
-    host_number: 21 # [ ] CHANGEME 3 
+    host_number: 21 # [ ] CHANGEME 3
   repos:
     subnet_name: mgmt
     repohost_number: 21 # [ ] CHANGEME 3
@@ -32,7 +32,7 @@ site:
 preset: 10_tps_single_site_pc # [ ] CHANGEME 5
 
 providers:
-  cloud: vSphereWithNSX # [ ] CHANGEME 6 Provider to deploy VMs and Networks 
+  cloud: vSphereWithNSX # [ ] CHANGEME 6 Provider to deploy VMs and Networks
 
 dns: # [ ] CHANGEME 7
   recursors:
@@ -63,7 +63,7 @@ refs:
 hosts:
   images: # vm images
   - type: vendor
-    name: golden-test  # [ ] CHANGEME 9
+    name: golden-test   # [ ] CHANGEME 9
   - type: cnhost
     name: "cnhost-${ for image in common.hosts.images: image.type => image.name }['vendor']"
   - type: basehost
@@ -173,10 +173,10 @@ vcd:
 
 # VM global configs
 vm:
-  domain: ${ common.site_name }   # Domain user for VM names. Result VM name: <name>.<vm_domain> 
+  domain: ${ common.site_name }   # Domain user for VM names. Result VM name: <name>.<vm_domain>
   subnet_name: vxlan-106-dvaraksin   # Subnet name in vCenter, where VM will be placed # [ ] CHANGEME 13
   subnet_CIDR: '${{ for network in common.networks: network.name => network}[common.vm.subnet_name].CIDR
-    }'                                                                                                      # Subnet CIDR in vCenter, where VM will be placed 
+    }'                                                                                                      # Subnet CIDR in vCenter, where VM will be placed
 
 # Network Configuration
 networks:
@@ -657,7 +657,6 @@ jobs:
     - victoriaMetrics
     - watcherRedirector
     - webApiRulesSupport
-
   services_list: # all services used in this site, used to generate tf code with modules
     stateful:
       # []
@@ -955,7 +954,7 @@ ssh_users: # [ ] CHANGEME 18
   - username: ansible
     ssh_key: ssh-rsa 
       AAAAB3NzaC1yc2EAAAADAQABAAABgQDQST46FZJcHlzX4T27pIFSSfmc6Qcc+ZL2NkqAMoXC1sD5qw4hmeW7axdU1lGbdwZF7E0ZlBJQ37QXvqYj+kFp6PXxL9ztIm/iWcU7hkX8ZDYmS4ubxt/VKiXngNBNyRb6ebRh9fjviDWEOIGrMT2YCcjHUNK33kbIDDRTbWfzTxPwJo8b15UczTbTKwMOMRw/0H9lPXzIMuMUMq1ns/of2x2xvI5nY/2WRVytU9pMOUgOAKMESlNMf/g1rprEr4V5ZXUDGUTTHYaChevKrvTHIQ6FISogfI8RvWI05CMw27Acpuz2IyYJiOr5ox0/DIXyouOiI+v2XB6aoMGztLaGU6dA5a3vuJ2ZQJb+JkcvaDg+mjU4IA4ioXG2x1qVdZO8Ho0iydcMc9HxY8dgmZK/eQRA1IfATXf+oS7jOTj90LH2eO8ufF+XOGmMlNoyk2kmKAHmJArSZ7ysznMZg/NIjf/QM5FnpIqAt0BHG7Ed/tOwo143ezUKYFPy3dxwQVs=
-      ansible@MCDEVOPS                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     # [ ] CHANGEME 18
+      ansible@MCDEVOPS
     sudoers: yes
     noPassSudo: yes
   - username: adyakonov
@@ -1027,7 +1026,6 @@ ssh_users: # [ ] CHANGEME 18
       iogolikhin
     sudoers: yes
     noPassSudo: yes
-
   enabled_users:
   - adyakonov
   - agolev

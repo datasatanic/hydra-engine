@@ -50,6 +50,12 @@ public class ElemInfo
     [JsonPropertyName("constraints")]
     public List<ConstraintItem> constraints { get; set; }
     
+    [DataMember(Name = "sub_type_class", EmitDefaultValue = false)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [JsonPropertyName("sub_type_class")]
+    public List<Dictionary<string,object>>? sub_type_class { get; set; }
+    
+    
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public List<object?> arrayItems { get; set; }
     

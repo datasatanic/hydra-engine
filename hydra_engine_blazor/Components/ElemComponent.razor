@@ -103,95 +103,62 @@
                     <img @onclick="AddItem"/>
                 </legend>
                 <div class="d-flex flex-column gap-3">
-                    @if (elemInfo.sub_type == ElemType.Range)
+                    @if (elemInfo?.sub_type_class != null)
                     {
-                        <div class="range-titles-container">
-                            <h4>From</h4>
-                            <h4>To</h4>
-                        </div>
+                        @foreach (var subElem in elemInfo.sub_type_class)
+                        {
+                            @foreach (var kvp in subElem)
+                            {
+                                var subElemInfo = JsonParser.DeserializeElemInfo(kvp.Value.ToString());
+                                <ElemComponent Key="@kvp.Key" elemInfo="@subElemInfo" SendValue="@((ElemInfo obj)=>HandleValue(obj,elemInfo.sub_type_class.IndexOf(subElem),kvp.Key))"></ElemComponent>
+                            }
+                            <img class="delete-elem" @onclick="@(() => RemoveArrayItem(elemInfo.sub_type_class.IndexOf(subElem)))"/>
+                            <hr/>
+                        }
                     }
-                    @for (var i = 0; i < elemInfo?.arrayItems.Count; i++)
+                    else
                     {
-                        var j = i;
-                        var elem = elemInfo?.arrayItems[j];
-                        <div class="position-relative">
-                            @switch (elemInfo?.control)
-                            {
-                                case Control.Textarea:
-                                    <div class="list-item-container">
-                                        <textarea @attributes="ElementAttributes" rows="@(elem?.ToString()?.Length)"validation-error="@(!TryParseToType(elem.ToString(), elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
-                                        <img @onclick="@(() => RemoveArrayItem(j))"/>
-                                    </div>
-                                    break;
-                                case Control.Range:
-                                    var range = JsonSerializer.Deserialize<Dictionary<string, object>>(elem.ToString());
-                                    <div class="elem-container">
-                                        <div class="position-relative">
-                                            <input type="number" value="@range?.GetValueOrDefault("from", "")" validation-error="@(!TryParseToType(range?.GetValueOrDefault("from", "").ToString(), ElemType.Int))" @onchange="@((e) => ChangeArrayRangeValue(e, j, true))"/>
-                                            @if (string.IsNullOrEmpty(range.GetValueOrDefault("from", "").ToString()))
-                                            {
-                                                <div class="validation-message">Enter field</div>
-                                            }
-                                            else if (!TryParseToType(range.GetValueOrDefault("from", "").ToString(), ElemType.Int))
-                                            {
-                                                <div class="validation-message">Not @ElemType.Int type</div>
-                                            }
-                                            else
-                                            {
-                                                foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(range.GetValueOrDefault("from", "").ToString(), item, elemInfo.control)))
-                                                {
-                                                    <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
-                                                }
-                                            }
+                         @for (var i = 0; i < elemInfo?.arrayItems.Count; i++)
+                         {
+                            var j = i;
+                            var elem = elemInfo?.arrayItems[j];
+                            <div class="position-relative">
+                                @switch (elemInfo?.control)
+                                {
+                                    case Control.Textarea:
+                                        <div class="list-item-container">
+                                            <textarea @attributes="ElementAttributes" rows="@(elem?.ToString()?.Length)"validation-error="@(!TryParseToType(elem.ToString(), elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
+                                            <img @onclick="@(() => RemoveArrayItem(j))"/>
                                         </div>
-                                        <div class="position-relative">
-                                            <input type="number" value="@range?.GetValueOrDefault("to", "")" validation-error="@(!TryParseToType(range?.GetValueOrDefault("to", "").ToString(), ElemType.Int))" @onchange="@((e) => ChangeArrayRangeValue(e, j, false))"/>
-                                            @if (string.IsNullOrEmpty(range.GetValueOrDefault("to", "").ToString()))
-                                            {
-                                                <div class="validation-message">Enter field</div>
-                                            }
-                                            else if (!TryParseToType(range.GetValueOrDefault("to", "").ToString(), ElemType.Int))
-                                            {
-                                                <div class="validation-message">Not @ElemType.Int type</div>
-                                            }
-                                            else
-                                            {
-                                                foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(range.GetValueOrDefault("to", "").ToString(), item, elemInfo.control)))
-                                                {
-                                                    <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
-                                                }
-                                            }
+                                        break;
+                                    default:
+                                        <div class="list-item-container">
+                                            <input @attributes="ElementAttributes" size="@(elem?.ToString()?.Length)" validation-error="@(!TryParseToType(elem.ToString(), elemInfo?.sub_type))" value="@elem" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))"/>
+                                            <img @onclick="@(() => RemoveArrayItem(j))"/>
                                         </div>
-                                        <img class="delete-image" @onclick="@(() => RemoveArrayItem(j))"/>
-                                    </div>
-                                    break;
-                                default:
-                                    <div class="list-item-container">
-                                        <input @attributes="ElementAttributes" size="@(elem?.ToString()?.Length)" validation-error="@(!TryParseToType(elem.ToString(), elemInfo?.sub_type))" value="@elem" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))"/>
-                                        <img @onclick="@(() => RemoveArrayItem(j))"/>
-                                    </div>
-                                    break;
-                            }
-                            @if (elemInfo?.sub_type != ElemType.Range)
-                            {
-                                @if (string.IsNullOrEmpty(elem.ToString()))
-                                {
-                                    <div class="validation-message">Enter field</div>
+                                        break;
                                 }
-                                else if (!TryParseToType(elem.ToString(), elemInfo?.sub_type))
+                                @if (elemInfo?.sub_type != ElemType.Range)
                                 {
-                                    <div class="validation-message">Not @elemInfo?.sub_type type</div>
-                                }
-                                else
-                                {
-                                    foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elem.ToString(), item, elemInfo.control)))
+                                    @if (string.IsNullOrEmpty(elem.ToString()))
                                     {
-                                        <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
+                                        <div class="validation-message">Enter field</div>
                                     }
+                                    else if (!TryParseToType(elem.ToString(), elemInfo?.sub_type))
+                                    {
+                                        <div class="validation-message">Not @elemInfo?.sub_type type</div>
+                                    }
+                                    else
+                                    {
+                                        foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elem.ToString(), item, elemInfo.control)))
+                                        {
+                                            <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
+                                        }
+                                    }
+
                                 }
-                                
-                            }
-                        </div>
+                            </div>
+                         }
                     }
                 </div>
             </fieldset>
@@ -217,8 +184,11 @@
         {
             new JsonStringEnumConverter()
         },
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
+    protected override void OnParametersSet()
+    {
+        //Value = elemInfo.value;
+    }
 
     protected override void OnInitialized()
     {
@@ -237,7 +207,6 @@
         elemInfo.isValid = true;
         AddElementAttributes(elemInfo);
     }
-
 
     private bool TryParseToType(string value,ElemType? type)
     {
@@ -453,14 +422,23 @@
 
     private async Task RemoveArrayItem(int pos)
     {
-        elemInfo?.arrayItems.RemoveAt(pos);
-        elemInfo.value = JsonSerializer.Serialize(elemInfo.arrayItems,options).Replace("\"{", "{").Replace("}\"", "}").Replace("\\","");
+        if (elemInfo.sub_type_class != null)
+        {
+            elemInfo.sub_type_class.RemoveAt(pos);
+            elemInfo.arrayItems.RemoveAt(pos);
+            elemInfo.value = elemInfo.arrayItems;
+        }
+        else
+        {
+            elemInfo?.arrayItems.RemoveAt(pos);
+            elemInfo.value = elemInfo.arrayItems;
+        }
         await SendValue.InvokeAsync(elemInfo);
     }
 
     private void AddItem()
     {
-        if (elemInfo?.sub_type == ElemType.Range)
+        if (elemInfo?.sub_type_class != null)
         {
             var dictionary = new Dictionary<string, object>()
             {
@@ -497,6 +475,26 @@
             "pattern" => Regex.IsMatch(value, constraintItem.value, RegexOptions.IgnoreCase),
             _ => true
             };
+    }
+    private async Task HandleValue(ElemInfo obj, int j,string key)
+    {
+        if (elemInfo != null)
+        {
+            var item = elemInfo.arrayItems[j];
+            var stringValue = item?.ToString();
+            if (!string.IsNullOrEmpty(stringValue))
+            {
+                var itemDict = JsonSerializer.Deserialize<Dictionary<string, object>>(stringValue);
+                if (itemDict != null)
+                {
+                    itemDict[key] = obj.value;
+                    elemInfo.arrayItems[j] = itemDict;
+                    elemInfo.value = elemInfo.arrayItems;
+                    await SendValue.InvokeAsync(elemInfo);
+                }
+            }
+
+        }
     }
 
 }

@@ -337,7 +337,44 @@ PARAMS:
           constraints:
     - ssh_users/users_dict:
         type: array
-        sub_type: string
+        sub_type: composite
+        sub_type_class:
+          username:
+            type: string
+            sub_type:
+            readonly: False
+            description: ""
+            render:
+              control: input_control
+              display_name: "User name"
+              constraints:
+          ssh_key:
+            type: string
+            sub_type:
+            readonly: False
+            description: ""
+            render:
+              control: input_control
+              display_name: "Ssh key"
+              constraints:
+          sudoers:
+            type: string
+            sub_type:
+            readonly: False
+            description: ""
+            render:
+              control: input_control
+              display_name: "Sudoers"
+              constraints:
+          noPassSudo:
+            type: string
+            sub_type:
+            readonly: False
+            description: ""
+            render:
+              control: input_control
+              display_name: "NoPassSudo"
+              constraints:
         readonly: False
         description: ""
         id: 6

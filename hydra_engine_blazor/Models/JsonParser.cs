@@ -142,6 +142,18 @@ public class JsonParser
                             JsonSerializer.Deserialize<List<ConstraintItem>>(keyValue.Value?.ToString());
                     }
                     break;
+                case "sub_type_class":
+                    if (!string.IsNullOrEmpty(keyValue.Value?.ToString()))
+                    {
+                        elemInfo.sub_type_class =
+                            JsonSerializer.Deserialize<List<Dictionary<string, object>>>(keyValue.Value?.ToString());
+                    }
+                    else
+                    {
+                        elemInfo.sub_type_class = null;
+                    }
+                    
+                    break;
             }
         }
 

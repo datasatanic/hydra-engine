@@ -48,14 +48,4 @@ PARAMS:
         control: input_control
         display_name: "Env name"
         constraints:
-  - ports: # Input_URL
-      type: array
-      sub_type: range
-      readonly: False
-      description: "Ports"
-      id: 6
-      render:
-        control: range_control
-        display_name: "Ports"
-        constraints:
           

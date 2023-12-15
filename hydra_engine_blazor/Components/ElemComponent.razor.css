@@ -138,6 +138,12 @@ textarea{
 input,textarea:invalid{
     border:1px solid var(--hydra-error);
 }
+.delete-elem{
+    content: url("icons/remove_item.svg");
+    cursor: pointer;
+    height: 24px;
+    width: 24px;
+}
 @media(max-width: 1200px){
     .elem-container{
         flex-direction: column;

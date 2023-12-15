@@ -1,5 +1,5 @@
 import json
-import ruamel.yaml
+import yaml
 import maya
 from typing import List, Literal, Dict
 from pydantic import BaseModel, validator, Extra, root_validator
@@ -10,10 +10,9 @@ import re
 tree = HydraParametersInfo().tree
 wizard_tree = HydraParametersInfo().wizard_tree
 logger = logging.getLogger('common_logger')
-yaml = ruamel.yaml.YAML(typ="rt")
 
 types = Literal["string", "int", "bool", "datetime", "range", "array"]
-sub_types = Literal["string", "int", "bool", "datetime", "range"]
+sub_types = Literal["string", "int", "bool", "datetime", "range", "composite"]
 constraints = Literal[
     'maxlength', 'minlength', 'pattern', 'cols', 'rows', 'min', 'max', 'format', "size", "resize"]
 controls = Literal[
@@ -35,6 +34,7 @@ class ElemInfo(BaseModel):
     type: types
     description: str = None
     sub_type: sub_types = None
+    sub_type_class: dict | list = None
     readOnly: bool = False
     display_name: str
     control: controls
@@ -125,6 +125,8 @@ class ElemInfo(BaseModel):
                     int(item["to"])
                 except TypeError:
                     raise TypeError(f"item {item} in array is not range")
+            return sub_type
+        if sub_type == "composite":
             return sub_type
 
     @validator("control", pre=True)
@@ -479,25 +481,51 @@ def get_elements(path_id):
     return elem_list
 
 
-def get_value(input_url: str, uid: str):
+def get_value(input_url: str, uid: str, sub_type_class=None):
     input_url_list = input_url.split("/")
     key = input_url_list[0]
     for elements in HydraParametersInfo().get_elements_values():
         if key in elements.values and elements.uid == uid:
-            return find_value_in_dict(elements.values, input_url_list)
+            return find_value_in_dict(elements.values, input_url_list, sub_type_class, uid)
 
 
-def find_value_in_dict(elements, input_url_list):
+def find_value_in_dict(elements, input_url_list, sub_type_class, file_id):
     while len(input_url_list) > 0:
         if input_url_list[0].isdigit():
             elements = elements[int(input_url_list[0])]
-        elif isinstance(elements,list):
+        elif isinstance(elements, list):
             arr = []
             for elem in elements:
                 arr.append(elem[input_url_list[0]])
             elements = arr
         else:
             elements = elements[input_url_list[0]]
+            if isinstance(elements, list) and sub_type_class is not None:
+                arr = []
+                for elem in elements:
+                    d = {}
+                    for key in elem:
+                        render_dict = sub_type_class[key]["render"]
+                        render_dict_constraints = render_dict["constraints"]
+                        render_constraints = []
+                        if render_dict_constraints:
+                            for constraint in render_dict_constraints:
+                                for constraint_key in constraint:
+                                    constraint_item = ConstraintItem(value=constraint[constraint_key],
+                                                                     type=constraint_key)
+                                    render_constraints.append(constraint_item)
+                        sub_elem_info = ElemInfo(value=elem[key], type=sub_type_class[key]["type"],
+                                                 description=sub_type_class[key]["description"],
+                                                 sub_type=sub_type_class[key]["sub_type"],
+                                                 sub_type_class=None,
+                                                 readOnly=sub_type_class[key]["readonly"],
+                                                 display_name=render_dict["display_name"],
+                                                 control=render_dict["control"],
+                                                 constraints=render_constraints,
+                                                 file_id=file_id)
+                        d[key] = sub_elem_info
+                    arr.append(d)
+                elements = arr
         input_url_list.pop(0)
     return elements
 
@@ -514,12 +542,9 @@ def set_value_in_dict(elements, value, input_url_list, file_type):
         else:
             elements = elements[input_url_list[0]]
         input_url_list.pop(0)
-    if file_type == "yaml":
-        if isinstance(elements,list):
-            for val in value:
-                elements[value.index(val)][input_url_list[0]] = val
-        else:
-            elements[input_url_list[0]] = yaml.load(value)
+    if isinstance(elements, list):
+        for val in value:
+            elements[value.index(val)][input_url_list[0]] = val
     else:
         elements[input_url_list[0]] = value
 
@@ -552,9 +577,13 @@ def get_element_info(input_url, uid: str):
                             constraint_item = ConstraintItem(value=constraint[key], type=key)
                             render_constraints.append(constraint_item)
                 try:
+                    sub_type_class = element["sub_type_class"] if "sub_type_class" in element else None
+                    if sub_type_class is not None:
+                        sub_type_class = get_value(input_url, uid, sub_type_class)
                     elem_info = ElemInfo(value=get_value(input_url, uid), type=element["type"],
                                          description=element["description"],
                                          sub_type=element["sub_type"],
+                                         sub_type_class=sub_type_class if "sub_type_class" in element else None,
                                          readOnly=element["readonly"],
                                          display_name=render_dict["display_name"], control=render_dict["control"],
                                          constraints=render_constraints,
@@ -580,7 +609,7 @@ def filter_tree(all_tree):
     return tree_filter
 
 
-def find_form(path, all_tree,is_wizard=False):
+def find_form(path, all_tree, is_wizard=False):
     """
         Find child forms and groups of current form
     """
