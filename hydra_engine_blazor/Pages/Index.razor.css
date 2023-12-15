@@ -17,6 +17,7 @@ hr{
     top:100px;
     color:var(--hydra-background-white);
     border: 0;
+    z-index: 1000;
 }
 .save-button:hover{
     background:var(--hydra-blue-hover);

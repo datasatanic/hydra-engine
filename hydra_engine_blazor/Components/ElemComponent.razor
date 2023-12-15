@@ -110,7 +110,9 @@
                             @foreach (var kvp in subElem)
                             {
                                 var subElemInfo = JsonParser.DeserializeElemInfo(kvp.Value.ToString());
-                                <ElemComponent Key="@kvp.Key" elemInfo="@subElemInfo" SendValue="@((ElemInfo obj)=>HandleValue(obj,elemInfo.sub_type_class.IndexOf(subElem),kvp.Key))"></ElemComponent>
+                                <div class="position-relative">
+                                    <ElemComponent Key="@kvp.Key" elemInfo="@subElemInfo" SendValue="@((ElemInfo obj)=>HandleValue(obj,elemInfo.sub_type_class.IndexOf(subElem),kvp.Key))"></ElemComponent>
+                                </div>
                             }
                             <img class="delete-elem" @onclick="@(() => RemoveArrayItem(elemInfo.sub_type_class.IndexOf(subElem)))"/>
                             <hr/>
@@ -478,7 +480,7 @@
     }
     private async Task HandleValue(ElemInfo obj, int j,string key)
     {
-        if (elemInfo != null)
+        if (elemInfo != null && obj.isValid && elemInfo.isValid)
         {
             var item = elemInfo.arrayItems[j];
             var stringValue = item?.ToString();
