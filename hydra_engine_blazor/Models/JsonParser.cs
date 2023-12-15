@@ -152,7 +152,18 @@ public class JsonParser
                     {
                         elemInfo.sub_type_class = null;
                     }
-                    
+                    break;
+                case "sub_type_schema":
+                    if (!string.IsNullOrEmpty(keyValue.Value?.ToString()))
+                    {
+                        elemInfo.sub_type_schema =
+                            JsonSerializer.Deserialize<Dictionary<string, object>>(keyValue.Value?.ToString());
+                    }
+                    else
+                    {
+                        elemInfo.sub_type_schema = null;
+                    }
+
                     break;
             }
         }

@@ -188,6 +188,11 @@
         },
     };
 
+    protected override void OnParametersSet()
+    {
+        Value = elemInfo.value;
+    }
+
     protected override void OnInitialized()
     {
         Value = elemInfo.value;
@@ -438,13 +443,10 @@
     {
         if (elemInfo?.sub_type_class != null)
         {
-            var dictionary = new Dictionary<string, object>()
-            {
-                { "from", 0},
-                { "to", 0}
-
-            };
-            elemInfo?.arrayItems.Add(JsonSerializer.Serialize(dictionary,options));
+            var dictionary = elemInfo.sub_type_schema;
+            elemInfo?.sub_type_class.Add(dictionary);
+            var valueDictionary = dictionary.ToDictionary(x => x.Key, y => (y.Value as ElemInfo)?.value);
+            elemInfo?.arrayItems.Add(valueDictionary);
         }
         else
         {

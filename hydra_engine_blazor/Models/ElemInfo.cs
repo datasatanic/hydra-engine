@@ -54,6 +54,10 @@ public class ElemInfo
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [JsonPropertyName("sub_type_class")]
     public List<Dictionary<string,object>>? sub_type_class { get; set; }
+    [DataMember(Name = "sub_type_schema", EmitDefaultValue = false)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [JsonPropertyName("sub_type_schema")]
+    public Dictionary<string,object> sub_type_schema { get; set; }
     
     
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]

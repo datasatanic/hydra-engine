@@ -34,6 +34,7 @@ class ElemInfo(BaseModel):
     type: types
     description: str = None
     sub_type: sub_types = None
+    sub_type_schema: dict = None
     sub_type_class: dict | list = None
     readOnly: bool = False
     display_name: str
@@ -578,12 +579,25 @@ def get_element_info(input_url, uid: str):
                             render_constraints.append(constraint_item)
                 try:
                     sub_type_class = element["sub_type_class"] if "sub_type_class" in element else None
+                    d = {}
                     if sub_type_class is not None:
+                        for el in sub_type_class:
+                            d[el] = ElemInfo(value="", type=sub_type_class[el]["type"],
+                                             description=sub_type_class[el]["description"],
+                                             sub_type=None,
+                                             sub_type_class=None,
+                                             sub_type_schema=None,
+                                             readOnly=sub_type_class[el]["readonly"],
+                                             display_name=sub_type_class[el]["render"]["display_name"],
+                                             control=sub_type_class[el]["render"]["control"],
+                                             constraints=render_constraints,
+                                             file_id=uid)
                         sub_type_class = get_value(input_url, uid, sub_type_class)
                     elem_info = ElemInfo(value=get_value(input_url, uid), type=element["type"],
                                          description=element["description"],
                                          sub_type=element["sub_type"],
                                          sub_type_class=sub_type_class if "sub_type_class" in element else None,
+                                         sub_type_schema=d if "sub_type_class" in element else None,
                                          readOnly=element["readonly"],
                                          display_name=render_dict["display_name"], control=render_dict["control"],
                                          constraints=render_constraints,
