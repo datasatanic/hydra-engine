@@ -354,7 +354,7 @@ PARAMS:
             readonly: False
             description: ""
             render:
-              control: input_control
+              control: textarea_control
               display_name: "Ssh key"
               constraints:
           sudoers:

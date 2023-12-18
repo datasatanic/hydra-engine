@@ -28,7 +28,8 @@
     </div>
     <button id="save" class="save-button" disabled="@(string.IsNullOrEmpty(Output_URL) | 
                                                       currentControlsMeta.Elem.Count == 0 
-                                                       & currentControlsMeta.Child.Where(item => item.Type.Equals("group")).Select(item => item.Elem.Count).Where(x => x > 0).ToList().Count == 0)" 
+                                                       & currentControlsMeta.Child.Where(item => item.Type.Equals("group")).Select(item => item.Elem.Count).Where(x => x > 0).ToList().Count == 0
+                                                        | changeElements.Exists(item => !item.Value.isValid))" 
                     @onclick="SaveValues">Save</button>
     <button class="save-button" style="right: 150px" @onclick="async()=>await ResetModalWindow.Open()">Reset</button>
     <div class="form-container">
@@ -213,6 +214,7 @@
         {
             changeElements.Add(elem);
         }
+        StateHasChanged();
         
     }
 

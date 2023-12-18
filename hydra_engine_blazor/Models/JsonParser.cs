@@ -163,11 +163,82 @@ public class JsonParser
                     {
                         elemInfo.sub_type_schema = null;
                     }
-
+                    break;
+                case "isValid":
+                    elemInfo.isValid = bool.Parse(keyValue.Value?.ToString());
                     break;
             }
         }
 
         return elemInfo;
+    }
+
+    public static string SerializeElemInfo(ElemInfo elemInfo)
+    {
+        JsonObject node = new JsonObject
+        {
+            ["value"] = elemInfo.value.ToString(),
+            ["file_id"] = elemInfo.fileId,
+            ["type"] = elemInfo.type switch
+            {
+                ElemType.String => "string",
+                ElemType.Int => "int",
+                ElemType.Double=>"double",
+                ElemType.DateTime=>"datetime",
+                ElemType.Bool => "bool",
+                ElemType.Array => "array",
+                _ => throw new ArgumentOutOfRangeException()
+            },
+            ["sub_type"] = elemInfo.sub_type switch
+            {
+                ElemType.String => "string",
+                ElemType.Int => "int",
+                ElemType.Double=>"double",
+                ElemType.DateTime=>"datetime",
+                ElemType.Bool => "bool",
+                ElemType.Composite => "composite",
+                _ => null
+            },
+            ["description"] = elemInfo.description,
+            ["readOnly"] = elemInfo.readOnly,
+            ["display_name"] = elemInfo.display_name,
+            ["control"] = elemInfo.control switch
+            {
+                Control.Text => "input_control",
+                Control.Textarea => "textarea_control",
+                Control.Label => "label_control",
+                Control.Password => "password_control",
+                Control.Date => "date_control",
+                Control.Datetime => "datetime_control",
+                Control.Time => "time_control",
+                Control.Number => "number_control",
+                Control.Checkbox => "checkbox_control",
+                Control.Radio => "radio_control",
+                Control.Fieldset => "list_control",
+                _ => throw new ArgumentOutOfRangeException()
+            },
+            ["constraints"] = JsonSerializer.Serialize(elemInfo.constraints),
+            ["sub_type_schema"] = JsonSerializer.Serialize(elemInfo.sub_type_schema),
+            ["isValid"] = elemInfo.isValid
+        };
+        if (elemInfo.sub_type_class == null)
+        {
+            node.Add("sub_type_class",null);
+        }
+        else
+        {
+            node.Add("sub_type_class",new JsonArray());
+            foreach (var dict in elemInfo.sub_type_class)
+            {
+                JsonNode subNode = new JsonObject();
+                foreach (var kvp in dict)
+                {
+                    subNode.AsObject().Add(kvp.Key,kvp.Value.ToString());
+                }
+                node["sub_type_class"]?.AsArray().Add(subNode);
+            }
+        }
+
+        return node.ToJsonString();
     }
 }

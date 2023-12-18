@@ -86,6 +86,8 @@ public enum ElemType
     Range,
     [EnumMember(Value = "array")]
     Array,
+    [EnumMember(Value = "composite")]
+    Composite
 }
 [Flags]
 public enum Control

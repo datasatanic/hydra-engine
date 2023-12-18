@@ -18,81 +18,31 @@
             case Control.Textarea:
                 <div class="elem-container">
                     <h4>@elemInfo.display_name</h4>
-                    <textarea @attributes="ElementAttributes" rows="@(Value?.ToString()?.Length)" @onchange="@((e)=>ChangeValue(e,Value,elemInfo.type))">@Value</textarea>
-                </div>
-                break;
-            case Control.Range:
-                <div class="elem-container">
-                    <h4>@elemInfo.display_name</h4>
-                    @{var range=JsonSerializer.Deserialize<Dictionary<string, object>>(Value.ToString());}
-                    <div class="elem-container">
-                        <div class="position-relative">
-                            <h4>From</h4>
-                            <input type="number" validation-error="@(!TryParseToType(range?.GetValueOrDefault("from", "").ToString(), ElemType.Int))" value="@range?.GetValueOrDefault("from", "")" @onchange="@((e) => ChangeRangeValue(e, range?.GetValueOrDefault("from", ""), true))"/>
-                            @if (string.IsNullOrEmpty(range.GetValueOrDefault("from", "").ToString()))
-                            {
-                                <div class="validation-message range-error">Enter field</div>
-                            }
-                            else if (!TryParseToType(range.GetValueOrDefault("from", "").ToString(), ElemType.Int))
-                            {
-                                <div class="validation-message range-error">Not @ElemType.Int type</div>
-                            }
-                            else
-                            {
-                                foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(range.GetValueOrDefault("from", "").ToString(), item, elemInfo.control)))
-                                {
-                                    <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
-                                }
-                            }
-                        </div>
-                        <div class="position-relative">
-                            <h4>To</h4>
-                            <input type="number" validation-error="@(!TryParseToType(range?.GetValueOrDefault("to", "").ToString(), ElemType.Int))" value="@range?.GetValueOrDefault("to", "")" @onchange="@((e) => ChangeRangeValue(e, range?.GetValueOrDefault("to", ""), false))"/>
-                            @if (string.IsNullOrEmpty(range.GetValueOrDefault("to", "").ToString()))
-                            {
-                                <div class="validation-message range-error">Enter field</div>
-                            }
-                            else if (!TryParseToType(range.GetValueOrDefault("to", "").ToString(), ElemType.Int))
-                            {
-                                <div class="validation-message range-error">Not @ElemType.Int type</div>
-                            }
-                            else
-                            {
-                                foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(range.GetValueOrDefault("to", "").ToString(), item, elemInfo.control)))
-                                {
-                                    <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
-                                }
-                            }
-                        </div>
-                    </div>
+                    <textarea @attributes="ElementAttributes" validation-error="@(!TryParseToType(elemInfo.value.ToString(), elemInfo?.type))" @onchange="@((e)=>ChangeValue(e,elemInfo.type))">@elemInfo.value</textarea>
                 </div>
                 break;
             default:
                 <div class="elem-container @(elemInfo.control==Control.Checkbox ? "elem-reverse" : "")">
                     <h4>@elemInfo.display_name</h4>
-                    <input @attributes="ElementAttributes" size="@(Value?.ToString()?.Length)" value="@(elemInfo.control==Control.Checkbox ? "bool" : Value)" @onchange="@((e)=>ChangeValue(e,Value,elemInfo.type))"/>
+                    <input @attributes="ElementAttributes" validation-error="@(!TryParseToType(elemInfo.value.ToString(), elemInfo?.type))" size="@(elemInfo.value.ToString()?.Length)" value="@(elemInfo.control==Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e)=>ChangeValue(e,elemInfo.type))"/>
                 </div>
                 break;
 
         }
-        @if (elemInfo.type != ElemType.Range)
+        @if (string.IsNullOrEmpty(elemInfo.value.ToString()))
         {
-            @if (string.IsNullOrEmpty(Value?.ToString()))
+            <div class="validation-message">Enter field</div>
+        }
+        else if (!TryParseToType(elemInfo.value.ToString(),elemInfo?.type))
+        {
+            <div class="validation-message">Not @elemInfo.type type</div>
+        }
+        else
+        {
+            foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elemInfo.value.ToString(), item, elemInfo.control)))
             {
-                <div class="validation-message">Enter field</div>
+                <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
             }
-            else if (!TryParseToType(Value.ToString(),elemInfo?.type))
-            {
-                <div class="validation-message">Not @elemInfo.type type</div>
-            }
-            else
-            {
-                foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(Value.ToString(), item, elemInfo.control)))
-                {
-                    <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
-                }
-            }
-            
         }
     }
     else
@@ -103,7 +53,7 @@
                     <img @onclick="AddItem"/>
                 </legend>
                 <div class="d-flex flex-column gap-3">
-                    @if (elemInfo?.sub_type_class != null)
+                    @if (elemInfo.sub_type_class != null)
                     {
                         @foreach (var subElem in elemInfo.sub_type_class)
                         {
@@ -129,7 +79,7 @@
                                 {
                                     case Control.Textarea:
                                         <div class="list-item-container">
-                                            <textarea @attributes="ElementAttributes" rows="@(elem?.ToString()?.Length)"validation-error="@(!TryParseToType(elem.ToString(), elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
+                                            <textarea @attributes="ElementAttributes" validation-error="@(!TryParseToType(elem.ToString(), elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
                                             <img @onclick="@(() => RemoveArrayItem(j))"/>
                                         </div>
                                         break;
@@ -140,24 +90,20 @@
                                         </div>
                                         break;
                                 }
-                                @if (elemInfo?.sub_type != ElemType.Range)
+                                @if (string.IsNullOrEmpty(elem.ToString()))
                                 {
-                                    @if (string.IsNullOrEmpty(elem.ToString()))
+                                    <div class="validation-message">Enter field</div>
+                                }
+                                else if (!TryParseToType(elem.ToString(), elemInfo?.sub_type))
+                                {
+                                    <div class="validation-message">Not @elemInfo?.sub_type type</div>
+                                }
+                                else
+                                {
+                                    foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elem.ToString(), item, elemInfo.control)))
                                     {
-                                        <div class="validation-message">Enter field</div>
+                                        <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
                                     }
-                                    else if (!TryParseToType(elem.ToString(), elemInfo?.sub_type))
-                                    {
-                                        <div class="validation-message">Not @elemInfo?.sub_type type</div>
-                                    }
-                                    else
-                                    {
-                                        foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elem.ToString(), item, elemInfo.control)))
-                                        {
-                                            <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
-                                        }
-                                    }
-
                                 }
                             </div>
                          }
@@ -177,7 +123,6 @@
     public ElemInfo? elemInfo { get; set; }
 
     private string filePath => elemInfo.fileId;
-    private object? Value { get; set; }
     private Dictionary<string, object>? ElementAttributes { get; set; } = new();
 
     private JsonSerializerOptions options = new()
@@ -188,27 +133,25 @@
         },
     };
 
-    protected override void OnParametersSet()
-    {
-        Value = elemInfo.value;
-    }
-
     protected override void OnInitialized()
     {
-        Value = elemInfo.value;
+        elemInfo.isValid = true;
+    }
+
+    protected override void OnParametersSet()
+    {
         ElementAttributes = new Dictionary<string, object>
         {
             {"disabled",elemInfo?.readOnly},
             {"tabindex",1},
-            {"title",elemInfo?.description},
-            {"validation-error",false}
+            {"title",elemInfo?.description}
         };
         if (elemInfo.type == ElemType.Array)
         {
-            elemInfo.arrayItems = JsonSerializer.Deserialize<List<object>>(Value.ToString(),options);
+            elemInfo.arrayItems = JsonSerializer.Deserialize<List<object>>(elemInfo.value.ToString(),options);
         }
-        elemInfo.isValid = true;
         AddElementAttributes(elemInfo);
+        
     }
 
     private bool TryParseToType(string value,ElemType? type)
@@ -232,10 +175,10 @@
             };
     }
 
-    private async Task ChangeValue(ChangeEventArgs obj,object? value,ElemType type)
+    private async Task ChangeValue(ChangeEventArgs obj,ElemType type)
     {
-        Value = obj.Value?.ToString();
-        value = obj.Value?.ToString();
+        elemInfo.value = obj.Value.ToString();
+        var value = obj.Value;
         if (TryParseToType(value.ToString(),elemInfo?.type) && !string.IsNullOrEmpty(value.ToString()) && !elemInfo.constraints.Exists(item=>!CheckConstraints(value.ToString(),item,elemInfo.control)))
         {
             ElementAttributes["validation-error"] = false;
@@ -266,47 +209,15 @@
         }
         else
         {
-            ElementAttributes["validation-error"] = true;
             elemInfo.isValid = false;
         }
-        await SendValue.InvokeAsync(elemInfo);
-    }
-
-    private async Task ChangeRangeValue(ChangeEventArgs obj, object? value,bool isStart)
-    {
-        var range=JsonSerializer.Deserialize<Dictionary<string, object>>(Value.ToString());
-        if (TryParseToType(obj.Value.ToString(), ElemType.Int) && !string.IsNullOrEmpty(obj.Value.ToString()) && !elemInfo.constraints.Exists(item=>!CheckConstraints(obj.Value.ToString(),item,elemInfo.control)))
-        {
-            if (isStart)
-            {
-                range["from"] = int.Parse(obj.Value.ToString());
-            }
-            else
-            {
-                range["to"] = int.Parse(obj.Value.ToString());
-            }
-            elemInfo.isValid = true;
-        }
-        else
-        {
-            if (isStart)
-            {
-                range["from"] = obj.Value.ToString();
-            }
-            else
-            {
-                range["to"] = obj.Value.ToString();
-            }
-            elemInfo.isValid = false;
-        }
-        Value = JsonSerializer.Serialize(range);
-        elemInfo.value = Value;
         await SendValue.InvokeAsync(elemInfo);
     }
 
     private async Task ChangeArrayValue(ChangeEventArgs obj,int i,ElemType type)
     {
         elemInfo.arrayItems[i]=obj.Value?.ToString();
+        elemInfo.value = JsonSerializer.Serialize(elemInfo.arrayItems);
         if (elemInfo?.arrayItems.Find(item => !TryParseToType(item?.ToString(), elemInfo?.sub_type) |
                                               string.IsNullOrEmpty(item.ToString()) | elemInfo.constraints.Exists(item=>!CheckConstraints(item.ToString(),item,elemInfo.control))) == null)
         {
@@ -320,7 +231,6 @@
                     elemInfo.value = elemInfo?.arrayItems.Select(item => int.Parse(item.ToString())).ToList();
                     break;
                 case ElemType.Double:
-                    List<double>? doubleArray;
                     switch (CultureInfo.CurrentCulture.TwoLetterISOLanguageName)
                     {
                         case "en":
@@ -338,49 +248,11 @@
                     elemInfo.value = elemInfo?.arrayItems.Select(item => DateTime.Parse(item.ToString())).ToList();
                     break;
             }
+            elemInfo.value = JsonSerializer.Serialize(elemInfo.value);
         }
         else
         {
             elemInfo.isValid = false;
-        }
-        await SendValue.InvokeAsync(elemInfo);
-    }
-
-    private async Task ChangeArrayRangeValue(ChangeEventArgs obj, int i, bool isStart)
-    {
-        var range=JsonSerializer.Deserialize<Dictionary<string, object>>(elemInfo.arrayItems[i].ToString());
-        if (TryParseToType(obj.Value.ToString(), ElemType.Int) && !string.IsNullOrEmpty(obj.Value.ToString()) && !elemInfo.constraints.Exists(item=>!CheckConstraints(obj.Value.ToString(),item,elemInfo.control)))
-        {
-            if (isStart)
-            {
-                range["from"] = int.Parse(obj.Value.ToString());
-            }
-            else
-            {
-                range["to"] = int.Parse(obj.Value.ToString());
-            }
-        }
-        else
-        {
-            if (isStart)
-            {
-                range["from"] = obj.Value.ToString();
-            }
-            else
-            {
-                range["to"] = obj.Value.ToString();
-            }
-        }
-        elemInfo.arrayItems[i] = JsonSerializer.Serialize(range,options);
-        elemInfo.isValid = true;
-        elemInfo.value = JsonSerializer.Serialize(elemInfo.arrayItems,options).Replace("\"{", "{").Replace("}\"", "}").Replace("\\","");
-        foreach (var item in elemInfo.arrayItems)
-        {
-            var dict = JsonSerializer.Deserialize<Dictionary<string, object>>(item.ToString());
-            if (!(string.IsNullOrEmpty(dict.GetValueOrDefault("from", "").ToString()) | string.IsNullOrEmpty(dict.GetValueOrDefault("to", "").ToString())
-                  | !TryParseToType(dict.GetValueOrDefault("from", "").ToString(), ElemType.Int) | !TryParseToType(dict.GetValueOrDefault("to", "").ToString(), ElemType.Int))) continue;
-            elemInfo.isValid = false;
-            break;
         }
         await SendValue.InvokeAsync(elemInfo);
     }
@@ -408,7 +280,7 @@
                 break;
             case Control.Checkbox:
                 ElementAttributes?.Add("type","checkbox");
-                ElementAttributes?.Add("checked", bool.Parse(Value.ToString()));
+                ElementAttributes?.Add("checked", bool.Parse(elemInfo.value.ToString()));
                 break;
             case Control.Fieldset:
                 break;
@@ -436,10 +308,11 @@
             elemInfo?.arrayItems.RemoveAt(pos);
             elemInfo.value = elemInfo.arrayItems;
         }
+        elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(elemInfo.value));
         await SendValue.InvokeAsync(elemInfo);
     }
 
-    private void AddItem()
+    private async Task AddItem()
     {
         if (elemInfo?.sub_type_class != null)
         {
@@ -452,6 +325,9 @@
         {
             elemInfo?.arrayItems.Add(string.Empty);
         }
+        elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(elemInfo.arrayItems));
+        elemInfo.isValid = false;
+        await SendValue.InvokeAsync(elemInfo);
     }
 
     private bool CheckConstraints(string value, ConstraintItem constraintItem,Control control)
@@ -485,11 +361,8 @@
         {
             itemDict[key] = obj.value;
             elemInfo.arrayItems[j] = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize<object>(itemDict));
-            elemInfo.value = elemInfo.arrayItems;
-            if (!obj.isValid)
-            {
-                elemInfo.isValid = false;
-            }
+            elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(elemInfo.arrayItems));
+            elemInfo.sub_type_class[j][key] = JsonParser.SerializeElemInfo(obj);
             await SendValue.InvokeAsync(elemInfo);
         }
     }
