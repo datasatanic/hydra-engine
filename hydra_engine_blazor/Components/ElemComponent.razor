@@ -136,6 +136,16 @@
     protected override void OnInitialized()
     {
         elemInfo.isValid = true;
+        if (elemInfo.sub_type_class == null) return;
+        foreach (var dictionary in elemInfo.sub_type_class)
+        {
+            foreach (var (key, value) in dictionary)
+            {
+                var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
+                subElemInfo.isValid = true;
+                elemInfo.sub_type_class[elemInfo.sub_type_class.IndexOf(dictionary)][key] = JsonParser.SerializeElemInfo(subElemInfo);
+            }
+        }
     }
 
     protected override void OnParametersSet()
@@ -363,6 +373,14 @@
             elemInfo.arrayItems[j] = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize<object>(itemDict));
             elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(elemInfo.arrayItems));
             elemInfo.sub_type_class[j][key] = JsonParser.SerializeElemInfo(obj);
+            foreach (var dictionary in elemInfo.sub_type_class)
+            {
+                foreach (var (_, value) in dictionary)
+                {
+                    var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
+                    if (!subElemInfo.isValid) elemInfo.isValid = false;
+                }
+            }
             await SendValue.InvokeAsync(elemInfo);
         }
     }
