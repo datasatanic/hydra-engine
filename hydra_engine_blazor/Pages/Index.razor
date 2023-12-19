@@ -1,6 +1,5 @@
 ﻿@page "/{*Output_URL}"
 @using hydra_engine_blazor.Models
-@using System.Timers
 @using DefaultNamespace
 @inject SettingsContainer SettingsContainer
 @inject IJSRuntime JSRuntime
@@ -10,7 +9,7 @@
 <div class="page-container">
     <div @onfocusout="BlurCallback">
         <div class="input-search-container">
-                <input type="search" placeholder="Search..." value="@searchValue" @oninput="SearchCallback" @onkeyup="ResetTimer" @onfocus="SearchOnFocus"/>
+                <input type="search" placeholder="Search..." value="@searchValue" @oninput="SearchCallback" @onfocus="SearchOnFocus"/>
                 <img/>
             </div>
             <div class="search-container" tabindex="1" @onfocusin="SearchOnFocus">
@@ -56,7 +55,7 @@
                     @foreach (var elem in currentControlsMeta.Elem)
                     {
                         var id = elem.Keys.ToList()[0];
-                        <div id="@($"#f{SettingsContainer.GetHash(id)}")">
+                        <div @key="id" id="@($"#f{SettingsContainer.GetHash(id)}")">
                             @foreach (var kvp in elem)
                             {
                                 <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
@@ -173,9 +172,6 @@
     protected override void OnInitialized()
     {
         SettingsContainer.CurrentOutputUrl = Output_URL;
-        _timer = new Timer(250);
-        _timer.Elapsed += OnSearchFinish;
-        _timer.AutoReset = false;
     }
 
     private async Task SaveValues()
@@ -199,6 +195,16 @@
         if (string.IsNullOrEmpty(searchValue))
         {
             _searchEntities?.Clear();
+        }
+        else
+        {
+            _timer?.Dispose();
+
+            _timer = new Timer(async _ =>
+            {
+                await OnSearchFinish();
+
+            }, null, 250, Timeout.Infinite);
         }
     }
 
@@ -237,17 +243,11 @@
         await ResetModalWindow.Close();
         await _module.InvokeVoidAsync("ReloadPage");
     }
-    private async void OnSearchFinish(object? source, ElapsedEventArgs e)
+    private async Task OnSearchFinish()
     {
         if (string.IsNullOrEmpty(searchValue)){ return;}
         _searchEntities = await SettingsContainer.SearchRequest(searchValue);
         StateHasChanged();
-    }
-
-    private void ResetTimer()
-    {
-        _timer?.Stop();
-        _timer?.Start();
     }
     void IDisposable.Dispose()
         =>
