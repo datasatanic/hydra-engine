@@ -15,5 +15,6 @@ PARAMS:
         control: input_control
         display_name: "PG username"
         constraints:
-            - maxlength: 30
+            - maxlength:
+                value: 30
         additional: # specified info

@@ -41,7 +41,7 @@
         {
             foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elemInfo.value.ToString(), item, elemInfo.control)))
             {
-                <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
+                <div class="validation-message">@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")</div>
             }
         }
     }
@@ -102,7 +102,7 @@
                                 {
                                     foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elem.ToString(), item, elemInfo.control)))
                                     {
-                                        <div class="validation-message">@constraintItem.type:@constraintItem.value</div>
+                                        <div class="validation-message">@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")</div>
                                     }
                                 }
                             </div>

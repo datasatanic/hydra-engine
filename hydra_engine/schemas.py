@@ -23,6 +23,7 @@ controls = Literal[
 class ConstraintItem(BaseModel):
     value: str
     type: constraints
+    message: str = None
 
     class Config:
         orm_mode = True
@@ -512,8 +513,9 @@ def find_value_in_dict(elements, input_url_list, sub_type_class, file_id):
                         if render_dict_constraints:
                             for constraint in render_dict_constraints:
                                 for constraint_key in constraint:
-                                    constraint_item = ConstraintItem(value=constraint[constraint_key],
-                                                                     type=constraint_key)
+                                    constraint_item = ConstraintItem(value=constraint[constraint_key]["value"],
+                                                                     type=constraint_key,
+                                                                     message=constraint[constraint_key]["message"] if "message" in constraint[constraint_key] else None)
                                     render_constraints.append(constraint_item)
                         sub_elem_info = ElemInfo(value=elem[key], type=sub_type_class[key]["type"],
                                                  description=sub_type_class[key]["description"],
@@ -575,7 +577,8 @@ def get_element_info(input_url, uid: str):
                 if render_dict_constraints:
                     for constraint in render_dict_constraints:
                         for key in constraint:
-                            constraint_item = ConstraintItem(value=constraint[key], type=key)
+                            constraint_item = ConstraintItem(value=constraint[key]["value"], type=key,
+                                                             message=constraint[key]["message"] if "message" in constraint[key] else None)
                             render_constraints.append(constraint_item)
                 try:
                     sub_type_class = element["sub_type_class"] if "sub_type_class" in element else None

@@ -18,8 +18,10 @@ PARAMS:
         control: input_control
         display_name: "Rex conn url"
         constraints:
-          - maxlength: 23
-          - minlength: 21
+          - maxlength:
+              value: 23
+          - minlength:
+              value: 21
         additional: # specified info
   - AllowedHosts: # Input_URL
       type: array

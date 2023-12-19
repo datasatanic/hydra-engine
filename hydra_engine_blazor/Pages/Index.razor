@@ -8,10 +8,6 @@
 @implements IDisposable;
 @layout MainLayout
 <div class="page-container">
-    @if (plan_loader)
-    {
-        <Loader Color="#5C73E5" Title="@plan_title"></Loader>
-    }
     <div @onfocusout="BlurCallback">
         <div class="input-search-container">
                 <input type="search" placeholder="Search..." value="@searchValue" @oninput="SearchCallback" @onkeyup="ResetTimer" @onfocus="SearchOnFocus"/>
@@ -136,8 +132,6 @@
     private string? searchValue = string.Empty;
     bool _load; //For loading before start scrolling
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
-    private bool plan_loader;
-    private string plan_title;
     private Timer? _timer;
     private bool visibility = true;
 

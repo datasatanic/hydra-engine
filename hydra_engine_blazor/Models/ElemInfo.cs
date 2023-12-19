@@ -122,4 +122,6 @@ public class ConstraintItem
 {
     public string value { get; set; }
     public string type { get; set; }
+    public string? message { get; set; }
+
 }

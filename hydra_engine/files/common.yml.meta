@@ -366,6 +366,9 @@ PARAMS:
               control: input_control
               display_name: "Sudoers"
               constraints:
+                - pattern:
+                    value: "^(yes|no)$"
+                    message: "Valid values: yes, no"
           noPassSudo:
             type: string
             sub_type:
@@ -375,6 +378,9 @@ PARAMS:
               control: input_control
               display_name: "NoPassSudo"
               constraints:
+                - pattern:
+                    value: "^(yes|no)$"
+                    message: "Valid values: yes, no"
         readonly: False
         description: ""
         id: 6
