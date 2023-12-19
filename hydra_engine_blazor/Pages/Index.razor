@@ -145,8 +145,15 @@
         {
             SettingsContainer.CurrentDisplayNamePath = SettingsContainer.ListOutputUrl.GetValueOrDefault(SettingsContainer.CurrentOutputUrl, "");
             var query = await SettingsContainer.GetFormInfo(Output_URL);
-            if (query != null) JsonParser.DeserializeTree(query.ToString(),currentControlsMeta,currentControlsMeta.Child);
-            _load = true;
+            if (query != null)
+            {
+                JsonParser.DeserializeTree(query.ToString(), currentControlsMeta, currentControlsMeta.Child);
+                _load = true;
+            }
+            else
+            {
+                _toastService.ShowError("Failed to get form info");
+            }
         }
     }
 
@@ -174,8 +181,16 @@
     private async Task SaveValues()
     {
         if (changeElements.Exists(item => !item.Value.isValid)) return;
-        await SettingsContainer.SetValues(changeElements);
-        changeElements.Clear();
+        var response = await SettingsContainer.SetValues(changeElements);
+        if (response.IsSuccessStatusCode)
+        {
+            _toastService.ShowSuccess("All changes were successfully saved");
+            changeElements.Clear();
+        }
+        else
+        {
+            _toastService.ShowError("An error occurred while saving data");
+        }
     }
 
     private void SearchCallback(ChangeEventArgs obj)
