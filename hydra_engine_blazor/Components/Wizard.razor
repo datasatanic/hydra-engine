@@ -5,18 +5,39 @@
 <div class="wizard-container">
     <Modal Model="WizardModel" @ref="WizardModal">
         <Header>
-            <h2 class="title">@WizardModel.Title</h2>
+            <div class="d-block">
+                <h2 class="title">@WizardModel.Title</h2>
+                @if (!string.IsNullOrEmpty(Output_URL) && Output_URL.Split("/").Length > 1)
+                {
+                    <div class="path-container">
+                        @{
+                            var urlsList = Output_URL.Split("/").ToList();
+                            var href = "";
+                            @foreach (var url in urlsList)
+                            {
+                                href += "/" + url;
+                                <div class="path" last-child="@(urlsList.IndexOf(url) == urlsList.Count - 1)">
+                                    @formNamesPath.Split("/")[urlsList.IndexOf(url)]
+                                </div>
+                                <img class="@(urlsList.IndexOf(url) != urlsList.Count - 1 && !string.IsNullOrEmpty(url) ? "right-arrow" : "")"/>
+                            }
+                        }
+                    </div>
+                }
+            </div>
             <img @onclick="async () => await WizardModal.Close()" alt=""/>
         </Header>
         <Body>
         @foreach (var elem in currentControlsMeta.Elem)
         {
-            <div>
-                @foreach (var kvp in elem)
-                {
-                    <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
-                    </ElemComponent>
-                }
+            <div class="form-elements-container">
+                <div class="elements-container">
+                    @foreach (var kvp in elem)
+                    {
+                        <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
+                        </ElemComponent>
+                    }
+                </div>
             </div>
         }
         <div class="groups @(currentControlsMeta.Child.Where(item => item.Type.Equals("group")).ToList().Count == 0 ? "hide" : "")">
@@ -48,7 +69,7 @@
                 continue;
             }
             <div>
-                <input type="radio" checked="@($"{item.Name}" == nextFormUrl.Split("/")[^1])" value="@item.DisplayName" @onchange="@(() => SelectForm(@item.Name))"/>
+                <input type="radio" checked="@($"{item.Name}" == nextFormUrl.Split("/")[^1])" value="@item.DisplayName" @onchange="@(() => SelectForm(item.Name,item.DisplayName))"/>
                 <p>@item.DisplayName</p>
             </div>
         }
@@ -56,9 +77,8 @@
         <Footer>
             <div class="prev-next-container">
                 <button style="@(!string.IsNullOrEmpty(Output_URL) ? "visibility:visible" : "visibility:hidden")" type="reset" @onclick="PrevCallback">Back</button>
-                <button style="@(currentControlsMeta.Child.Count > 0 ? "visibility:visible" : "visibility:hidden")" type="submit" class="next-button" @onclick="NextCallback">Next</button>
+                <button style="@(currentControlsMeta.Child.Count > 0 ? "visibility:visible" : "visibility:hidden")" type="reset" class="next-button" @onclick="NextCallback">Next</button>
             </div>
-            
         </Footer>
     </Modal>
 </div>
@@ -71,6 +91,8 @@
     private WizardModel WizardModel = new();
     private Modal WizardModal = new();
     private string nextFormUrl = "";
+    private string nextFormName = "";
+    private string formNamesPath = "";
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
 
     protected override async Task OnInitializedAsync()
@@ -84,13 +106,17 @@
         urlList.Remove(urlList.Last());
         if (urlList.Count == 0) Output_URL = "";
         Output_URL = string.Join("/", urlList);
+        var formsNameList = formNamesPath.Split("/").ToList();
+        formsNameList.Remove(formsNameList.Last());
+        if (formsNameList.Count == 0) formNamesPath = "";
+        formNamesPath = string.Join("/", formsNameList);
         await UpdateWizardData();
     }
 
-    private void SelectForm(string formName)
+    private void SelectForm(string formName,string formDisplayName)
     {
         nextFormUrl = !string.IsNullOrEmpty(Output_URL) ? $"{Output_URL}/{formName}" : formName;
-        Console.WriteLine(nextFormUrl);
+        nextFormName = !string.IsNullOrEmpty(formNamesPath) ? $"{formNamesPath}/{formDisplayName}" : formDisplayName;
     }
 
     private async Task NextCallback()
@@ -128,6 +154,7 @@
         if (response.IsSuccessStatusCode)
         {
             Output_URL = nextFormUrl;
+            formNamesPath = nextFormName;
             await UpdateWizardData();
         }
     }
@@ -160,12 +187,18 @@
         if (currentControlsMeta.Child.Count > 0)
         {
             nextFormUrl = (!string.IsNullOrEmpty(Output_URL) ? $"{Output_URL}/" : "") + currentControlsMeta.Child.Where(item => item.Type == "form").ToList()[0].Name;
-            Console.WriteLine(nextFormUrl);
+            nextFormName = (!string.IsNullOrEmpty(formNamesPath) ? $"{formNamesPath}/" : "") + currentControlsMeta.Child.Where(item => item.Type == "form").ToList()[0].DisplayName;
         }
         else
         {
             nextFormUrl = "";
+            nextFormName = "";
         }
+    }
+
+    private void PrevFormCallback(string url)
+    {
+        
     }
 
 }
