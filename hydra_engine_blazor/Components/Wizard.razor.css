@@ -96,3 +96,6 @@
 .modal-footer button[type=reset]:active{
     background: var(--hydra-secondary-30);
 }
+.next-button:disabled {
+    background: var(--hydra-secondary-30) !important;
+}

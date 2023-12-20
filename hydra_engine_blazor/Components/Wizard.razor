@@ -32,11 +32,14 @@
         {
             <div class="form-elements-container">
                 <div class="elements-container">
-                    @foreach (var kvp in elem)
-                    {
-                        <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
-                        </ElemComponent>
-                    }
+                    <div>
+                         @foreach (var kvp in elem)
+                         {
+                             <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
+                             </ElemComponent>
+                         }
+                    </div>
+                   
                 </div>
             </div>
         }
@@ -77,7 +80,8 @@
         <Footer>
             <div class="prev-next-container">
                 <button style="@(!string.IsNullOrEmpty(Output_URL) ? "visibility:visible" : "visibility:hidden")" type="reset" @onclick="PrevCallback">Back</button>
-                <button style="@(currentControlsMeta.Child.Count > 0 ? "visibility:visible" : "visibility:hidden")" type="reset" class="next-button" @onclick="NextCallback">Next</button>
+                <button style="@(currentControlsMeta.Child.Count > 0 ? "visibility:visible" : "visibility:hidden")" type="reset" class="next-button" @onclick="NextCallback"
+                         disabled="@(changeElements.Exists(item => !item.Value.isValid))" >Next</button>
             </div>
         </Footer>
     </Modal>
