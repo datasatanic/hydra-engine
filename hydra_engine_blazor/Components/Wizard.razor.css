@@ -1,9 +1,8 @@
 ﻿::deep .modal-header,::deep .modal-body,::deep .modal-footer{
-    min-width: 560px;
-    max-width: 75vw;
+    width: 75vw;
 }
 ::deep .modal-body{
-    max-height: 50vh;
+    height: 75vh;
 }
 .prev-next-container{
     width: 100%;

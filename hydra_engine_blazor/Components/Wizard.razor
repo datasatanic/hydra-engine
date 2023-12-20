@@ -1,11 +1,6 @@
 ﻿@using hydra_engine_blazor.Models
 @using DefaultNamespace
-@using System.Text.Json
-@using System.Runtime.InteropServices
 @inject WizardContainer WizardContainer
-@inject NavigationManager Navigation
-
-@page "/wizard"
 <button class="open-wizard-button" @onclick="async ()=> await WizardModal.Open()">Open Wizard</button>
 <div class="wizard-container">
     <Modal Model="WizardModel" @ref="WizardModal">
@@ -60,14 +55,8 @@
         </Body>
         <Footer>
             <div class="prev-next-container">
-                @if (!string.IsNullOrEmpty(Output_URL))
-                {
-                    <button type="reset" @onclick="PrevCallback">Back</button>
-                }
-                @if (currentControlsMeta.Child.Count > 0)
-                {
-                    <button type="submit" class="next-button" @onclick="NextCallback">Next</button>
-                }
+                <button style="@(!string.IsNullOrEmpty(Output_URL) ? "visibility:visible" : "visibility:hidden")" type="reset" @onclick="PrevCallback">Back</button>
+                <button style="@(currentControlsMeta.Child.Count > 0 ? "visibility:visible" : "visibility:hidden")" type="submit" class="next-button" @onclick="NextCallback">Next</button>
             </div>
             
         </Footer>
