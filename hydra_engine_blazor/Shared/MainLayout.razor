@@ -2,10 +2,9 @@
 @inherits LayoutComponentBase
 @inject SettingsContainer SettingsContainer
 @inject NavigationManager Navigation
-@inject IJSRuntime JsRuntime
 @using Blazored.Toast.Configuration
 <div class="page">
-    <div @ref="_elementReference" class="menu-container" @onmousemove="ResizeCallback">
+    <div @ref="_elementReference" class="menu-container" style="@($"width:{containerWidth}px")" @onmousemove="ResizeCallback">
         <h1>Dockermodule</h1>
         <div class="search-container">
             <div class="input-search-container">
@@ -39,8 +38,7 @@
             }
             
         </div>
-        <div class="slider-container" @onmousedown="() => resize = true" @onmouseup="() => resize = false"
-             onmouseleave="@MouseLeave">
+        <div class="slider-container" @onmouseout="()=>resize=false" @onmousedown="()=>resize = true" @onmouseup="()=>resize=false">
             <img class="slider"/>
         </div>
         
@@ -58,9 +56,9 @@
     public ControlsMeta _settingsTree = new();
     private bool resize;
     private ElementReference _elementReference;
-    private IJSObjectReference? _module;
     private Dictionary<string,KeyValuePair<string,string>> searchForms;
     private string? searchValue;
+    private double containerWidth = 460;
     protected override async Task OnInitializedAsync()
     {
         SettingsContainer.Expand = true;
@@ -70,25 +68,9 @@
         if (query != null) JsonParser.DeserializeTree(query.ToString(),_settingsTree,_settingsTree.Child);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private void ResizeCallback(MouseEventArgs obj)
     {
-        if (firstRender)
-        {
-            _module=await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./Shared/MainLayout.razor.js");
-        }
-    }
-
-    private async Task ResizeCallback(MouseEventArgs obj)
-    {
-        if (resize)
-        {
-            if (_module != null) await _module.InvokeVoidAsync("ResizeMenu", obj.PageX,_elementReference);
-        }
-    }
-
-    private void MouseLeave()
-    {
-        resize = false;
+        if (resize) containerWidth = obj.PageX;
     }
 
     private void SearchCallback(ChangeEventArgs obj)
