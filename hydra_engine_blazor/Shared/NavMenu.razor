@@ -8,9 +8,10 @@
 <ul class="tree">
     <li @onclick="SavePathSettings"
         @ondblclick:stopPropagation="true">
-        <div class="item-container @(SettingsContainer.CurrentOutputUrl == Root ? "active-link" : "")">
-            <div class="collapse-expand-el @(Settings.Child.Count==0 ? "hidden" : "")" data-bs-toggle="collapse" 
-                 data-bs-target="@($"#r{Root.GetHashCode()}")" aria-controls="@($"r{Root.GetHashCode()}")" type="button" aria-expanded="@(SettingsContainer.Expand ? "true" : "false")" 
+        <div class="item-container @(SettingsContainer.CurrentOutputUrl == Root ? "active-link" : "")
+                    @(!string.IsNullOrEmpty(SettingsContainer.CurrentOutputUrl) && SettingsContainer.CurrentOutputUrl != Root && string.Join("/", SettingsContainer.CurrentOutputUrl.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root ? "active-parent-link" : "")">
+            <div class="collapse-expand-el @(Settings.Child.Count == 0 ? "hidden" : "")" data-bs-toggle="collapse"
+                 data-bs-target="@($"#r{Root.GetHashCode()}")" aria-controls="@($"r{Root.GetHashCode()}")" type="button" aria-expanded="@(SettingsContainer.Expand ? "true" : "false")"
                  @ondblclick:stopPropagation="true" @onclick:stopPropagation="true">
                 <span class="first-stick"></span>
                 <span class="second-stick"></span>

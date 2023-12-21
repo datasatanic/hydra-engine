@@ -81,6 +81,10 @@
     display:block;
 }
 .active-link{
+    background: var(--hydra-secondary-20) !important;
+    border:1px solid var(--hydra-secondary-30) !important;
+}
+.active-parent-link{
     background: var(--hydra-secondary-10) !important;
     border:1px solid var(--hydra-secondary-30) !important;
 }
