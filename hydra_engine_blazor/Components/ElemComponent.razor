@@ -307,16 +307,31 @@
 
     private async Task RemoveArrayItem(int pos)
     {
+        elemInfo.isValid = true;
         if (elemInfo.sub_type_class != null)
         {
             elemInfo.sub_type_class.RemoveAt(pos);
             elemInfo.arrayItems.RemoveAt(pos);
             elemInfo.value = elemInfo.arrayItems;
+            foreach (var dictionary in elemInfo.sub_type_class)
+            {
+                foreach (var unused in dictionary.Select(kvp => JsonParser.DeserializeElemInfo(kvp.Value.ToString())).Where(subElemInfo => !subElemInfo.isValid))
+                {
+                    elemInfo.isValid = false;
+                    break;
+                }
+            }
         }
         else
         {
             elemInfo?.arrayItems.RemoveAt(pos);
             elemInfo.value = elemInfo.arrayItems;
+            if (elemInfo?.arrayItems.
+                Find(item => !TryParseToType(item?.ToString(), elemInfo?.sub_type) |
+                             string.IsNullOrEmpty(item.ToString()) | elemInfo.constraints.Exists(item => !CheckConstraints(item.ToString(), item, elemInfo.control))) != null)
+            {
+                elemInfo.isValid = false;
+            } 
         }
         elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(elemInfo.value));
         await SendValue.InvokeAsync(elemInfo);
@@ -326,7 +341,7 @@
     {
         if (elemInfo?.sub_type_class != null)
         {
-            var dictionary = elemInfo.sub_type_schema;
+            var dictionary = new Dictionary<string, object>(elemInfo.sub_type_schema);
             elemInfo?.sub_type_class.Add(dictionary);
             var valueDictionary = dictionary.ToDictionary(x => x.Key, y => (y.Value as ElemInfo)?.value);
             elemInfo?.arrayItems.Add(valueDictionary);
