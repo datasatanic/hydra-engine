@@ -13,6 +13,17 @@ public class SettingsContainer
 	public string Plan { get; set; }
     public Dictionary<string,string> ListOutputUrl = new();
     private bool expand;
+    private DateTime modifyTime;
+
+    public DateTime ModifyTime
+    {
+        get => modifyTime;
+        set
+        {
+            modifyTime = value;
+            NotifyStateChanged();
+        }
+    }
 
     public bool Expand
     {
@@ -76,6 +87,22 @@ public class SettingsContainer
     public async Task<object?> GetFormInfo(string url)
     {
         return await _client.GetFromJsonAsync<object>($"api/hydra/tree/{url}");
+    }
+
+    public async Task<DateTime> GetModifiedTime()
+    {
+        return await _client.GetFromJsonAsync<DateTime>("api/hydra/modify");
+    }
+
+    public async Task<HttpResponseMessage> CheckModifyTime(DateTime time)
+    {
+        var formattedTime = time.ToString("o");
+        var apiUrl = "api/hydra/check/modify";
+        var queryString = $"modify_time={Uri.EscapeDataString(formattedTime)}";
+        var apiUrlWithQuery = $"{apiUrl}?{queryString}";
+        const string json = "";
+        HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
+        return await _client.PostAsync(apiUrlWithQuery,content);
     }
 
     public async Task<object?> GetElementValue(string FilePath,string Key)

@@ -3,6 +3,7 @@ import hashlib
 import logging
 import ruamel.yaml
 import os
+from datetime import datetime
 
 logger = logging.getLogger("common_logger")
 yaml = ruamel.yaml.YAML(typ="rt")
@@ -24,6 +25,7 @@ class HydraParametersInfo(metaclass=SingletonMeta):
         self.elements_files_info = None
         self.elements_values = None
         self.elements_meta = None
+        self.modify_time: datetime
 
     def get_elements_files_info(self):
         return self.elements_files_info
@@ -39,6 +41,9 @@ class HydraParametersInfo(metaclass=SingletonMeta):
 
     def get_wizard_tree_structure(self):
         return self.wizard_tree
+
+    def set_modify_time(self):
+        self.modify_time = datetime.now()
 
     def set_lists(self, l1, l2, l3):
         self.elements_files_info = l1

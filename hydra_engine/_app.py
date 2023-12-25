@@ -1,6 +1,7 @@
 import logging
 import os
 from contextlib import asynccontextmanager
+from datetime import datetime
 
 import ruamel.yaml
 from fastapi import FastAPI, Request
@@ -27,6 +28,7 @@ async def startup_event(app: FastAPI):
     parse_config_files()
     read_ui_file(os.path.join(base_dir, "files"))
     read_wizard_file(os.path.join(base_dir, "files"))
+    HydraParametersInfo().set_modify_time()
     logger.debug("Directory has been parsed successfully")
     await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
     yield

@@ -65,7 +65,11 @@
         searchForms = new Dictionary<string, KeyValuePair<string,string>>();
         var query = await SettingsContainer.GetTree();
         _settingsTree.Name = "tree";
-        if (query != null) JsonParser.DeserializeTree(query.ToString(),_settingsTree,_settingsTree.Child);
+        if (query != null)
+        {
+            JsonParser.DeserializeTree(query.ToString(),_settingsTree,_settingsTree.Child);
+            SettingsContainer.ModifyTime = await SettingsContainer.GetModifiedTime();
+        }
     }
 
     private void ResizeCallback(MouseEventArgs obj)

@@ -2,7 +2,8 @@ import os
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from hydra_engine._app import parse_config_files, read_ui_file,read_wizard_file
+from hydra_engine._app import parse_config_files, read_ui_file, read_wizard_file
+from hydra_engine.parser import HydraParametersInfo
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -14,6 +15,7 @@ class EventHandler(FileSystemEventHandler):
             parse_config_files()
             read_ui_file(os.path.join(base_dir, "files"))
             read_wizard_file(os.path.join(base_dir, "files"))
+            HydraParametersInfo().set_modify_time()
 
 
 def start_monitoring_files():

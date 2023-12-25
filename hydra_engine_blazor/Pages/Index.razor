@@ -176,16 +176,25 @@
 
     private async Task SaveValues()
     {
-        if (changeElements.Exists(item => !item.Value.isValid)) return;
-        var response = await SettingsContainer.SetValues(changeElements);
-        if (response.IsSuccessStatusCode)
+        var checkResponse = await SettingsContainer.CheckModifyTime(SettingsContainer.ModifyTime);
+        if (checkResponse.IsSuccessStatusCode)
         {
-            _toastService.ShowSuccess("All changes were successfully saved");
-            changeElements.Clear();
+            if (changeElements.Exists(item => !item.Value.isValid)) return;
+            var response = await SettingsContainer.SetValues(changeElements);
+            if (response.IsSuccessStatusCode)
+            {
+                _toastService.ShowSuccess("All changes were successfully saved");
+                changeElements.Clear();
+                SettingsContainer.ModifyTime = await response.Content.ReadFromJsonAsync<DateTime>();
+            }
+            else
+            {
+                _toastService.ShowError("An error occurred while saving data");
+            }
         }
         else
         {
-            _toastService.ShowError("An error occurred while saving data");
+            _toastService.ShowInfo("Saving cancelled. Your data is out of date, refresh the page to get the latest data.");
         }
     }
 

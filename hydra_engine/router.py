@@ -7,8 +7,9 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 
-from hydra_engine.schemas import set_value, HydraParametersInfo, ParameterSaveInfo,filter_tree,find_form
+from hydra_engine.schemas import set_value, HydraParametersInfo, ParameterSaveInfo, filter_tree, find_form
 from hydra_engine.search.searcher import HydraSearcher
+from datetime import datetime
 
 logger = logging.getLogger("common_logger")
 router = APIRouter(prefix="/hydra", tags=["hydra"])
@@ -24,6 +25,11 @@ def get_forms():
         return JSONResponse(content={"detail": "File or directory not found"}, status_code=400)
 
 
+@router.get("/modify")
+def get_modify_time():
+    return JSONResponse(content=jsonable_encoder(HydraParametersInfo().modify_time), status_code=200)
+
+
 @router.get("/tree/{name:path}")
 def get_form_info(name: str):
     form = find_form(name.split("/"), copy.deepcopy(HydraParametersInfo().get_tree_structure()))
@@ -34,6 +40,16 @@ def get_form_info(name: str):
 async def set_values(content: list[ParameterSaveInfo]):
     for item in content:
         set_value(item.input_url, item.file_id, item.value)
+    HydraParametersInfo().set_modify_time()
+    return JSONResponse(content=jsonable_encoder(HydraParametersInfo().modify_time), status_code=200)
+
+
+@router.post("/check/modify")
+async def check_modify_time(modify_time: datetime):
+    if modify_time == HydraParametersInfo().modify_time:
+        return JSONResponse(content={"detail": "ok"}, status_code=200)
+    else:
+        return JSONResponse(content={"detail": "Configuration files was modified"}, status_code=400)
 
 
 @router.post("/configuration")
@@ -60,4 +76,3 @@ async def search(q,
                  ):
     results = await HydraSearcher().perform_search(q, pagenum, pagelen)
     return JSONResponse(content=results) if results != 'not exists' else JSONResponse(content={'index': results})
-
