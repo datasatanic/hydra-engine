@@ -1,3 +1,5 @@
+import copy
+
 import commentjson as json
 import hashlib
 import logging
@@ -53,8 +55,8 @@ class HydraParametersInfo(metaclass=SingletonMeta):
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 elements_files_info = []
-elements_json = []
-elements_yaml = []
+elements_values = []
+elements_meta = []
 
 
 class ValuesInstance:
@@ -74,27 +76,14 @@ def parse_meta_params():
     """
         Parse files with metadata and get info about meta info of different parameters
     """
-    elements_yaml.clear()
-    ui_meta_data = {}
-    with open(os.path.join(base_dir, "files/ui.meta"), 'r') as stream:
-        data = yaml.load(stream)
-        for key in data:
-            ui_meta_data[data[key]["id"]] = key
+    elements_meta.clear()
     for root, dirs, files in os.walk(os.path.join(base_dir, "files")):
         for filename in files:
             if "meta" in filename and filename != "ui.meta" and filename != "wizard.meta":
                 with open(os.path.join(root, filename), 'r') as stream:
                     data_loaded = yaml.load(stream)
                     _elements = data_loaded["PARAMS"]
-                    for el in _elements:
-                        for key in el:
-                            if el[key]["id"] in ui_meta_data:
-                                el[key]["output_url"] = ui_meta_data[el[key]["id"]]
-                    for element in elements_json:
-                        for file_info in elements_files_info:
-                            if element.path == file_info["path"]:
-                                file_info["uid"] = element.uid
-                    elements_yaml.append(_elements)
+                    elements_meta.append(_elements)
 
 
 def parse_elements_fileinfo():
@@ -117,22 +106,51 @@ def parse_value_files():
     """
         Parse configuration files
     """
-    elements_json.clear()
+    elements_values.clear()
     for file in elements_files_info:
-        if file["type"] == "json":
-            with open(os.path.join(base_dir, file["path"]), 'r') as stream:
-                data_loaded = json.load(stream)
-                value_instance = ValuesInstance(file["type"], file["path"],
-                                                hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
-                                                data_loaded)
-                elements_json.append(value_instance)
-        if file["type"] == "yaml":
-            with open(os.path.join(base_dir, file["path"]), 'r') as stream:
-                data_loaded = yaml.load(stream)
-                value_instance = ValuesInstance(file["type"], file["path"],
-                                                hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
-                                                data_loaded)
-                elements_json.append(value_instance)
+        if not os.path.exists(os.path.join(base_dir, file["path"])):
+            d = {}
+            with open(os.path.join(base_dir, file["path"]), 'w') as new_file:
+                elements=elements_meta[elements_files_info.index(file)]
+                for element in elements:
+                    for key in element:
+                        sub_d = d
+                        key_arr = key.split("/")
+                        for slice_path in key_arr:
+                            if key_arr.index(slice_path) == len(key_arr) - 1:
+                                if element[key]["type"] != "array" or element[key]["type"] == "array" and element[key]["sub_type"] != "composite":
+                                    sub_d.update({slice_path: element[key]["default_value"]})
+                                else:
+                                    sub_d.update({slice_path: []})
+                            else:
+                                if slice_path in sub_d:
+                                    sub_d = sub_d[slice_path]
+                                else:
+                                    sub_d.update({slice_path: {}})
+                                    sub_d = sub_d[slice_path]
+                if file["type"] == "yaml":
+                    yaml.dump(d,new_file)
+                elif file["type"] == "json":
+                    json.dump(d, new_file, indent=2)
+                new_file.close()
+        else:
+            if file["type"] == "json":
+                with open(os.path.join(base_dir, file["path"]), 'r') as stream:
+                    data_loaded = json.load(stream)
+                    value_instance = ValuesInstance(file["type"], file["path"],
+                                                    hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
+                                                    data_loaded)
+                    elements_values.append(value_instance)
+            if file["type"] == "yaml":
+                with open(os.path.join(base_dir, file["path"]), 'r') as stream:
+                    data_loaded = yaml.load(stream)
+                    value_instance = ValuesInstance(file["type"], file["path"],
+                                                    hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
+                                                    data_loaded)
+                    elements_values.append(value_instance)
+        for element in elements_values:
+            if element.path == file["path"]:
+                file["uid"] = element.uid
 
 
 def write_file(data, file_path, file_type, key, value):
@@ -150,6 +168,6 @@ def write_file(data, file_path, file_type, key, value):
 
 def parse_config_files():
     parse_elements_fileinfo()
-    parse_value_files()
     parse_meta_params()
-    HydraParametersInfo().set_lists(elements_files_info, elements_json, elements_yaml)
+    parse_value_files()
+    HydraParametersInfo().set_lists(elements_files_info, elements_values, elements_meta)

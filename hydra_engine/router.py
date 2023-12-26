@@ -1,3 +1,4 @@
+import asyncio
 import copy
 import logging
 import subprocess
@@ -40,7 +41,8 @@ def get_form_info(name: str):
 async def set_values(content: list[ParameterSaveInfo]):
     for item in content:
         set_value(item.input_url, item.file_id, item.value)
-    HydraParametersInfo().set_modify_time()
+    await asyncio.sleep(1)  # костыль
+    HydraParametersInfo().set_modify_time()  # костыль
     return JSONResponse(content=jsonable_encoder(HydraParametersInfo().modify_time), status_code=200)
 
 
