@@ -58,7 +58,7 @@
                         <div @key="id" id="@($"#f{SettingsContainer.GetHash(id)}")">
                             @foreach (var kvp in elem)
                             {
-                                <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
+                                <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(elem,obj, kvp.Key))">
                                 </ElemComponent>
                             }
                         </div>
@@ -80,7 +80,7 @@
                                 <div class="elems-group" id="@($"#f{SettingsContainer.GetHash(uid)}")">
                                     @foreach (var kvp in elem)
                                     {
-                                        <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
+                                        <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(elem,obj, kvp.Key))">
                                         </ElemComponent>
                                     }
                                 </div>
@@ -224,8 +224,9 @@
         StateHasChanged();
     }
 
-    private void ChangeValue(ElemInfo obj,string key)
+    private void ChangeValue(Dictionary<string,ElemInfo> elemInfos,ElemInfo obj,string key)
     {
+        elemInfos[key] = obj;
         var elem = new KeyValuePair<string, ElemInfo>(key, obj);
         if (changeElements.Exists(item=>item.Key.Equals(elem.Key)))
         {

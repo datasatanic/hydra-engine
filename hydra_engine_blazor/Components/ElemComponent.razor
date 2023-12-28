@@ -350,14 +350,16 @@
     private async Task HandleChanges(ElemInfo obj, string key)
     {
         var dict = JsonSerializer.Deserialize<Dictionary<string,object>>(elemInfo.value.ToString());
-        if (dict.ContainsKey(key))
+        if (dict != null)
         {
+            elemInfo.sub_type_schema[key] = JsonSerializer.Deserialize<object>(JsonParser.SerializeElemInfo(obj));
             dict[key] = obj.value;
-            elemInfo.value = JsonSerializer.Serialize<object>(dict);
+            elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(dict));
+            Console.WriteLine(elemInfo.value);
             await SendValue.InvokeAsync(elemInfo);
         }
-       
-        
+
+
     }
 
 }
