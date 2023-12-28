@@ -115,16 +115,7 @@ def parse_value_files():
                 for element in elements:
                     for key in element:
                         sub_d = d
-                        key_arr = key.split("/")
-                        for slice_path in key_arr:
-                            if key_arr.index(slice_path) == len(key_arr) - 1:
-                                sub_d.update({slice_path: element[key]["default_value"]})
-                            else:
-                                if slice_path in sub_d:
-                                    sub_d = sub_d[slice_path]
-                                else:
-                                    sub_d.update({slice_path: {}})
-                                    sub_d = sub_d[slice_path]
+                        generate_config_structure(element, key, sub_d)
                 if file["type"] == "yaml":
                     yaml.dump(d, new_file)
                 elif file["type"] == "json":
@@ -157,9 +148,9 @@ def generate_config_structure(element, key, sub_d):
         else:
             sub_d.update({key: {}})
             sub_d = sub_d[key]
-        if element[key]["sub_type_class"] is not None:
-            for sub_key in element[key]["sub_type_class"]:
-                generate_config_structure(element[key]["sub_type_class"], sub_key, sub_d)
+        if element[key]["sub_type_schema"] is not None:
+            for sub_key in element[key]["sub_type_schema"]:
+                generate_config_structure(element[key]["sub_type_schema"], sub_key, sub_d)
     else:
         sub_d.update({key: element[key]["default_value"]})
 

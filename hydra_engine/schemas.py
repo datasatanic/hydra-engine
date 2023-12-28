@@ -11,13 +11,13 @@ tree = HydraParametersInfo().tree
 wizard_tree = HydraParametersInfo().wizard_tree
 logger = logging.getLogger('common_logger')
 
-types = Literal["string", "int", "bool", "datetime", "range", "array"]
-sub_types = Literal["string", "int", "bool", "datetime", "range", "composite"]
+types = Literal["string", "int", "bool", "datetime", "dict", "array"]
+sub_types = Literal["string", "int", "bool", "datetime", "dict", "composite"]
 constraints = Literal[
     'maxlength', 'minlength', 'pattern', 'cols', 'rows', 'min', 'max', 'format', "size", "resize"]
 controls = Literal[
     "input_control", "textarea_control", "list_control", "checkbox_control", "number_control", "datetime_control",
-    "date_control", "time_control", "range_control"]
+    "date_control", "time_control", "label_control"]
 
 
 class ConstraintItem(BaseModel):
@@ -36,7 +36,6 @@ class ElemInfo(BaseModel):
     description: str = None
     sub_type: sub_types = None
     sub_type_schema: dict = None
-    sub_type_class: dict | list = None
     readOnly: bool = False
     display_name: str
     control: controls
@@ -80,12 +79,14 @@ class ElemInfo(BaseModel):
                 raise TypeError("Not range type")
         if value_type == "array":
             return value_type
+        if value_type == "dict":
+            return value_type
 
     @validator("sub_type", pre=True)
     def check_sub_type(cls, sub_type, values, **kwargs):
         if "type" not in values:
             return
-        if values["type"] != "array" and sub_type is not None:
+        if values["type"] != "array" and values["type"] != "dict" and sub_type is not None:
             raise TypeError("sub_type can be not empty only when type is array")
         if values["type"] == "array" and sub_type is None:
             raise TypeError("sub_type can't be empty in array")
@@ -129,6 +130,8 @@ class ElemInfo(BaseModel):
                     raise TypeError(f"item {item} in array is not range")
             return sub_type
         if sub_type == "composite":
+            return sub_type
+        if sub_type == "dict":
             return sub_type
 
     @validator("control", pre=True)
@@ -483,54 +486,10 @@ def get_elements(path_id):
     return elem_list
 
 
-def get_value(input_url: str, uid: str, sub_type_class=None):
-    input_url_list = input_url.split("/")
-    key = input_url_list[0]
+def get_value(key: str, uid: str, sub_type_class=None):
     for elements in HydraParametersInfo().get_elements_values():
         if key in elements.values and elements.uid == uid:
-            return find_value_in_dict(elements.values, input_url_list, sub_type_class, uid)
-
-
-def find_value_in_dict(elements, input_url_list, sub_type_class, file_id):
-    while len(input_url_list) > 0:
-        if input_url_list[0].isdigit():
-            elements = elements[int(input_url_list[0])]
-        elif isinstance(elements, list):
-            arr = []
-            for elem in elements:
-                arr.append(elem[input_url_list[0]])
-            elements = arr
-        else:
-            elements = elements[input_url_list[0]]
-            if isinstance(elements, list) and sub_type_class is not None:
-                arr = []
-                for elem in elements:
-                    d = {}
-                    for key in elem:
-                        render_dict = sub_type_class[key]["render"]
-                        render_dict_constraints = render_dict["constraints"]
-                        render_constraints = []
-                        if render_dict_constraints:
-                            for constraint in render_dict_constraints:
-                                for constraint_key in constraint:
-                                    constraint_item = ConstraintItem(value=constraint[constraint_key]["value"],
-                                                                     type=constraint_key,
-                                                                     message=constraint[constraint_key]["message"] if "message" in constraint[constraint_key] else None)
-                                    render_constraints.append(constraint_item)
-                        sub_elem_info = ElemInfo(value=elem[key], type=sub_type_class[key]["type"],
-                                                 description=sub_type_class[key]["description"],
-                                                 sub_type=sub_type_class[key]["sub_type"],
-                                                 sub_type_class=None,
-                                                 readOnly=sub_type_class[key]["readonly"],
-                                                 display_name=render_dict["display_name"],
-                                                 control=render_dict["control"],
-                                                 constraints=render_constraints,
-                                                 file_id=file_id)
-                        d[key] = sub_elem_info
-                    arr.append(d)
-                elements = arr
-        input_url_list.pop(0)
-    return elements
+            return elements.values[key]
 
 
 def set_value_in_dict(elements, value, input_url_list, file_type):
@@ -578,37 +537,46 @@ def get_element_info(input_url, uid: str):
                     for constraint in render_dict_constraints:
                         for key in constraint:
                             constraint_item = ConstraintItem(value=constraint[key]["value"], type=key,
-                                                             message=constraint[key]["message"] if "message" in constraint[key] else None)
+                                                             message=constraint[key]["message"] if "message" in
+                                                                                                   constraint[
+                                                                                                       key] else None)
                             render_constraints.append(constraint_item)
                 try:
-                    sub_type_class = element["sub_type_class"] if "sub_type_class" in element else None
-                    d = {}
-                    if sub_type_class is not None:
-                        for el in sub_type_class:
-                            d[el] = ElemInfo(value="", type=sub_type_class[el]["type"],
-                                             description=sub_type_class[el]["description"],
-                                             sub_type=None,
-                                             sub_type_class=None,
-                                             sub_type_schema=None,
-                                             readOnly=sub_type_class[el]["readonly"],
-                                             display_name=sub_type_class[el]["render"]["display_name"],
-                                             control=sub_type_class[el]["render"]["control"],
-                                             constraints=render_constraints,
-                                             file_id=uid)
-                        sub_type_class = get_value(input_url, uid, sub_type_class)
-                    elem_info = ElemInfo(value=get_value(input_url, uid), type=element["type"],
-                                         description=element["description"],
-                                         sub_type=element["sub_type"],
-                                         sub_type_class=sub_type_class if "sub_type_class" in element else None,
-                                         sub_type_schema=d if "sub_type_class" in element else None,
-                                         readOnly=element["readonly"],
-                                         display_name=render_dict["display_name"], control=render_dict["control"],
-                                         constraints=render_constraints,
-                                         file_id=uid)
+                    value = get_value(input_url, uid)
+                    elem_info = generate_elem_info(value, element, uid)
+                    return elem_info
                 except Exception as e:
                     logger.error(
                         f"Error {e} in file {elements_files_info[elements_meta.index(elements)]['path']} in parameter {input_url}")
-                return elem_info
+
+
+def generate_elem_info(value, element, uid):
+    render_dict = element["render"]
+    render_dict_constraints = render_dict["constraints"]
+    render_constraints = []
+    if render_dict_constraints:
+        for constraint in render_dict_constraints:
+            for key in constraint:
+                constraint_item = ConstraintItem(value=constraint[key]["value"], type=key,
+                                                 message=constraint[key]["message"] if "message" in constraint[
+                                                     key] else None)
+                render_constraints.append(constraint_item)
+    elem_info = ElemInfo(value=value, type=element["type"],
+                         description=element["description"],
+                         sub_type=element["sub_type"],
+                         sub_type_schema=None,
+                         readOnly=element["readonly"],
+                         display_name=render_dict["display_name"], control=render_dict["control"],
+                         constraints=render_constraints,
+                         file_id=uid)
+    if element["sub_type_schema"] is not None:
+        elem_info.sub_type_schema = {
+            key: generate_elem_info(value[key], metadata, uid)
+            for key, metadata in element["sub_type_schema"].items()
+        }
+    return elem_info
+
+
 
 
 def filter_tree(all_tree):

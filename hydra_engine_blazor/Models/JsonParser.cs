@@ -130,8 +130,6 @@ public class JsonParser
                         "time_control"=>Control.Time,
                         "date_control"=>Control.Date,
                         "radio_control" => Control.Radio,
-                        "list_control" => Control.Fieldset,
-                        "range_control"=>Control.Range,
                         _ => elemInfo.control
                     };
                     break;
@@ -140,17 +138,6 @@ public class JsonParser
                     {
                         elemInfo.constraints =
                             JsonSerializer.Deserialize<List<ConstraintItem>>(keyValue.Value?.ToString());
-                    }
-                    break;
-                case "sub_type_class":
-                    if (!string.IsNullOrEmpty(keyValue.Value?.ToString()))
-                    {
-                        elemInfo.sub_type_class =
-                            JsonSerializer.Deserialize<List<Dictionary<string, object>>>(keyValue.Value?.ToString());
-                    }
-                    else
-                    {
-                        elemInfo.sub_type_class = null;
                     }
                     break;
                 case "sub_type_schema":
@@ -221,23 +208,6 @@ public class JsonParser
             ["sub_type_schema"] = JsonSerializer.Serialize(elemInfo.sub_type_schema),
             ["isValid"] = elemInfo.isValid
         };
-        if (elemInfo.sub_type_class == null)
-        {
-            node.Add("sub_type_class",null);
-        }
-        else
-        {
-            node.Add("sub_type_class",new JsonArray());
-            foreach (var dict in elemInfo.sub_type_class)
-            {
-                JsonNode subNode = new JsonObject();
-                foreach (var kvp in dict)
-                {
-                    subNode.AsObject().Add(kvp.Key,kvp.Value.ToString());
-                }
-                node["sub_type_class"]?.AsArray().Add(subNode);
-            }
-        }
 
         return node.ToJsonString();
     }

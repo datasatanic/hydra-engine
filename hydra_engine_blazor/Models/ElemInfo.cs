@@ -50,10 +50,6 @@ public class ElemInfo
     [JsonPropertyName("constraints")]
     public List<ConstraintItem> constraints { get; set; }
     
-    [DataMember(Name = "sub_type_class", EmitDefaultValue = false)]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [JsonPropertyName("sub_type_class")]
-    public List<Dictionary<string,object>>? sub_type_class { get; set; }
     [DataMember(Name = "sub_type_schema", EmitDefaultValue = false)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [JsonPropertyName("sub_type_schema")]
@@ -87,7 +83,9 @@ public enum ElemType
     [EnumMember(Value = "array")]
     Array,
     [EnumMember(Value = "composite")]
-    Composite
+    Composite,
+    [EnumMember(Value = "dict")]
+    Dict
 }
 [Flags]
 public enum Control
