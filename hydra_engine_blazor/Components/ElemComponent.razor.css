@@ -132,6 +132,10 @@ textarea{
     content: url("icons/remove_item.svg");
     cursor: pointer;
 }
+.delete-image{
+    width: 24px;
+    height: 24px;
+}
 .range-titles-container{
     display: flex;
     flex-direction: row;

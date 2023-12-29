@@ -81,13 +81,19 @@
                     {
                         @foreach (var subTypeSchema in elemInfo.array_sub_type_schema)
                         {
-                            @foreach (var (key,value) in subTypeSchema)
-                            {
-                                var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
-                                <div class="position-relative">
-                                    <ElemComponent Key="@key" elemInfo="@subElemInfo" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key,elemInfo.array_sub_type_schema.IndexOf(subTypeSchema)))"></ElemComponent>
-                                </div>
-                            }
+                            <div class="elements-container">
+                                @foreach (var (key,value) in subTypeSchema)
+                                {
+                                    var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
+                                    subElemInfo.isValid = true;
+                                    <div class="position-relative">
+                                        <ElemComponent Key="@key" elemInfo="@subElemInfo" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key,elemInfo.array_sub_type_schema.IndexOf(subTypeSchema)))"></ElemComponent>
+                                    </div>
+                                }
+                                <img class="delete-image" @onclick="@(() => RemoveArrayItem(elemInfo.array_sub_type_schema.IndexOf(subTypeSchema)))"/>
+                                <hr/>
+                            </div>
+                            
                         }
                     }
                     else
@@ -321,6 +327,10 @@
     {
         elemInfo.isValid = true;
         elemInfo?.arrayItems.RemoveAt(pos);
+        if (elemInfo.array_sub_type_schema != null)
+        {
+            elemInfo.array_sub_type_schema.RemoveAt(pos);
+        }
         elemInfo.value = elemInfo.arrayItems;
         if (elemInfo?.arrayItems.
             Find(item => !TryParseToType(item?.ToString(), elemInfo?.sub_type) |
