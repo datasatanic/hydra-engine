@@ -151,6 +151,17 @@ public class JsonParser
                         elemInfo.sub_type_schema = null;
                     }
                     break;
+                case "array_sub_type_schema":
+                    if (!string.IsNullOrEmpty(keyValue.Value?.ToString()))
+                    {
+                        elemInfo.array_sub_type_schema =
+                            JsonSerializer.Deserialize<List<Dictionary<string, object>>>(keyValue.Value?.ToString());
+                    }
+                    else
+                    {
+                        elemInfo.array_sub_type_schema = null;
+                    }
+                    break;
                 case "isValid":
                     elemInfo.isValid = bool.Parse(keyValue.Value?.ToString());
                     break;
@@ -206,6 +217,7 @@ public class JsonParser
             },
             ["constraints"] = JsonSerializer.Serialize(elemInfo.constraints),
             ["sub_type_schema"] = JsonSerializer.Serialize(elemInfo.sub_type_schema),
+            ["array_sub_type_schema"] = JsonSerializer.Serialize(elemInfo.array_sub_type_schema),
             ["isValid"] = elemInfo.isValid
         };
 

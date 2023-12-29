@@ -36,6 +36,7 @@ class ElemInfo(BaseModel):
     description: str = None
     sub_type: sub_types = None
     sub_type_schema: dict = None
+    array_sub_type_schema: list = None
     readOnly: bool = False
     display_name: str
     control: controls
@@ -541,13 +542,9 @@ def get_element_info(input_url, uid: str):
                                                                                                    constraint[
                                                                                                        key] else None)
                             render_constraints.append(constraint_item)
-                try:
-                    value = get_value(input_url, uid)
-                    elem_info = generate_elem_info(value, element, uid)
-                    return elem_info
-                except Exception as e:
-                    logger.error(
-                        f"Error {e} in file {elements_files_info[elements_meta.index(elements)]['path']} in parameter {input_url}")
+                value = get_value(input_url, uid)
+                elem_info = generate_elem_info(value, element, uid)
+                return elem_info
 
 
 def generate_elem_info(value, element, uid):
@@ -570,13 +567,20 @@ def generate_elem_info(value, element, uid):
                          constraints=render_constraints,
                          file_id=uid)
     if element["sub_type_schema"] is not None:
-        elem_info.sub_type_schema = {
-            key: generate_elem_info(value[key], metadata, uid)
-            for key, metadata in element["sub_type_schema"].items()
-        }
+        if element["type"] == "array":
+            elem_info.array_sub_type_schema = []
+            for el in value:
+                d = {
+                    key: generate_elem_info(el[key], metadata, uid)
+                    for key, metadata in element["sub_type_schema"].items()
+                }
+                elem_info.array_sub_type_schema.append(d)
+        else:
+            elem_info.sub_type_schema = {
+                key: generate_elem_info(value[key], metadata, uid)
+                for key, metadata in element["sub_type_schema"].items()
+            }
     return elem_info
-
-
 
 
 def filter_tree(all_tree):
