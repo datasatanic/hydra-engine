@@ -84,7 +84,9 @@
                             @foreach (var (key,value) in subTypeSchema)
                             {
                                 var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
-                                <ElemComponent Key="@key" elemInfo="@subElemInfo" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key,elemInfo.array_sub_type_schema.IndexOf(subTypeSchema)))"></ElemComponent>
+                                <div class="position-relative">
+                                    <ElemComponent Key="@key" elemInfo="@subElemInfo" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key,elemInfo.array_sub_type_schema.IndexOf(subTypeSchema)))"></ElemComponent>
+                                </div>
                             }
                         }
                     }
@@ -332,7 +334,17 @@
 
     private async Task AddItem()
     {
-        elemInfo?.arrayItems.Add(string.Empty);
+        if (elemInfo?.sub_type_schema != null)
+        {
+            var dictionary = new Dictionary<string, object>(elemInfo.sub_type_schema);
+            elemInfo?.array_sub_type_schema.Add(dictionary);
+            var valueDictionary = dictionary.ToDictionary(x => x.Key, y => (y.Value as ElemInfo)?.value);
+            elemInfo?.arrayItems.Add(valueDictionary);
+        }
+        else
+        {
+            elemInfo?.arrayItems.Add(string.Empty);
+        }
         elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(elemInfo.arrayItems));
         elemInfo.isValid = false;
         await SendValue.InvokeAsync(elemInfo);

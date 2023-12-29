@@ -575,6 +575,10 @@ def generate_elem_info(value, element, uid):
                     for key, metadata in element["sub_type_schema"].items()
                 }
                 elem_info.array_sub_type_schema.append(d)
+            elem_info.sub_type_schema = {
+                key: generate_elem_info(metadata["default_value"], metadata, uid)
+                for key, metadata in element["sub_type_schema"].items()
+            }
         else:
             elem_info.sub_type_schema = {
                 key: generate_elem_info(value[key], metadata, uid)

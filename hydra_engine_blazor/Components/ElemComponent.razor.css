@@ -103,7 +103,7 @@ input[type="text"]:disabled,input[type="number"]:disabled,input[type="datetime-l
     border: 1px solid var(--hydra-secondary-10);
     background: var(--hydra-secondary-3);
 }
-input[type="text"][validation-error],input[type="number"][validation-error],input[type="datetime-local"][validation-error],input[type="date"][validation-error],input[type="time"][validation-error]{
+input[type="text"][validation-error],input[type="number"][validation-error],input[type="datetime-local"][validation-error],input[type="date"][validation-error],input[type="time"][validation-error],textarea[validation-error]{
     border:1px solid var(--hydra-error);
 }
 textarea{

@@ -178,6 +178,7 @@ PARAMS:
             sub_type_schema:
               username:
                 type: string
+                default_value: ""
                 sub_type:
                 sub_type_schema:
                 readonly: False
@@ -188,6 +189,7 @@ PARAMS:
                   constraints:
               ssh_key:
                 type: string
+                default_value: ""
                 sub_type:
                 sub_type_schema:
                 readonly: False
@@ -198,6 +200,7 @@ PARAMS:
                   constraints:
               sudoers:
                 type: string
+                default_value: "no"
                 sub_type:
                 sub_type_schema:
                 readonly: False
@@ -211,6 +214,7 @@ PARAMS:
                         message: "Valid values: yes, no"
               noPassSudo:
                 type: string
+                default_value: no
                 sub_type:
                 sub_type_schema:
                 readonly: False
