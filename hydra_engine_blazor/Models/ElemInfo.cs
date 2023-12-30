@@ -60,9 +60,9 @@ public class ElemInfo
     public List<Dictionary<string,object>> array_sub_type_schema { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public List<object?> arrayItems { get; set; }
-    
+
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public bool isValid { get; set; }
+    public bool isValid { get; set; } = true;
 
 
 

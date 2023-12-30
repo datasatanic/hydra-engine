@@ -161,11 +161,6 @@
         },
     };
 
-    protected override void OnInitialized()
-    {
-        elemInfo.isValid = true;
-    }
-
     protected override void OnParametersSet()
     {
         ElementAttributes = new Dictionary<string, object>
@@ -276,7 +271,7 @@
                     elemInfo.value = elemInfo?.arrayItems.Select(item => DateTime.Parse(item.ToString())).ToList();
                     break;
             }
-            elemInfo.value = JsonSerializer.Serialize(elemInfo.value);
+            elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(elemInfo.value));
         }
         else
         {
@@ -327,17 +322,25 @@
     {
         elemInfo.isValid = true;
         elemInfo?.arrayItems.RemoveAt(pos);
+        elemInfo.value = elemInfo.arrayItems;
         if (elemInfo.array_sub_type_schema != null)
         {
             elemInfo.array_sub_type_schema.RemoveAt(pos);
+            foreach (var item in elemInfo.array_sub_type_schema)
+            {
+                CheckValidation(item);
+            }
         }
-        elemInfo.value = elemInfo.arrayItems;
-        if (elemInfo?.arrayItems.
-            Find(item => !TryParseToType(item?.ToString(), elemInfo?.sub_type) |
-                         string.IsNullOrEmpty(item.ToString()) | elemInfo.constraints.Exists(item => !CheckConstraints(item.ToString(), item, elemInfo.control))) != null)
+        else
         {
-            elemInfo.isValid = false;
-        } 
+            if (elemInfo?.arrayItems.
+                Find(item => !TryParseToType(item?.ToString(), elemInfo?.sub_type) |
+                             string.IsNullOrEmpty(item.ToString()) | elemInfo.constraints.Exists(item => !CheckConstraints(item.ToString(), item, elemInfo.control))) != null)
+            {
+                elemInfo.isValid = false;
+            } 
+        }
+        
         elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(elemInfo.value));
         await SendValue.InvokeAsync(elemInfo);
     }
@@ -346,9 +349,8 @@
     {
         if (elemInfo?.sub_type_schema != null)
         {
-            var dictionary = new Dictionary<string, object>(elemInfo.sub_type_schema);
-            elemInfo?.array_sub_type_schema.Add(dictionary);
-            var valueDictionary = dictionary.ToDictionary(x => x.Key, y => (y.Value as ElemInfo)?.value);
+            elemInfo?.array_sub_type_schema.Add(elemInfo.sub_type_schema);
+            var valueDictionary = elemInfo?.sub_type_schema.ToDictionary(x => x.Key, y => JsonParser.DeserializeElemInfo(y.Value.ToString()).value);
             elemInfo?.arrayItems.Add(valueDictionary);
         }
         else
@@ -356,6 +358,7 @@
             elemInfo?.arrayItems.Add(string.Empty);
         }
         elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(elemInfo.arrayItems));
+        Console.WriteLine(elemInfo.value);
         elemInfo.isValid = false;
         await SendValue.InvokeAsync(elemInfo);
     }
@@ -385,11 +388,13 @@
 
     private async Task HandleChanges(ElemInfo obj, string key)
     {
+        elemInfo.isValid = true;
         var dict = JsonSerializer.Deserialize<Dictionary<string,object>>(elemInfo.value.ToString());
         if (dict != null)
         {
             elemInfo.sub_type_schema[key] = JsonSerializer.Deserialize<object>(JsonParser.SerializeElemInfo(obj));
             dict[key] = obj.value;
+            CheckValidation(elemInfo.sub_type_schema);
             elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(dict));
             await SendValue.InvokeAsync(elemInfo);
         }
@@ -398,16 +403,31 @@
     }
     private async Task HandleArrayChanges(ElemInfo obj, string key,int index)
     {
+        elemInfo.isValid = true;
         var arr = JsonSerializer.Deserialize<List<Dictionary<string,object>>>(elemInfo.value.ToString());
         if (arr != null)
         {
             arr[index][key] = obj.value;
             elemInfo.array_sub_type_schema[index][key] = JsonSerializer.Deserialize<object>(JsonParser.SerializeElemInfo(obj));
+            foreach (var item in elemInfo.array_sub_type_schema)
+            {
+                CheckValidation(item);
+            }
             elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(arr));
             await SendValue.InvokeAsync(elemInfo);
         }
+        
+    }
 
-
+    private void CheckValidation(Dictionary<string, object> item)
+    {
+        foreach (var (_,value) in item)
+        {
+            var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
+            if (subElemInfo.isValid) continue;
+            elemInfo.isValid = false;
+            break;
+        }
     }
 
 }
