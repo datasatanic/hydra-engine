@@ -74,7 +74,10 @@
         <div class="elem-container">
             <fieldset>
                 <legend>@elemInfo.display_name
-                    <img @onclick="AddItem"/>
+                    @if (!elemInfo.readOnly)
+                    {
+                        <img @onclick="AddItem"/>
+                    }
                 </legend>
                 <div class="d-flex flex-column gap-3">
                     @if (elemInfo.array_sub_type_schema != null)
@@ -90,7 +93,10 @@
                                         <ElemComponent Key="@key" elemInfo="@subElemInfo" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key,elemInfo.array_sub_type_schema.IndexOf(subTypeSchema)))"></ElemComponent>
                                     </div>
                                 }
-                                <img class="delete-image" @onclick="@(() => RemoveArrayItem(elemInfo.array_sub_type_schema.IndexOf(subTypeSchema)))"/>
+                                @if (!elemInfo.readOnly)
+                                {
+                                    <img class="delete-image" @onclick="@(() => RemoveArrayItem(elemInfo.array_sub_type_schema.IndexOf(subTypeSchema)))"/>
+                                }
                                 <hr/>
                             </div>
                             
@@ -108,13 +114,19 @@
                                     case Control.Textarea:
                                         <div class="list-item-container">
                                             <textarea @attributes="ElementAttributes" validation-error="@(!TryParseToType(elem.ToString(), elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
-                                            <img @onclick="@(() => RemoveArrayItem(j))"/>
+                                            @if (!elemInfo.readOnly)
+                                            {
+                                                <img @onclick="@(() => RemoveArrayItem(j))"/>
+                                            }
                                         </div>
                                         break;
                                     default:
                                         <div class="list-item-container">
                                             <input @attributes="ElementAttributes" size="@(elem?.ToString()?.Length)" validation-error="@(!TryParseToType(elem.ToString(), elemInfo?.sub_type))" value="@elem" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))"/>
-                                            <img @onclick="@(() => RemoveArrayItem(j))"/>
+                                            @if (!elemInfo.readOnly)
+                                            {
+                                                <img @onclick="@(() => RemoveArrayItem(j))"/>
+                                            }
                                         </div>
                                         break;
                                 }

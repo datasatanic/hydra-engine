@@ -265,7 +265,7 @@ PARAMS:
                       control: label_control
                       display_name: "node_affinity"
                       constraints:
-                readonly: False
+                readonly: True
                 description: ""
                 id: 6
                 render:
@@ -361,7 +361,7 @@ PARAMS:
                       control: input_control
                       display_name: "volume_name"
                       constraints:
-                readonly: False
+                readonly: True
                 description: ""
                 id: 6
                 render:
