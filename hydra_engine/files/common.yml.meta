@@ -114,6 +114,274 @@ PARAMS:
           control: input_control
           display_name: "Enabled hosts"
           constraints:
+    - k8s:
+        default_value:
+        type: dict
+        sub_type: dict
+        sub_type_schema:
+          containerRegistryAuthSecretName:
+            default_value: "docker-registries-credentials"
+            type: string
+            sub_type:
+            sub_type_schema:
+            readonly: True
+            description: ""
+            id: 6
+            render:
+              control: input_control
+              display_name: "containerRegistryAuthSecretName"
+              constraints:
+          api_endpoint_ip:
+            default_value: "${ cidrhost({for network in common.networks: network.name => network}[common.vm.subnet_name].CIDR, 21)}"
+            type: string
+            sub_type:
+            sub_type_schema:
+            readonly: True
+            description: ""
+            id: 6
+            render:
+              control: input_control
+              display_name: "api_endpoint_ip"
+              constraints:
+          use_k8s:
+            default_value: True
+            type: bool
+            sub_type:
+            sub_type_schema:
+            readonly: True
+            description: ""
+            id: 6
+            render:
+              control: checkbox_control
+              display_name: "use_k8s"
+              constraints:
+          storage:
+            default_value:
+            type: dict
+            sub_type: dict
+            sub_type_schema:
+              volumes:
+                default_value:
+                  - name: opensearch-volume
+                    capacity_gb: 200
+                    host_path: /data/volumes/opensearch
+                    node_affinity:
+                      keys:
+                        - opensearchhost
+                      label: host-type
+                  - name: vmstorage-volume
+                    capacity_gb: 50
+                    host_path: /data/volumes/vmstorage
+                    node_affinity:
+                      keys:
+                        - victoriametricshost
+                      label: host-type
+                  - name: minio-volume
+                    capacity_gb: 50
+                    host_path: /data/volumes/minio
+                    node_affinity:
+                      keys:
+                        - s3storagehost
+                      label: host-type
+                  - name: redis-volume
+                    capacity_gb: 50
+                    host_path: /data/volumes/redis
+                    node_affinity:
+                      keys:
+                        - redishost
+                      label: host-type
+                type: array
+                sub_type: composite
+                sub_type_schema:
+                  name:
+                    default_value: ""
+                    type: string
+                    sub_type:
+                    sub_type_schema:
+                    readonly: True
+                    description: ""
+                    id: 6
+                    render:
+                      control: input_control
+                      display_name: "name"
+                      constraints:
+                  capacity_gb:
+                    default_value: 0
+                    type: int
+                    sub_type:
+                    sub_type_schema:
+                    readonly: False
+                    description: ""
+                    id: 6
+                    render:
+                      control: number_control
+                      display_name: "capacity_gb"
+                      constraints:
+                  host_path:
+                    default_value: ""
+                    type: string
+                    sub_type:
+                    sub_type_schema:
+                    readonly: True
+                    description: ""
+                    id: 6
+                    render:
+                      control: input_control
+                      display_name: "host_path"
+                      constraints:
+                  node_affinity:
+                    default_value:
+                    type: dict
+                    sub_type: dict
+                    sub_type_schema:
+                      keys:
+                        default_value: []
+                        type: array
+                        sub_type: string
+                        sub_type_schema:
+                        readonly: True
+                        description: ""
+                        id: 6
+                        render:
+                          control: input_control
+                          display_name: "keys"
+                          constraints:
+                      label:
+                        default_value: ""
+                        type: string
+                        sub_type:
+                        sub_type_schema:
+                        readonly: True
+                        description: ""
+                        id: 6
+                        render:
+                          control: input_control
+                          display_name: "label"
+                          constraints:
+                    readonly: False
+                    description: ""
+                    id: 6
+                    render:
+                      control: label_control
+                      display_name: "node_affinity"
+                      constraints:
+                readonly: False
+                description: ""
+                id: 6
+                render:
+                  control: label_control
+                  display_name: "volumes"
+                  constraints:
+              volume_claims:
+                default_value:
+                  - name: opensearch-volume-claim
+                    access_modes:
+                      - ReadWriteOnce
+                    capacity_gb: 200
+                    storage_class_name: local-storage
+                    volume_name: opensearch-volume
+                  - name: vmstorage-volume-claim
+                    access_modes:
+                      - ReadWriteOnce
+                    capacity_gb: 50
+                    storage_class_name: local-storage
+                    volume_name: vmstorage-volume
+                  - name: redis-volume-claim
+                    access_modes:
+                      - ReadWriteOnce
+                    capacity_gb: 50
+                    storage_class_name: local-storage
+                    volume_name: redis-volume
+                  - name: minio-volume-claim
+                    access_modes:
+                      - ReadWriteOnce
+                    capacity_gb: 50
+                    storage_class_name: local-storage
+                    volume_name: minio-volume
+                type: array
+                sub_type: composite
+                sub_type_schema:
+                  name:
+                    default_value: ""
+                    type: string
+                    sub_type:
+                    sub_type_schema:
+                    readonly: True
+                    description: ""
+                    id: 6
+                    render:
+                      control: input_control
+                      display_name: "name"
+                      constraints:
+                  access_modes:
+                    default_value: []
+                    type: array
+                    sub_type: string
+                    sub_type_schema:
+                    readonly: True
+                    description: ""
+                    id: 6
+                    render:
+                      control: input_control
+                      display_name: "access_modes"
+                      constraints:
+                  capacity_gb:
+                    default_value: 0
+                    type: int
+                    sub_type:
+                    sub_type_schema:
+                    readonly: False
+                    description: ""
+                    id: 6
+                    render:
+                      control: number_control
+                      display_name: "capacity_gb"
+                      constraints:
+                  storage_class_name:
+                    default_value: ""
+                    type: string
+                    sub_type:
+                    sub_type_schema:
+                    readonly: True
+                    description: ""
+                    id: 6
+                    render:
+                      control: input_control
+                      display_name: "storage_class_name"
+                      constraints:
+                  volume_name:
+                    default_value: ""
+                    type: string
+                    sub_type:
+                    sub_type_schema:
+                    readonly: True
+                    description: ""
+                    id: 6
+                    render:
+                      control: input_control
+                      display_name: "volume_name"
+                      constraints:
+                readonly: False
+                description: ""
+                id: 6
+                render:
+                  control: label_control
+                  display_name: "volume_claims"
+                  constraints:
+            readonly: False
+            description: ""
+            id: 6
+            render:
+              control: label_control
+              display_name: "storage"
+              constraints:
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: label_control
+          display_name: "k8s"
+          constraints:
     - ssh_users:
         default_value:
         type: dict

@@ -35,8 +35,8 @@ class ElemInfo(BaseModel):
     type: types
     description: str = None
     sub_type: sub_types = None
-    sub_type_schema: dict = None
-    array_sub_type_schema: list = None
+    sub_type_schema: Dict[str, 'ElemInfo'] = None
+    array_sub_type_schema: List['ElemInfo'] = None
     readOnly: bool = False
     display_name: str
     control: controls
@@ -575,15 +575,25 @@ def generate_elem_info(value, element, uid):
                     for key, metadata in element["sub_type_schema"].items()
                 }
                 elem_info.array_sub_type_schema.append(d)
-            elem_info.sub_type_schema = {
-                key: generate_elem_info(metadata["default_value"], metadata, uid)
-                for key, metadata in element["sub_type_schema"].items()
-            }
+            elem_info.sub_type_schema = {}
+            for key, metadata in element["sub_type_schema"].items():
+                elem_info.sub_type_schema.update({
+                    key: generate_elem_info(metadata["default_value"], metadata, uid)
+                })
         else:
-            elem_info.sub_type_schema = {
-                key: generate_elem_info(value[key], metadata, uid)
-                for key, metadata in element["sub_type_schema"].items()
-            }
+            if value:
+                elem_info.sub_type_schema = {
+                    key: generate_elem_info(value[key], metadata, uid)
+                    for key, metadata in element["sub_type_schema"].items()
+                }
+            else:
+                elem_info.value = {}
+                elem_info.sub_type_schema = {}
+                for key, metadata in element["sub_type_schema"].items():
+                    elem_info.sub_type_schema.update({
+                        key: generate_elem_info(metadata["default_value"], metadata, uid)
+                    })
+                    elem_info.value.update({key: metadata["default_value"]})
     return elem_info
 
 

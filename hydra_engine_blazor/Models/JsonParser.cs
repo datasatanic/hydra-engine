@@ -79,7 +79,7 @@ public class JsonParser
             switch (keyValue.Key)
             {
                 case"value":
-                    elemInfo.value = keyValue.Value.ToString();
+                    elemInfo.value = keyValue.Value?.ToString() ?? "";
                     break;
                 case "file_id":
                     elemInfo.fileId = keyValue.Value.ToString();
@@ -92,7 +92,7 @@ public class JsonParser
                         "int" => ElemType.Int,
                         "datetime" => ElemType.DateTime,
                         "bool"=>ElemType.Bool,
-                        "range"=>ElemType.Range,
+                        "dict"=>ElemType.Dict,
                         "array"=>ElemType.Array,
                         _ => elemInfo.type
                     };
@@ -108,7 +108,7 @@ public class JsonParser
                         "int" => ElemType.Int,
                         "datetime" => ElemType.DateTime,
                         "bool"=>ElemType.Bool,
-                        "range"=>ElemType.Range,
+                        "dict"=>ElemType.Dict,
                         _ => elemInfo.type
                     };
                     break;
@@ -184,6 +184,7 @@ public class JsonParser
                 ElemType.Double=>"double",
                 ElemType.DateTime=>"datetime",
                 ElemType.Bool => "bool",
+                ElemType.Dict => "dict",
                 ElemType.Array => "array",
                 _ => throw new ArgumentOutOfRangeException()
             },
@@ -194,6 +195,7 @@ public class JsonParser
                 ElemType.Double=>"double",
                 ElemType.DateTime=>"datetime",
                 ElemType.Bool => "bool",
+                ElemType.Dict => "dict",
                 ElemType.Composite => "composite",
                 _ => null
             },

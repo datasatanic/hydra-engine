@@ -345,12 +345,26 @@
         await SendValue.InvokeAsync(elemInfo);
     }
 
+    private Dictionary<string, object> getSchema(Dictionary<string,object> schema,Dictionary<string,object> dict)
+    {
+        foreach (var (key, value) in schema)
+        {
+            var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
+            dict.Add(key,subElemInfo.value);
+            if (subElemInfo.sub_type_schema != null)
+            {
+                var subDict = getSchema(subElemInfo.sub_type_schema, new Dictionary<string, object>());
+                dict[key] = subDict;
+            }
+        }
+        return dict;
+    }
     private async Task AddItem()
     {
         if (elemInfo?.sub_type_schema != null)
         {
             elemInfo?.array_sub_type_schema.Add(elemInfo.sub_type_schema);
-            var valueDictionary = elemInfo?.sub_type_schema.ToDictionary(x => x.Key, y => JsonParser.DeserializeElemInfo(y.Value.ToString()).value);
+            var valueDictionary = getSchema(elemInfo.sub_type_schema, new Dictionary<string, object>());
             elemInfo?.arrayItems.Add(valueDictionary);
         }
         else
@@ -358,7 +372,6 @@
             elemInfo?.arrayItems.Add(string.Empty);
         }
         elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(elemInfo.arrayItems));
-        Console.WriteLine(elemInfo.value);
         elemInfo.isValid = false;
         await SendValue.InvokeAsync(elemInfo);
     }
