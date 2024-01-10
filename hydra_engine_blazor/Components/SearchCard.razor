@@ -34,7 +34,8 @@
 
     private string? _displayName;
     private string? _description;
-    protected override void OnInitialized()
+
+    protected override void OnParametersSet()
     {
         _displayName = Regex.Replace(Entity.DisplayName, "<[^>]+>", string.Empty);
         _description=Regex.Replace(Entity.Description, "<[^>]+>", string.Empty);

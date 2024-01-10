@@ -82,12 +82,72 @@ PARAMS:
               control: label_control
               display_name: "State"
               constraints:
+          repos:
+            type: dict
+            default_value:
+            sub_type: dict
+            sub_type_schema:
+              repohost_number:
+                type: int
+                default_value: 100
+                sub_type: # optional for array
+                sub_type_schema:
+                readonly: False
+                description: ""
+                id: 6
+                render:
+                  control: number_control
+                  display_name: "Repo host number"
+                  constraints:
+              subnet_name:
+                type: string
+                default_value: repos
+                sub_type:
+                sub_type_schema:
+                readonly: False
+                description: ""
+                id: 6
+                render:
+                  control: input_control
+                  display_name: "Subnet name"
+                  constraints:
+            readonly: False
+            description: ""
+            id: 6
+            render:
+              control: label_control
+              display_name: "Repos"
+              constraints:
         readonly: False
         description: ""
         id: 6
         render:
           control: label_control
           display_name: "Mgmt"
+          constraints:
+    - site:
+        type: dict
+        default_value:
+        sub_type: dict
+        sub_type_schema:
+          avg_cpu_core_hz:
+            type: int
+            default_value: 2500
+            sub_type: # optional for array
+            sub_type_schema:
+            readonly: False
+            description: ""
+            id: 6
+            render:
+              control: number_control
+              display_name: "avg_cpu_core_hz"
+              constraints:
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: label_control
+          display_name: "site"
           constraints:
     - preset:
         default_value: "preset name"
@@ -101,6 +161,71 @@ PARAMS:
           control: input_control
           display_name: "Preset"
           constraints:
+    - providers:
+        type: dict
+        default_value:
+        sub_type: dict
+        sub_type_schema:
+          cloud:
+            type: string
+            default_value: vSphereWithNSX
+            sub_type: # optional for array
+            sub_type_schema:
+            readonly: False
+            description: ""
+            id: 6
+            render:
+              control: input_control
+              display_name: "Cloud"
+              constraints:
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: label_control
+          display_name: "Providers"
+          constraints:
+    - dns:
+        type: dict
+        default_value:
+        sub_type: dict
+        sub_type_schema:
+          recursors:
+            type: array
+            default_value:
+              - "10.74.10.21"
+              - "10.74.10.22"
+              - "10.74.10.23"
+              - "10.74.10.24"
+              - "10.74.10.25"
+            sub_type: string
+            sub_type_schema:
+            readonly: False
+            description: ""
+            id: 6
+            render:
+              control: input_control
+              display_name: "recursors"
+              constraints:
+          forwarded_zones:
+            type: array
+            default_value: []
+            sub_type: string
+            sub_type_schema:
+            readonly: False
+            description: ""
+            id: 6
+            render:
+              control: input_control
+              display_name: "Forwarded zones"
+              constraints:
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: label_control
+          display_name: "Dns"
+          constraints:
     - enabled_hosts:
         default_value:
           - cnhost
@@ -113,6 +238,64 @@ PARAMS:
         render:
           control: input_control
           display_name: "Enabled hosts"
+          constraints:
+    - hosts:
+        type: dict
+        default_value:
+        sub_type: dict
+        sub_type_schema:
+          images:
+            type: array
+            default_value:
+              - type: vendor
+                name: golden-test
+              - type: cnhost
+                name: "cnhost-${ for image in common.hosts.images: image.type => image.name }['vendor']"
+              - type: basehost
+                name: "basehost-${ for image in common.hosts.images: image.type => image.name }['vendor']"
+              - type: pghost
+                name: "pghost-${ for image in common.hosts.images: image.type => image.name }['vendor']"
+              - type: opensearchhost
+                name: "opensearchhost-${ for image in common.hosts.images: image.type => image.name }['vendor']"
+            sub_type: composite
+            sub_type_schema:
+              type:
+                default_value: ""
+                type: string
+                sub_type:
+                sub_type_schema:
+                readonly: True
+                description: ""
+                id: 6
+                render:
+                  control: input_control
+                  display_name: "type"
+                  constraints:
+              name:
+                default_value: ""
+                type: string
+                sub_type:
+                sub_type_schema:
+                readonly: False
+                description: ""
+                id: 6
+                render:
+                  control: input_control
+                  display_name: "name"
+                  constraints:
+            readonly: False
+            description: ""
+            id: 6
+            render:
+              control: label_control
+              display_name: "images"
+              constraints:
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: label_control
+          display_name: "hosts"
           constraints:
     - k8s:
         default_value:

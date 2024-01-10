@@ -6,6 +6,7 @@ import logging
 import ruamel.yaml
 import os
 from datetime import datetime
+from hydra_engine.configs import config
 
 logger = logging.getLogger("common_logger")
 yaml = ruamel.yaml.YAML(typ="rt")
@@ -76,13 +77,24 @@ def parse_meta_params():
     """
         Parse files with metadata and get info about meta info of different parameters
     """
+    ui_meta_data = {}
     elements_meta.clear()
     for root, dirs, files in os.walk(os.path.join(base_dir, "files")):
+        files.sort(key=lambda x: (x != config.tree_filename, x))
         for filename in files:
-            if "meta" in filename and filename != "ui.meta" and filename != "wizard.meta":
+            if filename == "ui.meta":  # для связывания id и output_url
+                with open(os.path.join(root, filename), 'r') as stream:
+                    data = yaml.load(stream)
+                    for key in data:
+                        ui_meta_data[data[key]["id"]] = key
+            if "meta" in filename and filename != config.tree_filename and filename != config.wizard_filename:
                 with open(os.path.join(root, filename), 'r') as stream:
                     data_loaded = yaml.load(stream)
                     _elements = data_loaded["PARAMS"]
+                    for el in _elements:
+                        for key in el:
+                            if el[key]["id"] in ui_meta_data:
+                                el[key]["output_url"] = ui_meta_data[el[key]["id"]]
                     elements_meta.append(_elements)
 
 
@@ -93,7 +105,7 @@ def parse_elements_fileinfo():
     elements_files_info.clear()
     for root, dirs, files in os.walk(os.path.join(base_dir, "files")):
         for filename in files:
-            if "meta" in filename and filename != "ui.meta" and filename != "wizard.meta":
+            if "meta" in filename and filename != config.tree_filename and filename != config.wizard_filename:
                 if os.path.isfile(os.path.join(root, filename)):
                     with open(os.path.join(root, filename), 'r') as stream:
                         data_loaded = yaml.load(stream)

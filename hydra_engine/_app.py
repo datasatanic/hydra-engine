@@ -12,6 +12,7 @@ from starlette_prometheus import metrics, PrometheusMiddleware
 
 from schemas import Condition
 from hydra_engine import router, wizard_router
+from hydra_engine.configs import config
 from hydra_engine.parser import parse_config_files
 from hydra_engine.schemas import add_node, HydraParametersInfo, add_additional_fields
 from hydra_engine.search.index_schema import HydraIndexScheme
@@ -69,7 +70,7 @@ def read_ui_file(directory):
     HydraParametersInfo().tree.clear()
     for root, dirs, files in os.walk(directory):
         for name in files:
-            if name == "ui.meta":
+            if name == config.tree_filename:
                 with open(os.path.join(root, name), 'r') as stream:
                     data_loaded = yaml.load(stream)
                     for obj in data_loaded:
@@ -87,7 +88,7 @@ def read_wizard_file(directory):
     HydraParametersInfo().wizard_tree.clear()
     for root, dirs, files in os.walk(directory):
         for name in files:
-            if name == "wizard.meta":
+            if name == config.wizard_filename:
                 with open(os.path.join(root, name), 'r') as stream:
                     data_loaded = yaml.load(stream)
                     for obj in data_loaded:

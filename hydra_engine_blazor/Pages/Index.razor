@@ -133,6 +133,12 @@
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
     private Timer? _timer;
     private bool visibility = true;
+    private bool shouldRender = true;
+
+    protected override bool ShouldRender()
+    {
+        return shouldRender;
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -200,6 +206,7 @@
 
     private void SearchCallback(ChangeEventArgs obj)
     {
+        shouldRender = false;
         searchValue = obj.Value?.ToString();
         if (string.IsNullOrEmpty(searchValue))
         {
@@ -255,6 +262,7 @@
     }
     private async Task OnSearchFinish()
     {
+        shouldRender = true;
         if (string.IsNullOrEmpty(searchValue)){ return;}
         _searchEntities = await SettingsContainer.SearchRequest(searchValue);
         StateHasChanged();
