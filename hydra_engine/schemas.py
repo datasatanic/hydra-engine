@@ -11,12 +11,12 @@ tree = HydraParametersInfo().tree
 wizard_tree = HydraParametersInfo().wizard_tree
 logger = logging.getLogger('common_logger')
 
-types = Literal["string", "int", "bool", "datetime", "dict", "array"]
-sub_types = Literal["string", "int", "bool", "datetime", "dict", "composite"]
+types = Literal["string", "int", "bool", "datetime", "dict", "array", "double"]
+sub_types = Literal["string", "int", "bool", "datetime", "dict", "composite", "double"]
 constraints = Literal[
     'maxlength', 'minlength', 'pattern', 'cols', 'rows', 'min', 'max', 'format', "size", "resize"]
 controls = Literal[
-    "input_control", "textarea_control", "list_control", "checkbox_control", "number_control", "datetime_control",
+    "input_control", "textarea_control", "checkbox_control", "number_control", "datetime_control",
     "date_control", "time_control", "label_control"]
 
 
@@ -87,7 +87,7 @@ class ElemInfo(BaseModel):
     def check_sub_type(cls, sub_type, values, **kwargs):
         if "type" not in values:
             return
-        if values["type"] != "array" and values["type"] != "dict" and sub_type is not None:
+        if values["type"] != "array" and sub_type is not None:
             raise TypeError("sub_type can be not empty only when type is array")
         if values["type"] == "array" and sub_type is None:
             raise TypeError("sub_type can't be empty in array")
@@ -132,8 +132,6 @@ class ElemInfo(BaseModel):
             return sub_type
         if sub_type == "composite":
             return sub_type
-        if sub_type == "dict":
-            return sub_type
 
     @validator("control", pre=True)
     def check_control(cls, elem_control, values, **kwargs):
@@ -158,6 +156,24 @@ class ElemInfo(BaseModel):
                 else:
                     for item in values["value"]:
                         values["value"][values["value"].index(item)] = item.replace(tzinfo=None).time().isoformat()
+            case "label_control":
+                if not(values["type"] == "dict" or values["type"] == "array" and values["sub_type"] == "composite"):
+                    raise TypeError("Only parameters with dict type or arrays with composite type can have label_control")
+            case "input_control":
+                if not(values["type"] == "string" and values["type"] != "array" or values["type"] == "array" and values["sub_type"] == "string"):
+                    raise TypeError("Only parameters with string type can have input_control")
+            case "textarea_control":
+                if not(values["type"] == "string" and values["type"] != "array" or values["type"] == "array" and values[
+                    "sub_type"] == "string"):
+                    raise TypeError("Only parameters with string type can have textarea_control")
+            case "number_control":
+                if not((values["type"] == "int" or values["type"] == "double") and values["type"] != "array" or values["type"] == "array" and (values[
+                    "sub_type"] == "int" or values["sub_type"] == "double")):
+                    raise TypeError("Only parameters with int or double type can have number_control")
+            case "checkbox_control":
+                if not(values["type"] == "bool" and values["type"] != "array" or values["type"] == "array" and values[
+                    "sub_type"] == "bool"):
+                    raise TypeError("Only parameters with bool type can have checkbox_control")
         return elem_control
 
     @validator("constraints", pre=True)

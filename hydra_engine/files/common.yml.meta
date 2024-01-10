@@ -32,12 +32,12 @@ PARAMS:
     - mgmt:
         type: dict
         default_value:
-        sub_type: dict
+        sub_type:
         sub_type_schema:
           state:
             type: dict
             default_value:
-            sub_type: dict
+            sub_type:
             sub_type_schema:
               subnet_name:
                 type: string
@@ -85,7 +85,7 @@ PARAMS:
           repos:
             type: dict
             default_value:
-            sub_type: dict
+            sub_type:
             sub_type_schema:
               repohost_number:
                 type: int
@@ -128,7 +128,7 @@ PARAMS:
     - site:
         type: dict
         default_value:
-        sub_type: dict
+        sub_type:
         sub_type_schema:
           avg_cpu_core_hz:
             type: int
@@ -164,7 +164,7 @@ PARAMS:
     - providers:
         type: dict
         default_value:
-        sub_type: dict
+        sub_type:
         sub_type_schema:
           cloud:
             type: string
@@ -188,7 +188,7 @@ PARAMS:
     - dns:
         type: dict
         default_value:
-        sub_type: dict
+        sub_type:
         sub_type_schema:
           recursors:
             type: array
@@ -242,7 +242,7 @@ PARAMS:
     - hosts:
         type: dict
         default_value:
-        sub_type: dict
+        sub_type:
         sub_type_schema:
           images:
             type: array
@@ -300,7 +300,7 @@ PARAMS:
     - k8s:
         default_value:
         type: dict
-        sub_type: dict
+        sub_type:
         sub_type_schema:
           containerRegistryAuthSecretName:
             default_value: "docker-registries-credentials"
@@ -341,7 +341,7 @@ PARAMS:
           storage:
             default_value:
             type: dict
-            sub_type: dict
+            sub_type:
             sub_type_schema:
               volumes:
                 default_value:
@@ -415,7 +415,7 @@ PARAMS:
                   node_affinity:
                     default_value:
                     type: dict
-                    sub_type: dict
+                    sub_type:
                     sub_type_schema:
                       keys:
                         default_value: []
@@ -568,7 +568,7 @@ PARAMS:
     - ssh_users:
         default_value:
         type: dict
-        sub_type: dict
+        sub_type:
         sub_type_schema:
           users_dict:
             default_value:
