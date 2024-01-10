@@ -139,7 +139,10 @@ class ElemInfo(BaseModel):
             return
         match elem_control:
             case "datetime_control":
-                if values["sub_type"] is None:
+                if not (values["type"] == "datetime" and values["type"] != "array" or values["type"] == "array" and
+                        values["sub_type"] == "datetime"):
+                    raise TypeError("Only parameters with datetime type can have datetime_control")
+                elif values["sub_type"] is None:
                     values["value"] = values["value"].replace(tzinfo=None).isoformat()
                 else:
                     for item in values["value"]:
@@ -157,21 +160,25 @@ class ElemInfo(BaseModel):
                     for item in values["value"]:
                         values["value"][values["value"].index(item)] = item.replace(tzinfo=None).time().isoformat()
             case "label_control":
-                if not(values["type"] == "dict" or values["type"] == "array" and values["sub_type"] == "composite"):
-                    raise TypeError("Only parameters with dict type or arrays with composite type can have label_control")
+                if not (values["type"] == "dict" or values["type"] == "array" and values["sub_type"] == "composite"):
+                    raise TypeError(
+                        "Only parameters with dict type or arrays with composite type can have label_control")
             case "input_control":
-                if not(values["type"] == "string" and values["type"] != "array" or values["type"] == "array" and values["sub_type"] == "string"):
+                if not (values["type"] == "string" and values["type"] != "array" or values["type"] == "array" and
+                        values["sub_type"] == "string"):
                     raise TypeError("Only parameters with string type can have input_control")
             case "textarea_control":
-                if not(values["type"] == "string" and values["type"] != "array" or values["type"] == "array" and values[
-                    "sub_type"] == "string"):
+                if not (values["type"] == "string" and values["type"] != "array" or values["type"] == "array" and
+                        values[
+                            "sub_type"] == "string"):
                     raise TypeError("Only parameters with string type can have textarea_control")
             case "number_control":
-                if not((values["type"] == "int" or values["type"] == "double") and values["type"] != "array" or values["type"] == "array" and (values[
-                    "sub_type"] == "int" or values["sub_type"] == "double")):
+                if not ((values["type"] == "int" or values["type"] == "double") and values["type"] != "array" or values[
+                    "type"] == "array" and (values[
+                                                "sub_type"] == "int" or values["sub_type"] == "double")):
                     raise TypeError("Only parameters with int or double type can have number_control")
             case "checkbox_control":
-                if not(values["type"] == "bool" and values["type"] != "array" or values["type"] == "array" and values[
+                if not (values["type"] == "bool" and values["type"] != "array" or values["type"] == "array" and values[
                     "sub_type"] == "bool"):
                     raise TypeError("Only parameters with bool type can have checkbox_control")
         return elem_control
