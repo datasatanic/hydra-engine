@@ -71,13 +71,6 @@ class ElemInfo(BaseModel):
                 return value_type
             except TypeError:
                 raise TypeError("Not datetime type")
-        if value_type == "range":
-            try:
-                int(values["value"]["from"])
-                int(values["value"]["to"])
-                return value_type
-            except TypeError:
-                raise TypeError("Not range type")
         if value_type == "array":
             return value_type
         if value_type == "dict":
@@ -121,14 +114,6 @@ class ElemInfo(BaseModel):
                     values["value"][values["value"].index(item)] = date
                 except TypeError:
                     raise TypeError(f"item {item} in array is not datetime format")
-            return sub_type
-        if sub_type == "range":
-            for item in values["value"]:
-                try:
-                    int(item["from"])
-                    int(item["to"])
-                except TypeError:
-                    raise TypeError(f"item {item} in array is not range")
             return sub_type
         if sub_type == "composite":
             return sub_type
