@@ -208,20 +208,11 @@
     {
         shouldRender = false;
         searchValue = obj.Value?.ToString();
-        if (string.IsNullOrEmpty(searchValue))
+        _timer?.Dispose();
+        _timer = new Timer(async _ =>
         {
-            _searchEntities?.Clear();
-        }
-        else
-        {
-            _timer?.Dispose();
-
-            _timer = new Timer(async _ =>
-            {
-                await OnSearchFinish();
-
-            }, null, 250, Timeout.Infinite);
-        }
+            await OnSearchFinish();
+        }, null, 250, Timeout.Infinite);
     }
 
 
@@ -263,7 +254,7 @@
     private async Task OnSearchFinish()
     {
         shouldRender = true;
-        if (string.IsNullOrEmpty(searchValue)){ return;}
+        if (string.IsNullOrEmpty(searchValue)){ _searchEntities?.Clear();return;}
         _searchEntities = await SettingsContainer.SearchRequest(searchValue);
         StateHasChanged();
     }
