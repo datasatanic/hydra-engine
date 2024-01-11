@@ -21,16 +21,16 @@
                 var id = Guid.NewGuid();
                 <ul>
                     <li>@elemInfo.display_name
-                        <img data-bs-toggle="collapse" data-bs-target="@($"#el{id}")" aria-controls="@($"el{id}")" aria-expanded="false"/>
+                        <img data-bs-toggle="collapse" data-bs-target="@($"#el{id}")" aria-controls="@($"el{id}")" aria-expanded="@(Depth <= 2 ? "true" : "false")"/>
                         </li>
-                    <div class="collapse nested-element" id="@($"el{id}")">
+                    <div class="collapse @(Depth <= 2 ? "show" : "") nested-element" id="@($"el{id}")">
                         <ul class="elements-container">
                             @foreach (var (key,value) in elemInfo.sub_type_schema)
                             {
                                 <li>
                                     @{
                                         var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
-                                        <ElemComponent Key="@key" elemInfo="@subElemInfo" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))"></ElemComponent>
+                                        <ElemComponent Key="@key" elemInfo="@subElemInfo" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth = "@(Depth + 1)"></ElemComponent>
                                     }
                                 </li>
                             }
@@ -90,7 +90,7 @@
                                     var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
                                     subElemInfo.isValid = true;
                                     <div class="position-relative">
-                                        <ElemComponent Key="@key" elemInfo="@subElemInfo" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key,elemInfo.array_sub_type_schema.IndexOf(subTypeSchema)))"></ElemComponent>
+                                        <ElemComponent Key="@key" elemInfo="@subElemInfo" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key,elemInfo.array_sub_type_schema.IndexOf(subTypeSchema)))" Depth = "@(Depth + 1)"></ElemComponent>
                                     </div>
                                 }
                                 @if (!elemInfo.readOnly)
@@ -161,6 +161,8 @@
     [Parameter] public EventCallback<ElemInfo> SendValue { get; set; }
     [Parameter]
     public ElemInfo? elemInfo { get; set; }
+    [Parameter]
+    public int Depth { get; set; }
 
     private string filePath => elemInfo.fileId;
     private Dictionary<string, object>? ElementAttributes { get; set; } = new();

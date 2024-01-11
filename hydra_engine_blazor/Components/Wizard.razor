@@ -48,7 +48,7 @@
                         <div>
                             @foreach (var kvp in elem)
                             {
-                                <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
+                                <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))" Depth="1">
                                 </ElemComponent>
                             }
                         </div>
@@ -67,7 +67,7 @@
                                     <div class="elems-group">
                                         @foreach (var kvp in elem)
                                         {
-                                            <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
+                                            <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))" Depth="1">
                                             </ElemComponent>
                                         }
                                     </div>

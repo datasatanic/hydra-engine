@@ -58,7 +58,7 @@
                         <div id="@($"#f{SettingsContainer.GetHash(id)}")">
                             @foreach (var kvp in elem)
                             {
-                                <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(elem,obj, kvp.Key))">
+                                <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(elem,obj, kvp.Key))" Depth="1">
                                 </ElemComponent>
                             }
                         </div>
@@ -80,7 +80,7 @@
                                 <div class="elems-group" id="@($"#f{SettingsContainer.GetHash(uid)}")">
                                     @foreach (var kvp in elem)
                                     {
-                                        <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(elem,obj, kvp.Key))">
+                                        <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(elem,obj, kvp.Key))" Depth="1">
                                         </ElemComponent>
                                     }
                                 </div>
