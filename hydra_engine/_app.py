@@ -10,8 +10,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette_prometheus import metrics, PrometheusMiddleware
 
+
 from schemas import Condition
-from hydra_engine import router, wizard_router
+from hydra_engine import router, wizard_router,filewatcher
 from hydra_engine.configs import config
 from hydra_engine.parser import parse_config_files
 from hydra_engine.schemas import add_node, HydraParametersInfo, add_additional_fields
@@ -32,6 +33,7 @@ async def startup_event(app: FastAPI):
     HydraParametersInfo().set_modify_time()
     logger.debug("Directory has been parsed successfully")
     await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
+    filewatcher.start_monitoring_files()
     yield
 
 

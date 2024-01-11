@@ -55,7 +55,7 @@
                     @foreach (var elem in currentControlsMeta.Elem)
                     {
                         var id = elem.Keys.ToList()[0];
-                        <div @key="id" id="@($"#f{SettingsContainer.GetHash(id)}")">
+                        <div id="@($"#f{SettingsContainer.GetHash(id)}")">
                             @foreach (var kvp in elem)
                             {
                                 <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(elem,obj, kvp.Key))">

@@ -80,7 +80,7 @@ def parse_meta_params():
     ui_meta_data = {}
     elements_meta.clear()
     for root, dirs, files in os.walk(os.path.join(base_dir, "files")):
-        files.sort(key=lambda x: (x != config.tree_filename, x))
+        files.sort(key=lambda x: (x != config.tree_filename and x != config.wizard_filename, x))
         for filename in files:
             if filename == "ui.meta":  # для связывания id и output_url
                 with open(os.path.join(root, filename), 'r') as stream:
@@ -133,6 +133,10 @@ def parse_value_files():
                 elif file["type"] == "json":
                     json.dump(d, new_file, indent=2)
                 new_file.close()
+                value_instance = ValuesInstance(file["type"], file["path"],
+                                                hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
+                                                d)
+                elements_values.append(value_instance)
         else:
             if file["type"] == "json":
                 with open(os.path.join(base_dir, file["path"]), 'r') as stream:

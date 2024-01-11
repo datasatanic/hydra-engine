@@ -3,6 +3,7 @@
 }
 ::deep .modal-body{
     height: 75vh;
+    padding: 0;
 }
 .prev-next-container{
     width: 100%;
@@ -98,4 +99,40 @@
 }
 .next-button:disabled {
     background: var(--hydra-secondary-30) !important;
+}
+.wizard-content{
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+}
+.wizard-child-forms{
+    border-right: 1px solid var(--hydra-secondary-65);
+    height: 100%;
+    padding: 10px;
+    position: sticky;
+    top:0;
+    display: flex;
+    flex-direction: column;
+    gap:5px;
+}
+.wizard-elements{
+    padding: 10px 30px;
+    width: 100%;
+    overflow-y: auto;
+}
+.child-form-container{
+    background: var(--hydra-background-white);
+    border: 1px solid var(--hydra-secondary-65);
+    width: 100%;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 8px;
+    text-wrap: nowrap;
+}
+.selected-form{
+    background: var(--hydra-secondary-65);
 }

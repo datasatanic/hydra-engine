@@ -2,7 +2,7 @@
 
 FILE:
   type: 'yaml'
-  path: 'files/common.yml' # Optional/ default: path w/o .meta
+  path: 'files/common1.yml' # Optional/ default: path w/o .meta
 
 PARAMS:
     - site_name:
@@ -12,7 +12,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: w6
+        id: 6
         render:
           control: input_control
           display_name: "Site name"
@@ -24,7 +24,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: w6
+        id: 6
         render:
           control: input_control
           display_name: "CCFA version"
@@ -46,7 +46,7 @@ PARAMS:
                 sub_type_schema:
                 readonly: False
                 description: ""
-                id: w6
+                id: 6
                 render:
                   control: input_control
                   display_name: "Subnet name"
@@ -58,7 +58,7 @@ PARAMS:
                 sub_type_schema:
                 readonly: False
                 description: ""
-                id: w6
+                id: 6
                 render:
                   control: input_control
                   display_name: "Dc"
@@ -70,14 +70,14 @@ PARAMS:
                 sub_type_schema:
                 readonly: False
                 description: ""
-                id: w6
+                id: 6
                 render:
                   control: number_control
                   display_name: "Host number"
                   constraints:
             readonly: False
             description: ""
-            id: w6
+            id: 6
             render:
               control: label_control
               display_name: "State"
@@ -94,7 +94,7 @@ PARAMS:
                 sub_type_schema:
                 readonly: False
                 description: ""
-                id: w6
+                id: 6
                 render:
                   control: number_control
                   display_name: "Repo host number"
@@ -106,21 +106,21 @@ PARAMS:
                 sub_type_schema:
                 readonly: False
                 description: ""
-                id: w6
+                id: 6
                 render:
                   control: input_control
                   display_name: "Subnet name"
                   constraints:
             readonly: False
             description: ""
-            id: w6
+            id: 6
             render:
               control: label_control
               display_name: "Repos"
               constraints:
         readonly: False
         description: ""
-        id: w6
+        id: 6
         render:
           control: label_control
           display_name: "Mgmt"
@@ -137,14 +137,14 @@ PARAMS:
             sub_type_schema:
             readonly: False
             description: ""
-            id: w6
+            id: 6
             render:
               control: number_control
               display_name: "avg_cpu_core_hz"
               constraints:
         readonly: False
         description: ""
-        id: w6
+        id: 6
         render:
           control: label_control
           display_name: "site"
@@ -156,7 +156,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: w6
+        id: 6
         render:
           control: input_control
           display_name: "Preset"
@@ -180,7 +180,7 @@ PARAMS:
               constraints:
         readonly: False
         description: ""
-        id: w6
+        id: 6
         render:
           control: label_control
           display_name: "Providers"
@@ -202,7 +202,7 @@ PARAMS:
             sub_type_schema:
             readonly: False
             description: ""
-            id: w6
+            id: 6
             render:
               control: input_control
               display_name: "recursors"
@@ -214,14 +214,14 @@ PARAMS:
             sub_type_schema:
             readonly: False
             description: ""
-            id: w6
+            id: 6
             render:
               control: input_control
               display_name: "Forwarded zones"
               constraints:
         readonly: False
         description: ""
-        id: w6
+        id: 6
         render:
           control: label_control
           display_name: "Dns"
@@ -234,7 +234,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: w6
+        id: 6
         render:
           control: input_control
           display_name: "Enabled hosts"
@@ -266,7 +266,7 @@ PARAMS:
                 sub_type_schema:
                 readonly: True
                 description: ""
-                id: w7
+                id: 6
                 render:
                   control: input_control
                   display_name: "type"
@@ -278,21 +278,21 @@ PARAMS:
                 sub_type_schema:
                 readonly: False
                 description: ""
-                id: w7
+                id: 6
                 render:
                   control: input_control
                   display_name: "name"
                   constraints:
             readonly: False
             description: ""
-            id: w7
+            id: 6
             render:
               control: label_control
               display_name: "images"
               constraints:
         readonly: False
         description: ""
-        id: w7
+        id: 6
         render:
           control: label_control
           display_name: "hosts"
@@ -309,7 +309,7 @@ PARAMS:
             sub_type_schema:
             readonly: True
             description: ""
-            id: w8
+            id: 6
             render:
               control: input_control
               display_name: "containerRegistryAuthSecretName"
@@ -321,7 +321,7 @@ PARAMS:
             sub_type_schema:
             readonly: True
             description: ""
-            id: w8
+            id: 6
             render:
               control: input_control
               display_name: "api_endpoint_ip"
@@ -333,7 +333,7 @@ PARAMS:
             sub_type_schema:
             readonly: True
             description: ""
-            id: w8
+            id: 6
             render:
               control: checkbox_control
               display_name: "use_k8s"
@@ -383,7 +383,7 @@ PARAMS:
                     sub_type_schema:
                     readonly: True
                     description: ""
-                    id: w8
+                    id: 6
                     render:
                       control: input_control
                       display_name: "name"
@@ -395,7 +395,7 @@ PARAMS:
                     sub_type_schema:
                     readonly: False
                     description: ""
-                    id: w8
+                    id: 6
                     render:
                       control: number_control
                       display_name: "capacity_gb"
@@ -407,7 +407,7 @@ PARAMS:
                     sub_type_schema:
                     readonly: True
                     description: ""
-                    id: w8
+                    id: 6
                     render:
                       control: input_control
                       display_name: "host_path"
@@ -424,7 +424,7 @@ PARAMS:
                         sub_type_schema:
                         readonly: True
                         description: ""
-                        id: w8
+                        id: 6
                         render:
                           control: input_control
                           display_name: "keys"
@@ -436,21 +436,21 @@ PARAMS:
                         sub_type_schema:
                         readonly: True
                         description: ""
-                        id: w8
+                        id: 6
                         render:
                           control: input_control
                           display_name: "label"
                           constraints:
                     readonly: False
                     description: ""
-                    id: w8
+                    id: 6
                     render:
                       control: label_control
                       display_name: "node_affinity"
                       constraints:
                 readonly: True
                 description: ""
-                id: w8
+                id: 6
                 render:
                   control: label_control
                   display_name: "volumes"
@@ -491,7 +491,7 @@ PARAMS:
                     sub_type_schema:
                     readonly: True
                     description: ""
-                    id: w8
+                    id: 6
                     render:
                       control: input_control
                       display_name: "name"
@@ -503,7 +503,7 @@ PARAMS:
                     sub_type_schema:
                     readonly: True
                     description: ""
-                    id: w8
+                    id: 6
                     render:
                       control: input_control
                       display_name: "access_modes"
@@ -515,7 +515,7 @@ PARAMS:
                     sub_type_schema:
                     readonly: False
                     description: ""
-                    id: w8
+                    id: 6
                     render:
                       control: number_control
                       display_name: "capacity_gb"
@@ -527,7 +527,7 @@ PARAMS:
                     sub_type_schema:
                     readonly: True
                     description: ""
-                    id: w8
+                    id: 6
                     render:
                       control: input_control
                       display_name: "storage_class_name"
@@ -539,28 +539,28 @@ PARAMS:
                     sub_type_schema:
                     readonly: True
                     description: ""
-                    id: w8
+                    id: 6
                     render:
                       control: input_control
                       display_name: "volume_name"
                       constraints:
                 readonly: True
                 description: ""
-                id: w8
+                id: 6
                 render:
                   control: label_control
                   display_name: "volume_claims"
                   constraints:
             readonly: False
             description: ""
-            id: w8
+            id: 6
             render:
               control: label_control
               display_name: "storage"
               constraints:
         readonly: False
         description: ""
-        id: w8
+        id: 6
         render:
           control: label_control
           display_name: "k8s"

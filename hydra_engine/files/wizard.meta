@@ -1,34 +1,25 @@
-root:
-  display_name: Main
-  description: Main window
-  type: form
-  id: w1
-root/service1:
-  display_name: form1
+infrastructure:
+  display_name: Infrastructure
+  description: Choose infrastructure
   type: form
   id: w2
-  condition:
-    - PG/ClusterName:
-        equals:
-          - service1
-          - service
-root/service1/networks:
-  display_name: Networks
-  type: group
+infrastructure/common:
+  display_name: Common
+  description: Base settings
+  type: form
   id: w6
-root/service1/allowed_networks:
-  display_name: Allowed networks
-  type: group
+infrastructure/common/hosts:
+  display_name: Hosts
+  description: Configuration for hosts
+  type: form
   id: w7
-root/service1/service2:
-  display_name: form2
+infrastructure/common/k8s:
+  display_name: k8s cluster
+  description: k8s cluster configuration
   type: form
-  id: w3
-root/service1/service2/service3:
-  display_name: form3
+  id: w8
+infrastructure/common1:
+  display_name: Common1
+  description: Base settings
   type: form
-  id: w4
-help:
-  display_name: help
-  type: form
-  id: w5
+  id: w9

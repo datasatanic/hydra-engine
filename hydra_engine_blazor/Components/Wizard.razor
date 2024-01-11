@@ -28,59 +28,61 @@
             <img @onclick="async () => await WizardModal.Close()" alt=""/>
         </Header>
         <Body>
-        @foreach (var elem in currentControlsMeta.Elem)
-        {
-            <div class="form-elements-container">
-                <div class="elements-container">
-                    <div>
-                         @foreach (var kvp in elem)
-                         {
-                             <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
-                             </ElemComponent>
-                         }
-                    </div>
-                   
-                </div>
-            </div>
-        }
-        <div class="groups @(currentControlsMeta.Child.Where(item => item.Type.Equals("group")).ToList().Count == 0 ? "hide" : "")">
-            @foreach (var item in currentControlsMeta.Child.Where(item => item.Type.Equals("group")))
+        <div class="wizard-content">
+            @if (WizardModel.ControlsMeta.Child.Count(x => x.Type.Equals("form")) > 1)
             {
-                <div tabindex="1">
-                    <h2>@item.DisplayName</h2>
-                    <h4>@item.Description</h4>
+                <div class="wizard-child-forms">
+                    <h2>Next step</h2>
+                    @foreach (var item in WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("form")))
+                    {
+                        <div class="child-form-container @(item.Name == nextFormUrl.Split("/")[^1] ? "selected-form" : "")" @onclick="@(() => SelectForm(item.Name, item.DisplayName))">
+                            @item.DisplayName
+                        </div>
+                    }
+                </div>
+            }
+            <div class="wizard-elements form-elements-container">
+                @foreach (var elem in WizardModel.ControlsMeta.Elem)
+                {
                     <div class="elements-container">
-                        @foreach (var elem in item.Elem)
-                        {
-                            var uid = elem.Keys.ToList()[0];
-                            <div class="elems-group">
-                                @foreach (var kvp in elem)
+                        <div>
+                            @foreach (var kvp in elem)
+                            {
+                                <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
+                                </ElemComponent>
+                            }
+                        </div>
+                    </div>
+                }
+                <div class="groups @(WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("group")).ToList().Count == 0 ? "hide" : "")">
+                    @foreach (var item in WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("group")))
+                    {
+                        <div tabindex="1">
+                            <h2>@item.DisplayName</h2>
+                            <h4>@item.Description</h4>
+                            <div class="elements-container">
+                                @foreach (var elem in item.Elem)
                                 {
-                                    <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
-                                    </ElemComponent>
+                                    var uid = elem.Keys.ToList()[0];
+                                    <div class="elems-group">
+                                        @foreach (var kvp in elem)
+                                        {
+                                            <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))">
+                                            </ElemComponent>
+                                        }
+                                    </div>
                                 }
                             </div>
-                        }
-                    </div>
+                        </div>
+                    }
                 </div>
-            }
-        </div>
-        @foreach (var item in currentControlsMeta.Child.Where(item => item.Type.Equals("form")))
-        {
-            @if (currentControlsMeta.Child.Count(x => x.Type.Equals("form")) <= 1)
-            {
-                continue;
-            }
-            <div>
-                <input type="radio" checked="@($"{item.Name}" == nextFormUrl.Split("/")[^1])" value="@item.DisplayName" @onchange="@(() => SelectForm(item.Name,item.DisplayName))"/>
-                <p>@item.DisplayName</p>
             </div>
-        }
+        </div>
         </Body>
         <Footer>
             <div class="prev-next-container">
                 <button style="@(!string.IsNullOrEmpty(Output_URL) ? "visibility:visible" : "visibility:hidden")" type="reset" @onclick="PrevCallback">Back</button>
-                <button style="@(currentControlsMeta.Child.Count > 0 ? "visibility:visible" : "visibility:hidden")" type="reset" class="next-button" @onclick="NextCallback"
+                <button style="@(WizardModel.ControlsMeta.Child.Count > 0 ? "visibility:visible" : "visibility:hidden")" type="reset" class="next-button" @onclick="NextCallback"
                          disabled="@(changeElements.Exists(item => !item.Value.isValid))" >Next</button>
             </div>
         </Footer>
@@ -88,10 +90,7 @@
 </div>
 
 @code {
-    [Parameter]
-    public string Output_URL { get; set; }
-
-    private ControlsMeta currentControlsMeta = new();
+    private string Output_URL { get; set; }
     private WizardModel WizardModel = new();
     private Modal WizardModal = new();
     private string nextFormUrl = "";
@@ -126,14 +125,14 @@
     private async Task NextCallback()
     {
         var condition = new List<Condition>();
-        var conditions = currentControlsMeta.Child.Find(item => item.Name == nextFormUrl.Split("/")[^1])?.Condition;
+        var conditions = WizardModel.ControlsMeta.Child.Find(item => item.Name == nextFormUrl.Split("/")[^1])?.Condition;
         if (conditions != null)
         {
             foreach (var cond in conditions)
             {
                 var values = new List<object>();
                 var allow = new Dictionary<string, List<object>>();
-                foreach (var elem in currentControlsMeta.Elem.Where(item => item.ContainsKey(cond.Key)))
+                foreach (var elem in WizardModel.ControlsMeta.Elem.Where(item => item.ContainsKey(cond.Key)))
                 {
                     foreach (var kvp in elem)
                     {
@@ -181,28 +180,23 @@
 
     private async Task UpdateWizardData()
     {
-        currentControlsMeta = new ControlsMeta();
+        WizardModel.ControlsMeta = new ControlsMeta();
         changeElements.Clear();
-        if (string.IsNullOrEmpty(Output_URL)) currentControlsMeta.Name = "tree";
+        if (string.IsNullOrEmpty(Output_URL)) WizardModel.ControlsMeta.Name = "tree";
         var query = await WizardContainer.GetFormInfo(Output_URL);
-        if (query != null) JsonParser.DeserializeTree(query.ToString(),currentControlsMeta,currentControlsMeta.Child);
-        WizardModel.Title = !string.IsNullOrEmpty(Output_URL) ? currentControlsMeta.DisplayName : "Main window";
-        if (string.IsNullOrEmpty(Output_URL)) currentControlsMeta.Name = string.Empty;
-        if (currentControlsMeta.Child.Count > 0)
+        if (query != null) JsonParser.DeserializeTree(query.ToString(),WizardModel.ControlsMeta,WizardModel.ControlsMeta.Child);
+        WizardModel.Title = !string.IsNullOrEmpty(Output_URL) ? WizardModel.ControlsMeta.DisplayName : "Main window";
+        if (string.IsNullOrEmpty(Output_URL)) WizardModel.ControlsMeta.Name = string.Empty;
+        if (WizardModel.ControlsMeta.Child.Count > 0)
         {
-            nextFormUrl = (!string.IsNullOrEmpty(Output_URL) ? $"{Output_URL}/" : "") + currentControlsMeta.Child.Where(item => item.Type == "form").ToList()[0].Name;
-            nextFormName = (!string.IsNullOrEmpty(formNamesPath) ? $"{formNamesPath}/" : "") + currentControlsMeta.Child.Where(item => item.Type == "form").ToList()[0].DisplayName;
+            nextFormUrl = (!string.IsNullOrEmpty(Output_URL) ? $"{Output_URL}/" : "") + WizardModel.ControlsMeta.Child.Where(item => item.Type == "form").ToList()[0].Name;
+            nextFormName = (!string.IsNullOrEmpty(formNamesPath) ? $"{formNamesPath}/" : "") + WizardModel.ControlsMeta.Child.Where(item => item.Type == "form").ToList()[0].DisplayName;
         }
         else
         {
             nextFormUrl = "";
             nextFormName = "";
         }
-    }
-
-    private void PrevFormCallback(string url)
-    {
-        
     }
 
 }
