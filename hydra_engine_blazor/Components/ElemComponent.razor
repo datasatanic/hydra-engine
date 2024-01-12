@@ -18,7 +18,7 @@
             case Control.Label:
 
             {
-                var id = Guid.NewGuid();
+                var id = elemInfo.GetHashCode();
                 <ul>
                     <li>@elemInfo.display_name
                         <img data-bs-toggle="collapse" data-bs-target="@($"#el{id}")" aria-controls="@($"el{id}")" aria-expanded="@(Depth <= 2 ? "true" : "false")"/>
