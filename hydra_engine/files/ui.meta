@@ -2,174 +2,48 @@ root:
   display_name: Root
   type: form
   id: 1
-root/constr:
+root/infras:
   description: Connection strings
   display_name: Connection strings
   type: form
   id: 2
-root/constr/form:
-  description: Eagle master
-  display_name: Form
+root/infras/common:
+  description: Configuration for infrastructure
+  display_name: Common
   type: form
-  id: 3
-root/constr/form/group:
-  description: Kalash s venkami
-  display_name: Group
-  type: group
-  id: 4
-root/constr/infras:
-  description: Connection strings for infrastructions services
-  display_name: Infrastructure
-  type: group
   id: 5
-root/constr/service:
-  description: Connection strings for logical services
-  display_name: Service
-  type: form
+root/infras/common/infra_name:
+  description: ""
+  display_name: Infrastructure name
+  type: group
   id: 6
-root/test:
-  description: ''
-  display_name: Test
-  type: form
+root/infras/common/mgmt:
+  description: ""
+  display_name: MGMT site params
+  type: group
   id: 7
-root/test/TEST1:
-  description: ''
-  display_name: Test1
-  type: form
+root/infras/common/base:
+  description: ""
+  display_name: Base site parameters
+  type: group
   id: 8
-root/test/TEST2:
-  description: ''
-  display_name: Test2
-  type: form
+root/infras/common/hosts:
+  description: ""
+  display_name: Hosts configuration
+  type: group
   id: 9
-root1:
-  display_name: "Root1"
-  type: "form"
+root/infras/common/k8s:
+  description: Kubernetes cluster configuration
+  display_name: Kubernetes
+  type: group
   id: 10
-root1/constr:
-  description: Connection strings
-  display_name: Connection Strings
+root/infras/common/ssh_users:
+  description: ""
+  display_name: Ssh users
   type: form
   id: 11
-root1/constr/infras:
-  description: Connection strings for infrastructions services
-  display_name: Infrastructure
+root/infras/common/vSphere:
+  description: Used for creation VM
+  display_name: Vsphere parameters
   type: group
   id: 12
-root1/constr/service:
-  description: Connection strings for logical services
-  display_name: Service
-  type: group
-  id: 13
-root2:
-  display_name: Root2
-  type: form
-  id: 14
-root2/constr2:
-  description: Connection1 strings
-  display_name: Connection1 strings
-  type: form
-  id: 15
-root2/constr2/infras:
-  description: Connection strings for infrastructions services
-  display_name: Infrastructure
-  type: form
-  id: 16
-root2/constr2/group1:
-  description: Connection strings for logical services
-  display_name: Group1
-  type: form
-  id: 17
-root3:
-  display_name: Root3
-  type: form
-  id: 18
-root3/constr2:
-  description: Connection3 strings
-  display_name: Connection3 strings
-  type: form
-  id: 19
-root3/constr2/infras:
-  description: Connection strings for infrastructions services
-  display_name: Infrastructure
-  type: form
-  id: 20
-root3/constr2/group1:
-  description: Connection strings for logical services
-  display_name: Group1
-  type: group
-  id: 21
-root3/constr:
-  display_name: Connection strings
-  type: form
-  id: 22
-root3/constr/infras2:
-  display_name: Infrastructure2
-  type: form
-  id: 23
-root3/constr/group:
-  display_name: "Group"
-  type: "group"
-  id: 24
-root4:
-  display_name: "Root4"
-  type: "form"
-  id: 25
-root4/constr2:
-  description: Connection1 strings
-  display_name: Connection1 strings
-  type: form
-  id: 26
-root4/constr2/infras:
-  description: Connection strings for infrastructions services
-  display_name: Infrastructure
-  type: form
-  id: 27
-root4/constr2/group1:
-  description: Connection strings for logical services
-  display_name: Group1
-  type: group
-  id: 28
-root4/constr:
-  display_name: Connection1 strings
-  type: form
-  id: 29
-root4/constr/infras2:
-  display_name: Connection1 strings
-  type: form
-  id: 30
-root4/constr/group:
-  display_name: Connection1 strings
-  type: form
-  id: 31
-root5:
-  display_name: Root5
-  type: form
-  id: 31
-root5/constr2:
-  description: Connection1 strings
-  display_name: Connection1 strings
-  type: form
-  id: 32
-root5/constr2/infras:
-  description: Connection strings for infrastructions services
-  display_name: Infrastructure
-  type: form
-  id: 33
-root5/constr2/group1:
-  description: Connection strings for logical services
-  display_name: Group1
-  type: form
-  id: 34
-root5/constr:
-  display_name: Connection1 strings
-  type: form
-  id: 35
-root5/constr/infras2:
-  display_name: Connection1 strings
-  type: form
-  id: 36
-root5/constr/group:
-  display_name: Connection1 strings
-  type: group
-  id: 37

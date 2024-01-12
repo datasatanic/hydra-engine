@@ -214,6 +214,7 @@
 
     private async Task ChangeValue(ChangeEventArgs obj,ElemType type)
     {
+        if (elemInfo.readOnly) return;
         elemInfo.value = obj.Value.ToString();
         var value = obj.Value;
         if (TryParseToType(value.ToString(),elemInfo?.type) && !string.IsNullOrEmpty(value.ToString()) && !elemInfo.constraints.Exists(item=>!CheckConstraints(value.ToString(),item,elemInfo.control)))
@@ -253,6 +254,7 @@
 
     private async Task ChangeArrayValue(ChangeEventArgs obj,int i,ElemType type)
     {
+        if (elemInfo.readOnly) return;
         elemInfo.arrayItems[i]=obj.Value?.ToString();
         elemInfo.value = JsonSerializer.Serialize(elemInfo.arrayItems);
         if (elemInfo?.arrayItems.Find(item => !TryParseToType(item?.ToString(), elemInfo?.sub_type) |
