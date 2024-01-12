@@ -8,6 +8,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 
+import hydra_engine.filewatcher
 from hydra_engine.schemas import set_value, HydraParametersInfo, ParameterSaveInfo, filter_tree, find_form
 from hydra_engine.search.searcher import HydraSearcher
 from datetime import datetime
@@ -41,8 +42,7 @@ def get_form_info(name: str):
 async def set_values(content: list[ParameterSaveInfo]):
     for item in content:
         set_value(item.input_url, item.file_id, item.value)
-    await asyncio.sleep(1)  # костыль
-    HydraParametersInfo().set_modify_time()  # костыль
+    hydra_engine.filewatcher.file_event.wait()
     return JSONResponse(content=jsonable_encoder(HydraParametersInfo().modify_time), status_code=200)
 
 
