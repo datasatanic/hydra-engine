@@ -54,23 +54,29 @@
 
     [Parameter]
     public RenderFragment? Footer { get; set; }
+    [Parameter]
+    public bool OpenedAfterCreate { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Modal.razor.js");
+            if (OpenedAfterCreate)
+            {
+                await Open();
+            }
         }
     }
 
     public async Task Open()
     {
-        await module.InvokeVoidAsync("Open", obj);
+        if (module != null) await module.InvokeVoidAsync("Open", obj);
     }
 
     public async Task Close()
     {
-        await module.InvokeVoidAsync("Close", obj);
+        if (module != null) await module.InvokeVoidAsync("Close", obj);
     }
 
 }

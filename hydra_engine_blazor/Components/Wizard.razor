@@ -3,7 +3,7 @@
 @inject WizardContainer WizardContainer
 <button class="open-wizard-button" @onclick="async ()=> await WizardModal.Open()">Open Wizard</button>
 <div class="wizard-container">
-    <Modal Model="WizardModel" @ref="WizardModal">
+    <Modal Model="WizardModel" @ref="WizardModal" IsOpened="true" OpenedAfterCreate="true">
         <Header>
             <div class="d-block">
                 <h2 class="title">@WizardModel.Title</h2>
@@ -42,6 +42,7 @@
                 </div>
             }
             <div class="wizard-elements form-elements-container">
+                <h3>@WizardModel.ControlsMeta.Description</h3>
                 @foreach (var elem in WizardModel.ControlsMeta.Elem)
                 {
                     <div class="elements-container">
@@ -100,7 +101,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await UpdateWizardData();
+        await UpdateWizardData();   
     }
 
     private async Task PrevCallback()
