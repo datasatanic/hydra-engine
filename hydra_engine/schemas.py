@@ -565,11 +565,11 @@ def get_element_info(input_url, uid: str):
                                                                                                        key] else None)
                             render_constraints.append(constraint_item)
                 value = get_value(input_url, uid)
-                elem_info = generate_elem_info(value, element, uid, input_url)
+                elem_info = generate_elem_info(value, element, uid, input_url, True)
                 return elem_info
 
 
-def generate_elem_info(value, element, uid, path):
+def generate_elem_info(value, element, uid, path, is_log):
     try:
         render_dict = element["render"]
         render_dict_constraints = render_dict["constraints"]
@@ -594,19 +594,19 @@ def generate_elem_info(value, element, uid, path):
                 elem_info.array_sub_type_schema = []
                 for el in value:
                     d = {
-                        key: generate_elem_info(el[key], metadata, uid,f"{path}/{key}")
+                        key: generate_elem_info(el[key], metadata, uid, f"{path}/{key}", value.index(el) == 0)
                         for key, metadata in element["sub_type_schema"].items()
                     }
                     elem_info.array_sub_type_schema.append(d)
                 elem_info.sub_type_schema = {}
                 for key, metadata in element["sub_type_schema"].items():
                     elem_info.sub_type_schema.update({
-                        key: generate_elem_info(metadata["default_value"], metadata, uid,f"{path}/{key}")
+                        key: generate_elem_info(metadata["default_value"], metadata, uid, f"{path}/{key}", False)
                     })
             else:
                 if value:
                     elem_info.sub_type_schema = {
-                        key: generate_elem_info(value[key], metadata, uid,f"{path}/{key}")
+                        key: generate_elem_info(value[key], metadata, uid, f"{path}/{key}", True)
                         for key, metadata in element["sub_type_schema"].items()
                     }
                 else:
@@ -614,18 +614,19 @@ def generate_elem_info(value, element, uid, path):
                     elem_info.sub_type_schema = {}
                     for key, metadata in element["sub_type_schema"].items():
                         elem_info.sub_type_schema.update({
-                            key: generate_elem_info(metadata["default_value"], metadata, uid,f"{path}/{key}")
+                            key: generate_elem_info(metadata["default_value"], metadata, uid, f"{path}/{key}", True)
                         })
                         elem_info.value.update({key: metadata["default_value"]})
         return elem_info
     except ValidationError as e:
-        value_instance = next((item for item in HydraParametersInfo().elements_values if item.uid == uid), None)
-        file_info = next(
-            (item for item in HydraParametersInfo().elements_files_info if item["path"] == value_instance.path), None)
-        for error in e.errors():
-            for loc in error["loc"]:
-                logger.error(
-                    f"{file_info['meta_path']} validation error in parameter metadata,line:{element.lc.line}, field: {loc}, message: {error['msg']}")
+        if is_log:
+            value_instance = next((item for item in HydraParametersInfo().elements_values if item.uid == uid), None)
+            file_info = next(
+                (item for item in HydraParametersInfo().elements_files_info if item["path"] == value_instance.path), None)
+            for error in e.errors():
+                for loc in error["loc"]:
+                    logger.error(
+                        f"{file_info['meta_path']} validation error in metadata of parameter({path}),line:{element.lc.line}, field: {loc}, message: {error['msg']}")
 
 
 def filter_tree(all_tree):
