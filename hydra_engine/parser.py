@@ -168,7 +168,12 @@ def generate_config_structure(element, key, sub_d):
             for sub_key in element[key]["sub_type_schema"]:
                 generate_config_structure(element[key]["sub_type_schema"], sub_key, sub_d)
     else:
-        sub_d.update({key: element[key]["default_value"]})
+        input_url_list = key.split("/")
+        while len(input_url_list) > 1:
+            sub_d.update({input_url_list[0]: {}})
+            sub_d = sub_d[input_url_list[0]]
+            input_url_list.pop(0)
+        sub_d.update({input_url_list[0]: element[key]["default_value"]})
 
 
 def write_file(data, file_path, file_type, key, value):

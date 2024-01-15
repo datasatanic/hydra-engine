@@ -3,8 +3,8 @@ root:
   type: form
   id: 1
 root/infras:
-  description: Connection strings
-  display_name: Connection strings
+  description: Exist infrastructures
+  display_name: Infrastructures
   type: form
   id: 2
 root/infras/common:

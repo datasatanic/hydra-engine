@@ -495,10 +495,24 @@ def get_elements(path_id):
     return elem_list
 
 
-def get_value(key: str, uid: str, sub_type_class=None):
+def get_value(input_url: str, uid: str):
+    input_url_list = input_url.split("/")
+    key = input_url_list[0]
+    input_url_list.pop(0)
     for elements in HydraParametersInfo().get_elements_values():
         if key in elements.values and elements.uid == uid:
-            return elements.values[key]
+            return get_value_by_key(elements.values[key], input_url_list)
+
+
+def get_value_by_key(value, input_url_list):
+    if len(input_url_list) == 0:
+        return value
+    key = input_url_list[0]
+    input_url_list.pop(0)
+    if key in value:
+        return get_value_by_key(value[key], input_url_list)
+    else:
+        logger.error("Key not exist")
 
 
 def set_value_in_dict(elements, value, input_url_list, file_type):
@@ -570,7 +584,7 @@ def generate_elem_info(value, element, uid):
                          description=element["description"],
                          sub_type=element["sub_type"],
                          sub_type_schema=None,
-                         readOnly=element["readonly"],
+                         readOnly=element["readonly"] if "readonly" in element else False,
                          display_name=render_dict["display_name"], control=render_dict["control"],
                          constraints=render_constraints,
                          file_id=uid)

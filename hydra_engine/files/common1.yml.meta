@@ -72,7 +72,6 @@ PARAMS:
                   control: number_control
                   display_name: "Host number"
                   constraints:
-            readonly: False
             description: ""
             id: 6
             render:
@@ -106,13 +105,11 @@ PARAMS:
                   control: number_control
                   display_name: "Repo host number"
                   constraints:
-            readonly: False
             description: ""
             render:
               control: label_control
               display_name: "Repos"
               constraints:
-        readonly: False
         description: ""
         id: 7
         render:
@@ -135,7 +132,6 @@ PARAMS:
               control: number_control
               display_name: "avg_cpu_core_hz"
               constraints:
-        readonly: False
         description: ""
         id: 7
         render:
@@ -170,7 +166,6 @@ PARAMS:
               control: input_control
               display_name: "Cloud"
               constraints:
-        readonly: False
         description: ""
         id: 8
         render:
@@ -209,7 +204,6 @@ PARAMS:
               control: input_control
               display_name: "Forwarded zones"
               constraints:
-        readonly: False
         description: ""
         id: 8
         render:
@@ -271,13 +265,11 @@ PARAMS:
                   control: input_control
                   display_name: "name"
                   constraints:
-            readonly: False
             description: ""
             render:
               control: label_control
               display_name: "images"
               constraints:
-        readonly: False
         description: ""
         id: 9
         render:
@@ -420,7 +412,6 @@ PARAMS:
                           control: input_control
                           display_name: "label"
                           constraints:
-                    readonly: False
                     description: ""
                     render:
                       control: label_control
@@ -522,13 +513,11 @@ PARAMS:
                   control: label_control
                   display_name: "volume_claims"
                   constraints:
-            readonly: False
             description: ""
             render:
               control: label_control
               display_name: "storage"
               constraints:
-        readonly: False
         description: ""
         id: 10
         render:
@@ -653,7 +642,6 @@ PARAMS:
               control: label_control
               display_name: "Users dict"
               constraints:
-        readonly: False
         description: ""
         id: 11
         render:
@@ -742,10 +730,21 @@ PARAMS:
               control: input_control
               display_name: "Resource pool"
               constraints:
-        readonly: False
         description: ""
         id: 12
         render:
           control: label_control
           display_name: Vsphere
+          constraints:
+    - vcd/templates_catalog:
+        default_value: Templates
+        type: string
+        sub_type:
+        sub_type_schema:
+        readonly: False
+        description: ""
+        id: 6
+        render:
+          control: input_control
+          display_name: Vcd templates catalog
           constraints:
