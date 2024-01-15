@@ -111,6 +111,7 @@ def parse_elements_fileinfo():
                         data_loaded = yaml.load(stream)
                         if data_loaded is not None:
                             _elements = data_loaded["FILE"]
+                            _elements["meta_path"] = os.path.join(root, filename)
                             elements_files_info.append(_elements)
 
 

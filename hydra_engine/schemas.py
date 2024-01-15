@@ -2,7 +2,7 @@ import json
 import yaml
 import maya
 from typing import List, Literal, Dict
-from pydantic import BaseModel, validator, Extra, root_validator
+from pydantic import BaseModel, validator, Extra, root_validator, ValidationError
 from hydra_engine.parser import write_file, HydraParametersInfo
 import logging
 import re
@@ -52,7 +52,7 @@ class ElemInfo(BaseModel):
             try:
                 int(values["value"])
                 return value_type
-            except TypeError:
+            except Exception:
                 raise TypeError("Not integer type")
         if value_type == "bool":
             if values["value"] is True or values["value"] is False:
@@ -62,14 +62,14 @@ class ElemInfo(BaseModel):
             try:
                 float(values["value"])
                 return value_type
-            except TypeError:
+            except Exception:
                 raise TypeError("Not double type")
         if value_type == "datetime":
             try:
                 date = maya.parse(values["value"]).datetime()
                 values["value"] = date
                 return value_type
-            except TypeError:
+            except Exception:
                 raise TypeError("Not datetime type")
         if value_type == "array":
             return value_type
@@ -90,21 +90,21 @@ class ElemInfo(BaseModel):
             for item in values["value"]:
                 try:
                     int(item)
-                except TypeError:
+                except Exception:
                     raise TypeError(f"item {item} in array is not integer")
             return sub_type
         if sub_type == "bool":
             for item in values["value"]:
                 try:
                     bool(item)
-                except TypeError:
+                except Exception:
                     raise TypeError(f"item {item} in array is not boolean")
             return sub_type
         if sub_type == "double":
             for item in values["value"]:
                 try:
                     float(item)
-                except TypeError:
+                except Exception:
                     raise TypeError(f"item {item} in array is not double")
             return sub_type
         if sub_type == "datetime":
@@ -112,7 +112,7 @@ class ElemInfo(BaseModel):
                 try:
                     date = maya.parse(item).datetime()
                     values["value"][values["value"].index(item)] = date
-                except TypeError:
+                except Exception:
                     raise TypeError(f"item {item} in array is not datetime format")
             return sub_type
         if sub_type == "composite":
@@ -120,8 +120,8 @@ class ElemInfo(BaseModel):
 
     @validator("control", pre=True)
     def check_control(cls, elem_control, values, **kwargs):
-        if "sub_type" not in values:
-            return
+        if "sub_type" not in values or "type" not in values:
+            return elem_control
         match elem_control:
             case "datetime_control":
                 if not (values["type"] == "datetime" and values["type"] != "array" or values["type"] == "array" and
@@ -565,58 +565,67 @@ def get_element_info(input_url, uid: str):
                                                                                                        key] else None)
                             render_constraints.append(constraint_item)
                 value = get_value(input_url, uid)
-                elem_info = generate_elem_info(value, element, uid)
+                elem_info = generate_elem_info(value, element, uid, input_url)
                 return elem_info
 
 
-def generate_elem_info(value, element, uid):
-    render_dict = element["render"]
-    render_dict_constraints = render_dict["constraints"]
-    render_constraints = []
-    if render_dict_constraints:
-        for constraint in render_dict_constraints:
-            for key in constraint:
-                constraint_item = ConstraintItem(value=constraint[key]["value"], type=key,
-                                                 message=constraint[key]["message"] if "message" in constraint[
-                                                     key] else None)
-                render_constraints.append(constraint_item)
-    elem_info = ElemInfo(value=value, type=element["type"],
-                         description=element["description"],
-                         sub_type=element["sub_type"],
-                         sub_type_schema=None,
-                         readOnly=element["readonly"] if "readonly" in element else False,
-                         display_name=render_dict["display_name"], control=render_dict["control"],
-                         constraints=render_constraints,
-                         file_id=uid)
-    if element["sub_type_schema"] is not None:
-        if element["type"] == "array":
-            elem_info.array_sub_type_schema = []
-            for el in value:
-                d = {
-                    key: generate_elem_info(el[key], metadata, uid)
-                    for key, metadata in element["sub_type_schema"].items()
-                }
-                elem_info.array_sub_type_schema.append(d)
-            elem_info.sub_type_schema = {}
-            for key, metadata in element["sub_type_schema"].items():
-                elem_info.sub_type_schema.update({
-                    key: generate_elem_info(metadata["default_value"], metadata, uid)
-                })
-        else:
-            if value:
-                elem_info.sub_type_schema = {
-                    key: generate_elem_info(value[key], metadata, uid)
-                    for key, metadata in element["sub_type_schema"].items()
-                }
-            else:
-                elem_info.value = {}
+def generate_elem_info(value, element, uid, path):
+    try:
+        render_dict = element["render"]
+        render_dict_constraints = render_dict["constraints"]
+        render_constraints = []
+        if render_dict_constraints:
+            for constraint in render_dict_constraints:
+                for key in constraint:
+                    constraint_item = ConstraintItem(value=constraint[key]["value"], type=key,
+                                                     message=constraint[key]["message"] if "message" in constraint[
+                                                         key] else None)
+                    render_constraints.append(constraint_item)
+        elem_info = ElemInfo(value=value, type=element["type"],
+                             description=element["description"],
+                             sub_type=element["sub_type"],
+                             sub_type_schema=None,
+                             readOnly=element["readonly"] if "readonly" in element else False,
+                             display_name=render_dict["display_name"], control=render_dict["control"],
+                             constraints=render_constraints,
+                             file_id=uid)
+        if element["sub_type_schema"] is not None:
+            if element["type"] == "array":
+                elem_info.array_sub_type_schema = []
+                for el in value:
+                    d = {
+                        key: generate_elem_info(el[key], metadata, uid,f"{path}/{key}")
+                        for key, metadata in element["sub_type_schema"].items()
+                    }
+                    elem_info.array_sub_type_schema.append(d)
                 elem_info.sub_type_schema = {}
                 for key, metadata in element["sub_type_schema"].items():
                     elem_info.sub_type_schema.update({
-                        key: generate_elem_info(metadata["default_value"], metadata, uid)
+                        key: generate_elem_info(metadata["default_value"], metadata, uid,f"{path}/{key}")
                     })
-                    elem_info.value.update({key: metadata["default_value"]})
-    return elem_info
+            else:
+                if value:
+                    elem_info.sub_type_schema = {
+                        key: generate_elem_info(value[key], metadata, uid,f"{path}/{key}")
+                        for key, metadata in element["sub_type_schema"].items()
+                    }
+                else:
+                    elem_info.value = {}
+                    elem_info.sub_type_schema = {}
+                    for key, metadata in element["sub_type_schema"].items():
+                        elem_info.sub_type_schema.update({
+                            key: generate_elem_info(metadata["default_value"], metadata, uid,f"{path}/{key}")
+                        })
+                        elem_info.value.update({key: metadata["default_value"]})
+        return elem_info
+    except ValidationError as e:
+        value_instance = next((item for item in HydraParametersInfo().elements_values if item.uid == uid), None)
+        file_info = next(
+            (item for item in HydraParametersInfo().elements_files_info if item["path"] == value_instance.path), None)
+        for error in e.errors():
+            for loc in error["loc"]:
+                logger.error(
+                    f"{file_info['meta_path']} validation error in parameter metadata,line:{element.lc.line}, field: {loc}, message: {error['msg']}")
 
 
 def filter_tree(all_tree):
