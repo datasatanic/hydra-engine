@@ -417,7 +417,7 @@ PARAMS:
                       control: label_control
                       display_name: "node_affinity"
                       constraints:
-                readonly: True
+                readonly: False
                 description: ""
                 render:
                   control: label_control

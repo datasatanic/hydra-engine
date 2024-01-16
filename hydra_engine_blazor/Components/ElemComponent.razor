@@ -407,7 +407,15 @@
     {
         if (elemInfo?.sub_type_schema != null)
         {
-            elemInfo?.array_sub_type_schema.Add(elemInfo.sub_type_schema);
+            var subTypeSchema = new Dictionary<string, object>();
+            foreach (var (key, value) in elemInfo.sub_type_schema)
+            {
+                var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
+                subElemInfo.readOnly = false;
+                var elemInfoAsObject = JsonSerializer.Deserialize<object>(JsonParser.SerializeElemInfo(subElemInfo));
+                if (elemInfoAsObject != null) subTypeSchema.Add(key, elemInfoAsObject);
+            }
+            elemInfo?.array_sub_type_schema.Add(subTypeSchema);
             var valueDictionary = getSchema(elemInfo.sub_type_schema, new Dictionary<string, object>());
             elemInfo?.arrayItems.Add(valueDictionary);
         }
