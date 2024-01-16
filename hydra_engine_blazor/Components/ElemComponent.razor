@@ -331,8 +331,6 @@
                 ElementAttributes?.Add("type","checkbox");
                 ElementAttributes?.Add("checked", bool.Parse(elemInfo.value.ToString()));
                 break;
-            case Control.Fieldset:
-                break;
         }
         if (elemInfo.constraints is null)
         {

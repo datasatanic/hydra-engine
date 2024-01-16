@@ -46,77 +46,69 @@ class ElemInfo(BaseModel):
     def check_type(cls, value_type, values, **kwargs):
         if value_type is None:
             raise TypeError("Type can't be empty")
-        if value_type == "string":
-            return value_type
-        if value_type == "int":
+        elif value_type == "int":
             try:
                 int(values["value"])
-                return value_type
             except Exception:
                 raise TypeError("Not integer type")
-        if value_type == "bool":
-            if values["value"] is True or values["value"] is False:
-                return value_type
-            raise TypeError("Not boolean type")
-        if value_type == "double":
+        elif value_type == "double":
             try:
                 float(values["value"])
-                return value_type
             except Exception:
                 raise TypeError("Not double type")
-        if value_type == "datetime":
+        elif value_type == "datetime":
             try:
                 date = maya.parse(values["value"]).datetime()
                 values["value"] = date
-                return value_type
             except Exception:
                 raise TypeError("Not datetime type")
-        if value_type == "array":
-            return value_type
-        if value_type == "dict":
-            return value_type
+        elif value_type == "bool":
+            if values["value"] is True or values["value"] is False:
+                return value_type
+            raise TypeError("Not boolean type")
+        return value_type
 
     @validator("sub_type", pre=True)
     def check_sub_type(cls, sub_type, values, **kwargs):
         if "type" not in values:
             return
-        if values["type"] != "array" and sub_type is not None:
+        elif values["type"] != "array" and sub_type is not None:
             raise TypeError("sub_type can be not empty only when type is array")
-        if values["type"] == "array" and sub_type is None:
+        elif values["type"] == "array" and sub_type is None:
             raise TypeError("sub_type can't be empty in array")
-        if sub_type == "string":
-            return sub_type
-        if sub_type == "int":
+        elif sub_type == "int":
             for item in values["value"]:
                 try:
                     int(item)
                 except Exception:
                     raise TypeError(f"item {item} in array is not integer")
-            return sub_type
-        if sub_type == "bool":
+        elif sub_type == "bool":
             for item in values["value"]:
                 try:
                     bool(item)
                 except Exception:
                     raise TypeError(f"item {item} in array is not boolean")
-            return sub_type
-        if sub_type == "double":
+        elif sub_type == "double":
             for item in values["value"]:
                 try:
                     float(item)
                 except Exception:
                     raise TypeError(f"item {item} in array is not double")
-            return sub_type
-        if sub_type == "datetime":
+        elif sub_type == "datetime":
             for item in values["value"]:
                 try:
                     date = maya.parse(item).datetime()
                     values["value"][values["value"].index(item)] = date
                 except Exception:
                     raise TypeError(f"item {item} in array is not datetime format")
-            return sub_type
-        if sub_type == "composite":
-            return sub_type
+        return sub_type
+
+    @validator("sub_type_schema", pre=True)
+    def check_sub_type_schema(cls, sub_type_schema, values, **kwargs):
+        if values.get('type') != "dict" or values.get('type') == "array" and values.get('sub_type') != "composite":
+            if sub_type_schema is not None:
+                raise ValueError("Parameter with type dict or array with composite type can have sub_type_schema")
+        return sub_type_schema
 
     @validator("control", pre=True)
     def check_control(cls, elem_control, values, **kwargs):
@@ -170,10 +162,10 @@ class ElemInfo(BaseModel):
 
     @validator("constraints", pre=True)
     def check_constraints(cls, elem_constraints, values, **kwargs):
-        if "control" not in values:
-            return
-        if values["control"] != "checkbox_control":
-            check_allowed_constraints(elem_constraints, values["control"])
+        if values.get('type') == "dict" and len(elem_constraints) > 0:
+            raise ValueError("Parameter with dict type can't have constraints")
+        if values.get('control') != "checkbox_control":
+            check_allowed_constraints(elem_constraints, values.get('control'))
             check_constraints_values(elem_constraints, values)
             return elem_constraints
         else:
@@ -194,25 +186,25 @@ def check_constraints_values(elem_constraints, elem):
             case "maxlength":
                 try:
                     maxlength = int(constraint.value)
-                    if elem["type"] != "array":
-                        if len(elem["value"]) > maxlength:
-                            raise ValueError(f"Value of {elem['display_name']} more than max length")
+                    if elem.get("type") != "array":
+                        if len(elem.get("value")) > maxlength:
+                            raise ValueError(f"Value of {elem.get('display_name')} more than max length")
                     else:
-                        for value in elem["value"]:
+                        for value in elem.get("value"):
                             if len(value) > maxlength:
-                                raise ValueError(f"Value of {elem['display_name']} more than max length")
+                                raise ValueError(f"Value of {elem.get('display_name')} more than max length")
                 except TypeError:
                     raise TypeError(f"In constraint maxlength value must be integer")
             case "minlength":
                 try:
                     minlength = int(constraint.value)
-                    if elem["type"] != "array":
-                        if len(elem["value"]) < minlength:
-                            raise ValueError(f"Value of {elem['display_name']} less than min length")
+                    if elem.get("type") != "array":
+                        if len(elem.get("value")) < minlength:
+                            raise ValueError(f"Value of {elem.get('display_name')} less than min length")
                     else:
-                        for value in elem["value"]:
+                        for value in elem.get("value"):
                             if len(value) < minlength:
-                                raise ValueError(f"Value of array {elem['display_name']} less than min length")
+                                raise ValueError(f"Value of array {elem.get('display_name')} less than min length")
                 except TypeError:
                     raise TypeError(f"In constraint minlength value must be integer")
             case "size":
@@ -221,139 +213,147 @@ def check_constraints_values(elem_constraints, elem):
                 except TypeError:
                     raise TypeError(f"In constraint size value must be integer")
             case "pattern":
-                if elem["type"] != "array":
-                    if re.match(constraint.value, elem["value"]) is None:
+                if elem.get("type") != "array":
+                    if re.match(constraint.value, elem.get("value")) is None:
                         raise ValueError(f"The string does not match the regular expression")
                 else:
-                    for value in elem["value"]:
+                    for value in elem.get("value"):
                         if re.match(constraint.value, value) is None:
                             raise ValueError(f"The string of array does not match the regular expression")
             case "min":
-                match elem["control"]:
+                match elem.get("control"):
                     case "datetime_control":
                         try:
                             date = maya.parse(constraint.value).datetime()
                             constraint.value = date.replace(tzinfo=None).isoformat()
-                            if elem["type"] != "array":
-                                min = maya.parse(elem["value"]).datetime().replace(tzinfo=None)
+                            if elem.get('type') != "array":
+                                min = maya.parse(elem.get("value")).datetime().replace(tzinfo=None)
                                 if min < date.replace(tzinfo=None):
-                                    raise ValueError(f"Value of {elem['display_name']} less than min value")
+                                    raise ValueError(f"Value of {elem.get('display_name')} less than min value")
                             else:
-                                for value in elem["value"]:
+                                for value in elem.get('value'):
                                     min = maya.parse(value).datetime().replace(tzinfo=None)
                                     if min < date.replace(tzinfo=None):
-                                        raise ValueError(f"Value of array {elem['display_name']} less than min value")
+                                        raise ValueError(
+                                            f"Value of array {elem.get('display_name')} less than min value")
                         except TypeError:
                             raise TypeError(
-                                f"Not datetime value in constraint {constraint.type} when control is {elem['control']}")
+                                f"Not datetime value in constraint {constraint.type} when control is {elem.get('control')}")
                     case "date_control":
                         try:
                             date = maya.parse(constraint.value).datetime()
                             constraint.value = date.replace(tzinfo=None).date().isoformat()
-                            if elem["type"] != "array":
-                                min = maya.parse(elem["value"]).datetime().replace(tzinfo=None)
+                            if elem.get('type') != "array":
+                                min = maya.parse(elem.get('value')).datetime().replace(tzinfo=None)
                                 if min < date.replace(tzinfo=None):
-                                    raise ValueError(f"Value of {elem['display_name']} less than min value")
+                                    raise ValueError(f"Value of {elem.get('display_name')} less than min value")
                             else:
-                                for value in elem["value"]:
+                                for value in elem.get('value'):
                                     min = maya.parse(value).datetime().replace(tzinfo=None)
                                     if min < date.replace(tzinfo=None):
-                                        raise ValueError(f"Value of array {elem['display_name']} less than min value")
+                                        raise ValueError(
+                                            f"Value of array {elem.get('display_name')} less than min value")
                         except TypeError:
                             raise TypeError(
-                                f"Not date value in constraint {constraint.type} when control is {elem['control']}")
+                                f"Not date value in constraint {constraint.type} when control is {elem.get('control')}")
                     case "time_control":
                         try:
                             date = maya.parse(constraint.value).datetime()
                             constraint.value = date.replace(tzinfo=None).time().isoformat()
-                            if elem["type"] != "array":
-                                min = maya.parse(elem["value"]).datetime().replace(tzinfo=None)
+                            if elem.get('type') != "array":
+                                min = maya.parse(elem.get('value')).datetime().replace(tzinfo=None)
                                 if min < date.replace(tzinfo=None):
-                                    raise ValueError(f"Value of {elem['display_name']} less than min value")
+                                    raise ValueError(f"Value of {elem.get('display_name')} less than min value")
                             else:
-                                for value in elem["value"]:
+                                for value in elem.get('value'):
                                     min = maya.parse(value).datetime().replace(tzinfo=None)
                                     if min < date.replace(tzinfo=None):
-                                        raise ValueError(f"Value of array {elem['display_name']} less than min value")
+                                        raise ValueError(
+                                            f"Value of array {elem.get('display_name')} less than min value")
                         except TypeError:
                             raise TypeError(
-                                f"Not time value in constraint {constraint.type} when control is {elem['control']}")
+                                f"Not time value in constraint {constraint.type} when control is {elem.get('control')}")
                     case "number_control":
                         try:
                             min = int(constraint.value)
-                            if elem["type"] != "array":
-                                if int(elem["value"]) < min:
-                                    raise ValueError(f"Value of {elem['display_name']} less than min value")
+                            if elem.get('type') != "array":
+                                if int(elem.get('value')) < min:
+                                    raise ValueError(f"Value of {elem.get('display_name')} less than min value")
                             else:
-                                for value in elem["value"]:
+                                for value in elem.get('value'):
                                     if int(value) < min:
-                                        raise ValueError(f"Value of array {elem['display_name']} less than min value")
+                                        raise ValueError(
+                                            f"Value of array {elem.get('display_name')} less than min value")
                         except TypeError:
                             raise TypeError(
-                                f"Not integer value in constraint {constraint.type} when control is {elem['control']}")
+                                f"Not integer value in constraint {constraint.type} when control is {elem.get('control')}")
             case "max":
-                match elem["control"]:
+                match elem.get('control'):
                     case "datetime_control":
                         try:
                             date = maya.parse(constraint.value).datetime()
                             constraint.value = date.replace(tzinfo=None).isoformat()
-                            if elem["type"] != "array":
-                                max = maya.parse(elem["value"]).datetime().replace(tzinfo=None)
+                            if elem.get('type') != "array":
+                                max = maya.parse(elem.get('value')).datetime().replace(tzinfo=None)
                                 if max > date.replace(tzinfo=None):
-                                    raise ValueError(f"Value of {elem['display_name']} more than max value")
+                                    raise ValueError(f"Value of {elem.get('display_name')} more than max value")
                             else:
-                                for value in elem["value"]:
+                                for value in elem.get('value'):
                                     max = maya.parse(value).datetime().replace(tzinfo=None)
                                     if max > date.replace(tzinfo=None):
-                                        raise ValueError(f"Value of array {elem['display_name']} more than max value")
+                                        raise ValueError(
+                                            f"Value of array {elem.get('display_name')} more than max value")
                         except TypeError:
                             raise TypeError(
-                                f"Not datetime value in constraint {constraint.type} when control is {elem['control']}")
+                                f"Not datetime value in constraint {constraint.type} when control is {elem.get('control')}")
                     case "date_control":
                         try:
                             date = maya.parse(constraint.value).datetime()
                             constraint.value = date.replace(tzinfo=None).date().isoformat()
-                            if elem["type"] != "array":
-                                max = maya.parse(elem["value"]).datetime().replace(tzinfo=None)
+                            if elem.get('type') != "array":
+                                max = maya.parse(elem.get('value')).datetime().replace(tzinfo=None)
                                 if max > date.replace(tzinfo=None):
-                                    raise ValueError(f"Value of {elem['display_name']} more than max value")
+                                    raise ValueError(f"Value of {elem.get('display_name')} more than max value")
                             else:
-                                for value in elem["value"]:
+                                for value in elem.get('value'):
                                     max = maya.parse(value).datetime().replace(tzinfo=None)
                                     if max > date.replace(tzinfo=None):
-                                        raise ValueError(f"Value of array {elem['display_name']} more than max value")
+                                        raise ValueError(
+                                            f"Value of array {elem.get('display_name')} more than max value")
                         except TypeError:
                             raise TypeError(
-                                f"Not date value in constraint {constraint.type} when control is {elem['control']}")
+                                f"Not date value in constraint {constraint.type} when control is {elem.get('control')}")
                     case "time_control":
                         try:
                             date = maya.parse(constraint.value).datetime()
                             constraint.value = date.replace(tzinfo=None).time().isoformat()
-                            if elem["type"] != "array":
-                                max = maya.parse(elem["value"]).datetime().replace(tzinfo=None)
+                            if elem.get('type') != "array":
+                                max = maya.parse(elem.get('value')).datetime().replace(tzinfo=None)
                                 if max > date.replace(tzinfo=None):
-                                    raise ValueError(f"Value of {elem['display_name']} more than max value")
+                                    raise ValueError(f"Value of {elem.get('display_name')} more than max value")
                             else:
-                                for value in elem["value"]:
+                                for value in elem.get('value'):
                                     max = maya.parse(value).datetime().replace(tzinfo=None)
                                     if max > date.replace(tzinfo=None):
-                                        raise ValueError(f"Value of array {elem['display_name']} more than max value")
+                                        raise ValueError(
+                                            f"Value of array {elem.get('display_name')} more than max value")
                         except TypeError:
                             raise TypeError(
-                                f"Not time value in constraint {constraint.type} when control is {elem['control']}")
+                                f"Not time value in constraint {constraint.type} when control is {elem.get('control')}")
                     case "number_control":
                         try:
                             max = int(constraint.value)
-                            if elem["type"] != "array":
-                                if int(elem["value"]) > max:
-                                    raise ValueError(f"Value of {elem['display_name']} more than max value")
+                            if elem.get('type') != "array":
+                                if int(elem.get('value')) > max:
+                                    raise ValueError(f"Value of {elem.get('display_name')} more than max value")
                             else:
-                                for value in elem["value"]:
+                                for value in elem.get('value'):
                                     if int(value) > max:
-                                        raise ValueError(f"Value of array {elem['display_name']} more than max value")
+                                        raise ValueError(
+                                            f"Value of array {elem.get('display_name')} more than max value")
                         except TypeError:
                             raise TypeError(
-                                f"Not integer value in constraint {constraint.type} when control is {elem['control']}")
+                                f"Not integer value in constraint {constraint.type} when control is {elem.get('control')}")
             case "cols":
                 try:
                     int(constraint.value)
@@ -553,17 +553,6 @@ def get_element_info(input_url, uid: str):
                 element = item[input_url]
                 if len(element) == 0:
                     return None
-                render_dict = element["render"]
-                render_dict_constraints = render_dict["constraints"]
-                render_constraints = []
-                if render_dict_constraints:
-                    for constraint in render_dict_constraints:
-                        for key in constraint:
-                            constraint_item = ConstraintItem(value=constraint[key]["value"], type=key,
-                                                             message=constraint[key]["message"] if "message" in
-                                                                                                   constraint[
-                                                                                                       key] else None)
-                            render_constraints.append(constraint_item)
                 value = get_value(input_url, uid)
                 elem_info = generate_elem_info(value, element, uid, input_url, True)
                 return elem_info
@@ -571,44 +560,48 @@ def get_element_info(input_url, uid: str):
 
 def generate_elem_info(value, element, uid, path, is_log):
     try:
-        render_dict = element["render"]
-        render_dict_constraints = render_dict["constraints"]
         render_constraints = []
-        if render_dict_constraints:
-            for constraint in render_dict_constraints:
-                for key in constraint:
-                    constraint_item = ConstraintItem(value=constraint[key]["value"], type=key,
-                                                     message=constraint[key]["message"] if "message" in constraint[
-                                                         key] else None)
-                    render_constraints.append(constraint_item)
-        elem_info = ElemInfo(value=value, type=element["type"],
-                             description=element["description"],
-                             sub_type=element["sub_type"],
+        render_dict = element.get('render')
+        if render_dict:
+            render_dict_constraints = render_dict.get('constraints')
+            if render_dict_constraints:
+                for constraint in render_dict_constraints:
+                    for key in constraint:
+                        constraint_item = ConstraintItem(value=constraint[key].get('value'), type=key,
+                                                         message=constraint[key].get('message'))
+                        render_constraints.append(constraint_item)
+        elem_info = ElemInfo(value=value, type=element.get('type'),
+                             description=element.get('description'),
+                             sub_type=element.get('sub_type'),
                              sub_type_schema=None,
                              readOnly=element["readonly"] if "readonly" in element else False,
-                             display_name=render_dict["display_name"], control=render_dict["control"],
+                             display_name=render_dict.get('display_name') if render_dict else None, control=render_dict.get('control') if render_dict else None,
                              constraints=render_constraints,
                              file_id=uid)
-        if element["sub_type_schema"] is not None:
-            if element["type"] == "array":
+        if element.get("sub_type_schema") is not None:
+            sub_type_schema = element.get("sub_type_schema")
+            if element.get("type") == "array":
                 elem_info.array_sub_type_schema = []
                 for el in value:
                     d = {
-                        key: generate_elem_info(el[key], metadata, uid, f"{path}/{key}", value.index(el) == 0)
+                        key: generate_elem_info(el[key], metadata, uid, f"{path}/{key}", False)
                         for key, metadata in element["sub_type_schema"].items()
                     }
                     elem_info.array_sub_type_schema.append(d)
                 elem_info.sub_type_schema = {}
                 for key, metadata in element["sub_type_schema"].items():
                     elem_info.sub_type_schema.update({
-                        key: generate_elem_info(metadata["default_value"], metadata, uid, f"{path}/{key}", False)
+                        key: generate_elem_info(metadata["default_value"], metadata, uid, f"{path}/{key}", is_log)
                     })
             else:
                 if value:
-                    elem_info.sub_type_schema = {
-                        key: generate_elem_info(value[key], metadata, uid, f"{path}/{key}", True)
-                        for key, metadata in element["sub_type_schema"].items()
-                    }
+                    if isinstance(sub_type_schema, dict):
+                        elem_info.sub_type_schema = {
+                            key: generate_elem_info(value[key], metadata, uid, f"{path}/{key}", is_log)
+                            for key, metadata in sub_type_schema.items()
+                        }
+                    else:
+                        raise TypeError("Type of field sub_type_schema must be dict")
                 else:
                     elem_info.value = {}
                     elem_info.sub_type_schema = {}
@@ -622,11 +615,20 @@ def generate_elem_info(value, element, uid, path, is_log):
         if is_log:
             value_instance = next((item for item in HydraParametersInfo().elements_values if item.uid == uid), None)
             file_info = next(
-                (item for item in HydraParametersInfo().elements_files_info if item["path"] == value_instance.path), None)
+                (item for item in HydraParametersInfo().elements_files_info if item["path"] == value_instance.path),
+                None)
             for error in e.errors():
                 for loc in error["loc"]:
                     logger.error(
                         f"{file_info['meta_path']} validation error in metadata of parameter({path}),line:{element.lc.line}, field: {loc}, message: {error['msg']}")
+    except TypeError as e:
+        if is_log:
+            value_instance = next((item for item in HydraParametersInfo().elements_values if item.uid == uid), None)
+            file_info = next(
+                (item for item in HydraParametersInfo().elements_files_info if item["path"] == value_instance.path),
+                None)
+            logger.error(
+                f"{file_info['meta_path']} validation error in metadata of parameter({path}),line:{element.lc.line}, field: sub_type_schema, message: {e}")
 
 
 def filter_tree(all_tree):
