@@ -1,14 +1,11 @@
-export function Scroll(){
-    const id=window.location.hash
+﻿export function Scroll(id){
     const scrollTarget = document.getElementById(id);
+    console.log(id)
+    console.log(scrollTarget)
     if(scrollTarget !== null){
         scrollTarget.scrollIntoView({
             behavior:"smooth",
-            block:"nearest"
+            block:"center",
         });
     }
-
-}
-export function ReloadPage(){
-    location.reload();
 }
