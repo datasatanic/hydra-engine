@@ -11,7 +11,7 @@ namespace hydra_engine_blazor;
 public class SettingsContainer
 {
 	public string Plan { get; set; }
-    public Dictionary<string,string> ListOutputUrl = new();
+    private Dictionary<string,string> dictOutputUrl = new();
     private bool expand;
     private DateTime modifyTime;
 
@@ -54,6 +54,16 @@ public class SettingsContainer
         set
         {
             _currentDisplayNamePath = value;
+            NotifyStateChanged();
+        }
+    }
+
+    public Dictionary<string, string> DictOutputUrl
+    {
+        get => dictOutputUrl;
+        set
+        {
+            dictOutputUrl = value;
             NotifyStateChanged();
         }
     }

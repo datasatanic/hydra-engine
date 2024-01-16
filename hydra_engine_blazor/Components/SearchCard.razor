@@ -51,7 +51,7 @@
         {
             var list = new List<string>(Entity.Output_Url.Split("/"));
             list.RemoveAll(string.IsNullOrEmpty);
-            if (!SettingsContainer.ListOutputUrl.ContainsKey(string.Join("/", list)))
+            if (!SettingsContainer.DictOutputUrl.ContainsKey(string.Join("/", list)))
             {
                 list.RemoveAt(list.Count-1);
             }

@@ -4,7 +4,7 @@
 @inject SettingsContainer SettingsContainer
 @inject IJSRuntime JSRuntime
 @inject IToastService _toastService
-@implements IDisposable;
+@implements IAsyncDisposable
 @layout MainLayout
 <div class="page-container">
     <div @onfocusout="BlurCallback">
@@ -139,7 +139,6 @@
     {
         return shouldRender;
     }
-
     protected override async Task OnParametersSetAsync()
     {
         _load = false;
@@ -148,7 +147,7 @@
         changeElements.Clear();
         if (!string.IsNullOrEmpty(Output_URL))
         {
-            SettingsContainer.CurrentDisplayNamePath = SettingsContainer.ListOutputUrl.GetValueOrDefault(SettingsContainer.CurrentOutputUrl, "");
+            SettingsContainer.CurrentDisplayNamePath = SettingsContainer.DictOutputUrl.GetValueOrDefault(SettingsContainer.CurrentOutputUrl, "");
             var query = await SettingsContainer.GetFormInfo(Output_URL);
             if (query != null)
             {
@@ -177,9 +176,9 @@
 
     protected override void OnInitialized()
     {
+        SettingsContainer.OnChange += StateHasChanged;
         SettingsContainer.CurrentOutputUrl = Output_URL;
     }
-
     private async Task SaveValues()
     {
         var checkResponse = await SettingsContainer.CheckModifyTime(SettingsContainer.ModifyTime);
@@ -258,14 +257,18 @@
         _searchEntities = await SettingsContainer.SearchRequest(searchValue);
         StateHasChanged();
     }
-    void IDisposable.Dispose()
-        =>
-            _timer?.Dispose();
 
     private void BlurCallback()
     {
         visibility = false;
         StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module != null) await _module.DisposeAsync();
+        if (_timer != null) await _timer.DisposeAsync();
+        SettingsContainer.OnChange -= StateHasChanged;
     }
 
 }
