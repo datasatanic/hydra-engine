@@ -214,7 +214,6 @@ public class JsonParser
                 Control.Number => "number_control",
                 Control.Checkbox => "checkbox_control",
                 Control.Radio => "radio_control",
-                Control.Fieldset => "list_control",
                 _ => throw new ArgumentOutOfRangeException()
             },
             ["constraints"] = JsonSerializer.Serialize(elemInfo.constraints),

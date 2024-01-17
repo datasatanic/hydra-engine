@@ -35,6 +35,7 @@ fieldset>legend{
     display: flex;
     align-items: center;
     gap:10px;
+    text-wrap: nowrap;
 }
 fieldset>legend>img{
     content:url("icons/add_item.svg");

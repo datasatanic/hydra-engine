@@ -389,17 +389,36 @@
         await SendValue.InvokeAsync(elemInfo);
     }
 
-    private Dictionary<string, object> getSchema(Dictionary<string,object> schema,Dictionary<string,object> dict)
+    private Dictionary<string, object> getSchema(Dictionary<string,object> schema)
     {
+        var dict = new Dictionary<string, object>();
         foreach (var (key, value) in schema)
         {
             var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
             dict.Add(key,subElemInfo.value);
             if (subElemInfo.sub_type_schema != null)
             {
-                var subDict = getSchema(subElemInfo.sub_type_schema, new Dictionary<string, object>());
+                var subDict = getSchema(subElemInfo.sub_type_schema);
                 dict[key] = subDict;
             }
+        }
+        return dict;
+    }
+
+    private Dictionary<string, object> changeReadonly(Dictionary<string, object> schema)
+    {
+        var dict = new Dictionary<string, object>();
+        foreach (var (key, value) in schema)
+        {
+            var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
+            if (subElemInfo.sub_type_schema != null)
+            {
+                var subDict = changeReadonly(subElemInfo.sub_type_schema);
+                subElemInfo.sub_type_schema = subDict;
+            }
+            subElemInfo.readOnly = false;
+            dict.Add(key, JsonParser.SerializeElemInfo(subElemInfo));
+            
         }
         return dict;
     }
@@ -407,16 +426,9 @@
     {
         if (elemInfo?.sub_type_schema != null)
         {
-            var subTypeSchema = new Dictionary<string, object>();
-            foreach (var (key, value) in elemInfo.sub_type_schema)
-            {
-                var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
-                subElemInfo.readOnly = false;
-                var elemInfoAsObject = JsonSerializer.Deserialize<object>(JsonParser.SerializeElemInfo(subElemInfo));
-                if (elemInfoAsObject != null) subTypeSchema.Add(key, elemInfoAsObject);
-            }
-            elemInfo?.array_sub_type_schema.Add(subTypeSchema);
-            var valueDictionary = getSchema(elemInfo.sub_type_schema, new Dictionary<string, object>());
+            var subTypeSchema = changeReadonly(elemInfo.sub_type_schema);
+            elemInfo?.array_sub_type_schema?.Add(subTypeSchema);
+            var valueDictionary = getSchema(elemInfo.sub_type_schema);
             elemInfo?.arrayItems.Add(valueDictionary);
         }
         else
