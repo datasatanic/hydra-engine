@@ -32,7 +32,6 @@ input[type="search"]{
     right: 50%;
     top: 50%;
     transform: translateY(-50%);
-    cursor: col-resize;
     margin-right: -5px;
 }
 .slider-container{
@@ -43,11 +42,7 @@ input[type="search"]{
     top: 50%;
     transform: translateY(-50%);
     z-index: 2;
-}
-.slider-container:active{
-    width: 100%;
-    right: -50%;
-    height: 100%;
+    cursor: col-resize;
 }
 .resize-horizontal{
     resize: horizontal;

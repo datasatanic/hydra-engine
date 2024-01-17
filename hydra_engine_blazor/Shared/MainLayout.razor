@@ -3,8 +3,10 @@
 @inject SettingsContainer SettingsContainer
 @inject NavigationManager Navigation
 @using Blazored.Toast.Configuration
+@inject IJSRuntime _jsRuntime
+@implements IAsyncDisposable
 <div class="page">
-    <div @ref="_elementReference" class="menu-container" style="@($"width:{containerWidth}px")" @onmousemove="ResizeCallback">
+    <div @ref="menuContainer" class="menu-container">
         <h1>Dockermodule</h1>
         <div class="search-container">
             <div class="input-search-container">
@@ -38,7 +40,7 @@
             }
             
         </div>
-        <div class="slider-container" @onmouseout="()=>resize=false" @onmousedown="()=>resize = true" @onmouseup="()=>resize=false">
+        <div class="slider-container" @ref="resizeContainer">
             <img class="slider"/>
         </div>
         
@@ -55,10 +57,12 @@
 @code{
     public ControlsMeta _settingsTree = new();
     private bool resize;
-    private ElementReference _elementReference;
     private Dictionary<string,KeyValuePair<string,string>> searchForms;
     private string? searchValue;
     private double containerWidth = 460;
+    private IJSObjectReference _module;
+    ElementReference menuContainer;
+    ElementReference resizeContainer;
     protected override async Task OnInitializedAsync()
     {
         SettingsContainer.Expand = true;
@@ -72,9 +76,13 @@
         }
     }
 
-    private void ResizeCallback(MouseEventArgs obj)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (resize) containerWidth = obj.PageX;
+        if (firstRender)
+        {
+            _module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./Shared/MainLayout.razor.js");
+            await _module.InvokeVoidAsync("addListenersResize",resizeContainer);
+        }
     }
 
     private void SearchCallback(ChangeEventArgs obj)
@@ -96,6 +104,14 @@
             }
             FindForms(form.Child,outputUrl,displayNameUrl);
             
+        }
+    }
+    public async ValueTask DisposeAsync()
+    {
+        if (_module != null)
+        {
+            await _module.InvokeVoidAsync("clearListenersResize",resizeContainer);
+            await _module.DisposeAsync();
         }
     }
 
