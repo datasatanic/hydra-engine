@@ -1,0 +1,41 @@
+# File metadata
+
+FILE:
+  type: 'yaml'
+  path: 'files/frameworks/archs.yml' # Optional/ default: path w/o .meta
+
+PARAMS:
+  - sites:
+      default_value:
+      type: array
+      sub_type: composite
+      sub_type_schema:
+        name:
+          type: string
+          default_value: ""
+          sub_type:
+          sub_type_schema:
+          readonly: True
+          description: ""
+          render:
+            control: input_control
+            display_name: "Name"
+            constraints:
+        type:
+          type: string
+          default_value: ""
+          sub_type:
+          sub_type_schema:
+          readonly: True
+          description: ""
+          render:
+            control: input_control
+            display_name: "Type"
+            constraints:
+      readonly: True
+      id: w2
+      description: ""
+      render:
+        control: label_control
+        display_name: "Sites"
+        constraints:

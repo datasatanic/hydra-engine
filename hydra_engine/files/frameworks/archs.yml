@@ -1,0 +1,7 @@
+sites:
+  - name: dev_ep
+    type: main
+  - name: dev_fp
+    type: main
+  - name: dev_tp
+    type: main

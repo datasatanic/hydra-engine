@@ -486,14 +486,13 @@ def get_elements(path_id):
     elem_list = []
     elements_meta = HydraParametersInfo().get_elements_metadata()
     elements_files_info = HydraParametersInfo().get_elements_files_info()
-    for elements in elements_meta:
+    for elements, file_info in zip(elements_meta, elements_files_info):
         for item in elements:
             keys = list(item)
             for key in keys:
                 if item[key]["id"] == path_id:
-                    if elements_meta.index(elements) < len(elements_files_info):
-                        uid = elements_files_info[elements_meta.index(elements)]["uid"]
-                        elem_list.append({key: get_element_info(key, uid)})
+                    uid = file_info["uid"]
+                    elem_list.append({key: get_element_info(key, uid)})
     return elem_list
 
 
@@ -548,9 +547,9 @@ def set_value(input_url: str, uid: str, value: object):
 def get_element_info(input_url, uid: str):
     elements_meta = HydraParametersInfo().get_elements_metadata()
     elements_files_info = HydraParametersInfo().get_elements_files_info()
-    for elements in elements_meta:
+    for elements, file_info in zip(elements_meta, elements_files_info):
         for item in elements:
-            if input_url in item and elements_files_info[elements_meta.index(elements)]["uid"] == uid:
+            if input_url in item and file_info["uid"] == uid:
                 element = item[input_url]
                 if len(element) == 0:
                     return None
@@ -576,7 +575,8 @@ def generate_elem_info(value, element, uid, path, is_log):
                              sub_type=element.get('sub_type'),
                              sub_type_schema=None,
                              readOnly=element["readonly"] if "readonly" in element else False,
-                             display_name=render_dict.get('display_name') if render_dict else None, control=render_dict.get('control') if render_dict else None,
+                             display_name=render_dict.get('display_name') if render_dict else None,
+                             control=render_dict.get('control') if render_dict else None,
                              constraints=render_constraints,
                              file_id=uid)
         if element.get("sub_type_schema") is not None:
