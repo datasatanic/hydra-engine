@@ -3,6 +3,8 @@ import yaml
 import maya
 from typing import List, Literal, Dict
 from pydantic import BaseModel, validator, Extra, root_validator, ValidationError
+
+import hydra_engine.filewatcher
 from hydra_engine.parser import write_file, HydraParametersInfo
 import logging
 import re
@@ -527,11 +529,9 @@ def set_value_in_dict(elements, value, input_url_list, file_type):
         else:
             elements = elements[input_url_list[0]]
         input_url_list.pop(0)
-    if isinstance(elements, list):
-        for val in value:
-            elements[value.index(val)][input_url_list[0]] = val
-    else:
+    if elements[input_url_list[0]] != value:
         elements[input_url_list[0]] = value
+        HydraParametersInfo().was_modified = True
 
 
 def set_value(input_url: str, uid: str, value: object):
@@ -541,7 +541,8 @@ def set_value(input_url: str, uid: str, value: object):
     for elements in HydraParametersInfo().get_elements_values():
         if key in elements.values and elements.uid == uid:
             set_value_in_dict(elements.values, value, input_url_list, elements.type)
-            return write_file(elements.values, elements.path, elements.type, input_url, value)
+            write_file(elements.values, elements.path, elements.type, input_url, value)
+            return
 
 
 def get_element_info(input_url, uid: str):

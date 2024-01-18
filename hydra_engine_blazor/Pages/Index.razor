@@ -181,10 +181,13 @@
     }
     private async Task SaveValues()
     {
+        if (string.IsNullOrEmpty(Output_URL) |
+            currentControlsMeta.Elem.Count == 0
+            & currentControlsMeta.Child.Where(item => item.Type.Equals("group")).Select(item => item.Elem.Count).Where(x => x > 0).ToList().Count == 0
+            | changeElements.Exists(item => !item.Value.isValid)) return;
         var checkResponse = await SettingsContainer.CheckModifyTime(SettingsContainer.ModifyTime);
         if (checkResponse.IsSuccessStatusCode)
         {
-            if (changeElements.Exists(item => !item.Value.isValid)) return;
             var response = await SettingsContainer.SetValues(changeElements);
             if (response.IsSuccessStatusCode)
             {

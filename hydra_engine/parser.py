@@ -28,6 +28,7 @@ class HydraParametersInfo(metaclass=SingletonMeta):
         self.elements_files_info = None
         self.elements_values = None
         self.elements_meta = None
+        self.was_modified: bool = False
         self.modify_time: datetime
 
     def get_elements_files_info(self):

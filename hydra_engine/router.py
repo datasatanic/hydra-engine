@@ -42,7 +42,9 @@ def get_form_info(name: str):
 async def set_values(content: list[ParameterSaveInfo]):
     for item in content:
         set_value(item.input_url, item.file_id, item.value)
-    hydra_engine.filewatcher.file_event.wait()
+    if HydraParametersInfo().was_modified:
+        hydra_engine.filewatcher.file_event.wait()
+        HydraParametersInfo().was_modified = False
     return JSONResponse(content=jsonable_encoder(HydraParametersInfo().modify_time), status_code=200)
 
 
