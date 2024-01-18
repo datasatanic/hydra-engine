@@ -2,7 +2,7 @@
 
 FILE:
   type: 'yaml'
-  path: 'files/frameworks/archs.yml' # Optional/ default: path w/o .meta
+  path: 'files/frameworks/arch/second_archs.yml' # Optional/ default: path w/o .meta
 
 PARAMS:
   - sites:
