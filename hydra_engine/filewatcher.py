@@ -10,6 +10,8 @@ from hydra_engine.parser import HydraParametersInfo
 base_dir = os.path.dirname(os.path.abspath(__file__))
 last_trigger_time = time.time()
 file_event = threading.Event()
+apply_extension = ["meta", "yml", "json"]
+ignore_dirs = ["framework"]
 
 
 class EventHandler(FileSystemEventHandler):
@@ -18,7 +20,9 @@ class EventHandler(FileSystemEventHandler):
         global last_trigger_time
         global file_event
         current_time = time.time()
-        if not event.is_directory and event.src_path.find('~') == -1 and (current_time - last_trigger_time) > 1:
+        if (not event.is_directory and len([item for item in ignore_dirs if item in event.src_path]) == 0
+                and len([item for item in apply_extension if event.src_path.endswith(item)]) > 0
+                and event.src_path.find('~') == -1 and (current_time - last_trigger_time) > 1):
             _app.parse_config_files()
             _app.read_ui_file(os.path.join(base_dir, "files"))
             _app.read_wizard_file(os.path.join(base_dir, "files"))
