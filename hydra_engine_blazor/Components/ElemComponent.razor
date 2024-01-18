@@ -417,6 +417,7 @@
                 subElemInfo.sub_type_schema = subDict;
             }
             subElemInfo.readOnly = false;
+            subElemInfo.isValid = TryParseToType(subElemInfo.value.ToString(), subElemInfo.type) && !string.IsNullOrEmpty(subElemInfo.value.ToString()) && !subElemInfo.constraints.Exists(item => !CheckConstraints(subElemInfo.value.ToString(), item, subElemInfo.control));
             dict.Add(key, JsonParser.SerializeElemInfo(subElemInfo));
             
         }
@@ -427,6 +428,7 @@
         if (elemInfo?.sub_type_schema != null)
         {
             var subTypeSchema = changeReadonly(elemInfo.sub_type_schema);
+            CheckValidation(subTypeSchema);
             elemInfo?.array_sub_type_schema?.Add(subTypeSchema);
             var valueDictionary = getSchema(elemInfo.sub_type_schema);
             elemInfo?.arrayItems.Add(valueDictionary);
@@ -434,9 +436,9 @@
         else
         {
             elemInfo?.arrayItems.Add(string.Empty);
+            elemInfo.isValid = false;
         }
         elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(elemInfo.arrayItems));
-        elemInfo.isValid = false;
         _canScroll = true;
         await SendValue.InvokeAsync(elemInfo);
     }
@@ -499,9 +501,13 @@
 
     private void CheckValidation(Dictionary<string, object> item)
     {
-        foreach (var (_,value) in item)
+        foreach (var (key,value) in item)
         {
             var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
+            if (subElemInfo.sub_type_schema != null)
+            {
+                CheckValidation(subElemInfo.sub_type_schema);
+            }
             if (subElemInfo.isValid) continue;
             elemInfo.isValid = false;
             break;
