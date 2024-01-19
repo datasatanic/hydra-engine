@@ -2,7 +2,7 @@
 
 FILE:
   type: 'yaml'
-  path: 'files/common.yml' # Optional/ default: path w/o .meta
+  path: 'files/dev_fp/common.yml' # Optional/ default: path w/o .meta
 
 PARAMS:
     - site_name:
@@ -12,7 +12,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: w6
+        id: 5
         render:
           control: input_control
           display_name: "Site name"
@@ -24,7 +24,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: w6
+        id: 5
         render:
           control: input_control
           display_name: "CCFA version"
@@ -41,43 +41,38 @@ PARAMS:
             sub_type_schema:
               subnet_name:
                 type: string
-                default_value: name
+                default_value: mgmt
                 sub_type:
                 sub_type_schema:
-                readonly: False
+                readonly: True
                 description: ""
-                id: w6
                 render:
                   control: input_control
                   display_name: "Subnet name"
                   constraints:
               dc:
                 type: string
-                default_value: dc name
+                default_value: ccfa-mgmt
                 sub_type:
                 sub_type_schema:
-                readonly: False
+                readonly: True
                 description: ""
-                id: w6
                 render:
                   control: input_control
                   display_name: "Dc"
                   constraints:
               host_number:
                 type: int
-                default_value: 0
+                default_value: 21
                 sub_type: # optional for array
                 sub_type_schema:
                 readonly: False
                 description: ""
-                id: w6
                 render:
                   control: number_control
                   display_name: "Host number"
                   constraints:
-            readonly: False
             description: ""
-            id: w6
             render:
               control: label_control
               display_name: "State"
@@ -87,40 +82,35 @@ PARAMS:
             default_value:
             sub_type:
             sub_type_schema:
-              repohost_number:
-                type: int
-                default_value: 100
-                sub_type: # optional for array
-                sub_type_schema:
-                readonly: False
-                description: ""
-                id: w6
-                render:
-                  control: number_control
-                  display_name: "Repo host number"
-                  constraints:
               subnet_name:
                 type: string
                 default_value: repos
                 sub_type:
                 sub_type_schema:
-                readonly: False
+                readonly: True
                 description: ""
-                id: w6
                 render:
                   control: input_control
                   display_name: "Subnet name"
                   constraints:
-            readonly: False
+              repohost_number:
+                type: int
+                default_value: 21
+                sub_type: # optional for array
+                sub_type_schema:
+                readonly: False
+                description: ""
+                render:
+                  control: number_control
+                  display_name: "Repo host number"
+                  constraints:
             description: ""
-            id: w6
             render:
               control: label_control
               display_name: "Repos"
               constraints:
-        readonly: False
         description: ""
-        id: w6
+        id: 5
         render:
           control: label_control
           display_name: "Mgmt"
@@ -137,14 +127,12 @@ PARAMS:
             sub_type_schema:
             readonly: False
             description: ""
-            id: w6
             render:
               control: number_control
               display_name: "avg_cpu_core_hz"
               constraints:
-        readonly: False
         description: ""
-        id: w6
+        id: 5
         render:
           control: label_control
           display_name: "site"
@@ -156,7 +144,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: w6
+        id: 5
         render:
           control: input_control
           display_name: "Preset"
@@ -173,14 +161,12 @@ PARAMS:
             sub_type_schema:
             readonly: False
             description: ""
-            id: 6
             render:
               control: input_control
               display_name: "Cloud"
               constraints:
-        readonly: False
         description: ""
-        id: w6
+        id: 5
         render:
           control: label_control
           display_name: "Providers"
@@ -202,7 +188,6 @@ PARAMS:
             sub_type_schema:
             readonly: False
             description: ""
-            id: w6
             render:
               control: input_control
               display_name: "recursors"
@@ -214,14 +199,12 @@ PARAMS:
             sub_type_schema:
             readonly: False
             description: ""
-            id: w6
             render:
               control: input_control
               display_name: "Forwarded zones"
               constraints:
-        readonly: False
         description: ""
-        id: w6
+        id: 5
         render:
           control: label_control
           display_name: "Dns"
@@ -234,7 +217,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: w6
+        id: 5
         render:
           control: input_control
           display_name: "Enabled hosts"
@@ -266,7 +249,6 @@ PARAMS:
                 sub_type_schema:
                 readonly: True
                 description: ""
-                id: w7
                 render:
                   control: input_control
                   display_name: "type"
@@ -278,21 +260,17 @@ PARAMS:
                 sub_type_schema:
                 readonly: False
                 description: ""
-                id: w7
                 render:
                   control: input_control
                   display_name: "name"
                   constraints:
-            readonly: False
             description: ""
-            id: w7
             render:
               control: label_control
               display_name: "images"
               constraints:
-        readonly: False
         description: ""
-        id: w7
+        id: 5
         render:
           control: label_control
           display_name: "hosts"
@@ -309,7 +287,6 @@ PARAMS:
             sub_type_schema:
             readonly: True
             description: ""
-            id: w8
             render:
               control: input_control
               display_name: "containerRegistryAuthSecretName"
@@ -321,7 +298,6 @@ PARAMS:
             sub_type_schema:
             readonly: True
             description: ""
-            id: w8
             render:
               control: input_control
               display_name: "api_endpoint_ip"
@@ -333,7 +309,6 @@ PARAMS:
             sub_type_schema:
             readonly: True
             description: ""
-            id: w8
             render:
               control: checkbox_control
               display_name: "use_k8s"
@@ -383,7 +358,6 @@ PARAMS:
                     sub_type_schema:
                     readonly: True
                     description: ""
-                    id: w8
                     render:
                       control: input_control
                       display_name: "name"
@@ -395,7 +369,6 @@ PARAMS:
                     sub_type_schema:
                     readonly: False
                     description: ""
-                    id: w8
                     render:
                       control: number_control
                       display_name: "capacity_gb"
@@ -407,7 +380,6 @@ PARAMS:
                     sub_type_schema:
                     readonly: True
                     description: ""
-                    id: w8
                     render:
                       control: input_control
                       display_name: "host_path"
@@ -424,7 +396,6 @@ PARAMS:
                         sub_type_schema:
                         readonly: True
                         description: ""
-                        id: w8
                         render:
                           control: input_control
                           display_name: "keys"
@@ -436,21 +407,17 @@ PARAMS:
                         sub_type_schema:
                         readonly: True
                         description: ""
-                        id: w8
                         render:
                           control: input_control
                           display_name: "label"
                           constraints:
-                    readonly: False
                     description: ""
-                    id: w8
                     render:
                       control: label_control
                       display_name: "node_affinity"
                       constraints:
-                readonly: True
+                readonly: False
                 description: ""
-                id: w8
                 render:
                   control: label_control
                   display_name: "volumes"
@@ -491,7 +458,6 @@ PARAMS:
                     sub_type_schema:
                     readonly: True
                     description: ""
-                    id: w8
                     render:
                       control: input_control
                       display_name: "name"
@@ -503,7 +469,6 @@ PARAMS:
                     sub_type_schema:
                     readonly: True
                     description: ""
-                    id: w8
                     render:
                       control: input_control
                       display_name: "access_modes"
@@ -515,7 +480,6 @@ PARAMS:
                     sub_type_schema:
                     readonly: False
                     description: ""
-                    id: w8
                     render:
                       control: number_control
                       display_name: "capacity_gb"
@@ -527,7 +491,6 @@ PARAMS:
                     sub_type_schema:
                     readonly: True
                     description: ""
-                    id: w8
                     render:
                       control: input_control
                       display_name: "storage_class_name"
@@ -539,29 +502,248 @@ PARAMS:
                     sub_type_schema:
                     readonly: True
                     description: ""
-                    id: w8
                     render:
                       control: input_control
                       display_name: "volume_name"
                       constraints:
                 readonly: True
                 description: ""
-                id: w8
                 render:
                   control: label_control
                   display_name: "volume_claims"
                   constraints:
-            readonly: False
             description: ""
-            id: w8
             render:
               control: label_control
               display_name: "storage"
               constraints:
-        readonly: False
         description: ""
-        id: w8
+        id: 5
         render:
           control: label_control
           display_name: "k8s"
+          constraints:
+    - ssh_users:
+        default_value:
+        type: dict
+        sub_type:
+        sub_type_schema:
+          users_dict:
+            default_value:
+              - username: "ansible"
+                ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDQST46FZJcHlzX4T27pIFSSfmc6Qcc+ZL2NkqAMoXC1sD5qw4hmeW7axdU1lGbdwZF7E0ZlBJQ37QXvqYj+kFp6PXxL9ztIm/iWcU7hkX8ZDYmS4ubxt/VKiXngNBNyRb6ebRh9fjviDWEOIGrMT2YCcjHUNK33kbIDDRTbWfzTxPwJo8b15UczTbTKwMOMRw/0H9lPXzIMuMUMq1ns/of2x2xvI5nY/2WRVytU9pMOUgOAKMESlNMf/g1rprEr4V5ZXUDGUTTHYaChevKrvTHIQ6FISogfI8RvWI05CMw27Acpuz2IyYJiOr5ox0/DIXyouOiI+v2XB6aoMGztLaGU6dA5a3vuJ2ZQJb+JkcvaDg+mjU4IA4ioXG2x1qVdZO8Ho0iydcMc9HxY8dgmZK/eQRA1IfATXf+oS7jOTj90LH2eO8ufF+XOGmMlNoyk2kmKAHmJArSZ7ysznMZg/NIjf/QM5FnpIqAt0BHG7Ed/tOwo143ezUKYFPy3dxwQVs= ansible@MCDEVOPS" # [ ] CHANGEME 18
+                sudoers: yes
+                noPassSudo: yes
+              - username: "adyakonov"
+                ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDQFzon2K4U3MotQL8PGXOSa7N1d765hIKTkJiyMpny9UXTSqHzCgb7eZn2pFVq42TwYojzorYDunPbiXyH2jtnI0zXVTQj0xpdctqwfwnRuLj/SMdaAUYf0zBF8Vs3nCna8qTQRvCwBdKrofjfqNPT4QDCm8Dc7zvwC3TQoSCKlNFnvIW9RCTVpoErcNQmP+ePxvJpwi8REjViDputJ2bxGj8yoqVG0VT1gTX4TNgwdluRV2YJ8QhyEATi5kGkxND7xhihvvBk71SqfFCdthqLGsMdvQcdfvmF97y3VayG+TXoRceTYjm9TG0zJpJrH02zf+KX3kPUzCHCWsoigGao6wY4GnmBTv43pHCgznhFYAppYSQDMPRcZhOIhdUHbO4FNz7xIArNu90BjUZ+ZjoRsIqxeh16PsJqPUslBxLhvBW6j54faggVfRC2sHkH+TOgl81HgFfrp1zVNo7zaOD5iOT76A60XFn4D91bCJW7goT5OMxUKrLmv+qygZxoQnqmgoHUpECzdenYC3Syx9Acfs9Fn9ipP/YDjTmFPm+lirDUCZ4p/zYhYISzHmec+ePOjrCUeDWxLpvNZ62CheaJ3e+D5VIDGe3br45mmLoPXJNki6Uc2V7/PF2+NQvAs5gWHHhZvRBvaol+1t+lDp5QeCG8toGfkPOurEPrN1PdHw== a.dyakonov@adyakonov"
+                sudoers: yes
+                noPassSudo: yes
+              - username: "amarchenko"
+                ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCxehBtgLsS/8JWS8YkyX/cOGhLxdyIXbH5iqwu2s9jSSz5vVubwx7K+MXlVPw7KFFBeWqbFfyivyylQVwNmF1gh6mFqyG02mfDEJmi0fEDRc77M177IJo+TN0/VuSu98D2B+xj/buxpQxS3PL74YfindLH15c8Vy51xd22rOVPJw1qTMWG48mpkKhc3By36MH1FDOFOqb2GWXqpgcPDYsYPv64pkdVEshaHkBzzG0VDtvdoREaaDynTiH4wUKEBKlCIm1jcc8yuLP5Sv07QvSzd24SAok6Lz1KRit0qyIT0xZ1RVgNk6Jg8bsYWgAWybnRlX4yU7xzGcEmC5H3rhjvEPwlmrNqZHzLKAPyvhlQzWrGzpkGxukxNV14ugaDAbsl9V9GngHxBgPQU4N2QUWET6QEWMQPIJqAzUYKrvfGp43h5ehk0qPmChUzvLvrcQol85vgW3Pf8CVPh5H7BEhUx1rrMoMD0zEotFRVEnA1dgthvF21Fowjs52xlRvFBG8= vetrenik@amarchenko"
+                sudoers: yes
+                noPassSudo: yes
+              - username: "apanfilkin"
+                ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDJqAEM86z1dUWzKwUmsE3HZ4K35FDO+yBuIIoN8UQri+Ee+X65dwoE6lVYZzdwCIeIMidFPNCE5NkjDccMEasPUDKuPUuBcPBTsfHa756FNBYpal7ld+ZGTADnp1mF+4+ZFQAcJ74v+RT6rEk+xNwaahxPvKLXKFgofcqWfQXAnZyVrDK86ucmGuUlwajHViVbMKH5pOfafiHB4SQahVlufcAbo+gNeS6qw2M1ryzUdNM/NdPSZrA1/cw3/jcgtqemy3DzTxGizStXdTkVCh2z9niT65WPK/jUHAJatQykG6gD9ObE7VxA+FH2LZvpRL8V2gYPFRCHSN3scS/e3HJLKXTliJBjsGgNPA2JjJMQgp4MXGVh1TZH5a0MaqQpHIjcXgDJpz4klfrBGrsvBpQlnq8f4LoK5gHgVWHRe8WGZdrHCnN1p4ZenQpqxEX1iifjOOkURLuz+Vu0vWhnEs3gMpp7Y0GhH4bLK5Tit0Qw/atMG6gXoP5EppPnl66KA8E= apanfilkin"
+                sudoers: yes
+                noPassSudo: yes
+              - username: "ygasnikov"
+                ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCgI6DClvl2LwXS8D6jh8+11Jfw5Zpwzct+bW8Eyye3i9LJ/xMPxDLCDgV+aJcl4kmbZqMKc+5cNW3agVh3tDUpwoosfJK2VRjI+IkfQmopSWZlRk/Mz4JkJNadQclcxrctMRVikhAcppbgxk+iOc7iqqYozTjECPV72XLiLttGfJ/HrUnvGDosqap7a3SQtkEbgBXSNnVQ6rCtCJcnpPZf3AGEJnX4SfWk9WBnkOK8LuIqvWxqvFlU0wX/2YSKh1FPassZeGD6mSt5o1aLh4hwARoYUFlQWNL2uEJqMcg5EkkK6QzNKGQmOxokTxmkYKqxnWcy0UMzRlC8/ClkWyIGpziEcVs7DavQJGk22h2C5KfGuidYoIDOo15aAaLgz4mIBPN5SWNMBll8iPj9AmCYVPJGBY/WaTLuhKhxZATNM4HhAvGutseuD/JPplYO3f4wErfA9q4UIWNNGNZuoARWlZxIh3tKLFeWRkU8ulPy0oyl5Ouvk1jwQlPSQyhP3AYSVOtlvDPf2fj5M9Ex1uDw5FTCvnsKVErE9s8ntnyMrRJLZST2elwmwZbFTO2D/v3iUTbYWk7oxUkFx2NrnfhWAtWyHjK11ieoWgZ3y7CUhU7g1025v2mctE8+wIVHF9S5TjooRP/dj+noryIs2b0oSFTSfAkeblS424wYm/Uusw== Y.Gasnikov@compassplus.com"
+                sudoers: yes
+                noPassSudo: yes
+              - username: "vkotrachev"
+                ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDcosFTxu0BcMoPFwPRwT2nsqYEG/vr52h4MiUn4PvzKF4itoXQo6GipszShpOPZfR0+kEuMY9uVZqDEHOW+hhuqFU5SgBC8lsR+4zXCgiGvNjl/9mGXzC1mNJ+/TyqMzmMNzW8xawMxtTRF4Ak8luPwB8cZbUVi0yuuKzZgJKjB5VplwpQT7pZK4SvgeTSwLIDaTTnjUlfMJKZObPGqVyH1WplefQwysEJ6I1WLvU9Zu+ToM841NZx9g3qDWsYkEB/mRhiMcJpT3Cv8ucQLKnMtJ5dzddGClLuh7FomlkCDRKNhXrw+7qRUJ8iUBjBBmiJGhXi8JtTfhMUb6fJ/Add vk@vkotrachev-ws"
+                sudoers: yes
+                noPassSudo: yes
+              - username: "iogolikhin"
+                ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDs7tWjrigMeiLw3hJLOKQ8dYL/2e2fz3d4rO3rM6SSydQDc+STYjjWvmS8M0baG9/ojiTi86aoDCwa6mN03kbZeeL/2yf0EZBtK32qfBwpo+dfuVOMjla8Zd7LWuT/0absSnRHlJh5JSOYlTJuVRiT05mi23czOrIwIXUjt1znwp1oQ3Gj7VKv8hmxCQzT6tqc/D5BJ8Xnek3yQfhAd1JaGczSufEXHVBnF48DeuAyEsY39A2H12HsRNCN7GogNW2RT88k5hoSzbKoeb6zORj0+PA1OyvLkHEljfIeGrlsaYeuzQN7PtafF1dN/7eaTZL1eeI4jtzHN5dZA83Acnr0kRR3vYHhvdZfPIVMwIPlK58JQpsaAXPZtES4OhBBFV1mi6yLRQYE6nYyIo3UMmoNcOJuZtF/L6f+PlaP8GoUQ71gw2boCFKmUrd+X+v3Aly8xWxuaord2QGMYNKVBcwNq0AK2WFU9Wc4clEWI/BeY3X6eOdyLd+211TObRX3OzM= iogolikhin"
+                sudoers: yes
+                noPassSudo: yes
+              - username: "arubtsov"
+                ssh_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMBnWjg+Phy7NuLFY+jLQzkRxNefvpkEXzxBmThahMyc rav@DESKTOP-EUA02H9"
+                sudoers: yes
+                noPassSudo: yes
+              - username: "vdobychin"
+                ssh_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMYmUzECCXZia7XJi1FTAKC2MZ+20fXQSD5H+FwSSQ3J vdobychin@compassplus.com"
+                sudoers: yes
+                noPassSudo: yes
+              - username: "agolev"
+                ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDxVVu8qUDjoEUDHSmcwUEtXGjGkOQQHvi9/fnYtxzCUZivHcBawYGSQtTNfYSW9amQM4cVvlDOvRr73D3NldmzxqK9ToNvFll9XVsJDAe3+s2qd0T6bK8c+jX/quYLCgqMCHgF2bJHBc8Pj2/VJreRCCjIno+sZlDcSVRDXcK70auqH9Me8/rEA8LLMHrkMO8HPVoBgMqJE41A5DcUKA4MbiXr3VARB8nrm9BTg2BL29dxfX2zIEpyvk2snyqsElYqWTgQ/G5AP7g1RjxuWfC5AFmIYvQcHzrioBLsfh/uUv9+OsTWSE6SqLiWrAGgIpQDhyTsXhVIKDrVA1NB4KXPt64BkMZzZ5ZE3BjLYRBNRoRg5UJ2hu7+ma8eEwnOAXgN/rY+kKUxYOhzyPGaJRnDPyQ7G0lIch84+F6vJySIwxIqP4gz7efJcJNXnq1ZV3eUKS5dGa0y6tMwlIUoo97wiJbP/feZqqlaPpvuSsHdpvfYHL/QjS0Crogy3WcYX7U= admin@agolev"
+                sudoers: yes
+                noPassSudo: yes
+              - username: "arubtsov"
+                ssh_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMBnWjg+Phy7NuLFY+jLQzkRxNefvpkEXzxBmThahMyc rav@DESKTOP-EUA02H9"
+                sudoers: yes
+                noPassSudo: yes
+              - username: "vkotrachev"
+                ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDcosFTxu0BcMoPFwPRwT2nsqYEG/vr52h4MiUn4PvzKF4itoXQo6GipszShpOPZfR0+kEuMY9uVZqDEHOW+hhuqFU5SgBC8lsR+4zXCgiGvNjl/9mGXzC1mNJ+/TyqMzmMNzW8xawMxtTRF4Ak8luPwB8cZbUVi0yuuKzZgJKjB5VplwpQT7pZK4SvgeTSwLIDaTTnjUlfMJKZObPGqVyH1WplefQwysEJ6I1WLvU9Zu+ToM841NZx9g3qDWsYkEB/mRhiMcJpT3Cv8ucQLKnMtJ5dzddGClLuh7FomlkCDRKNhXrw+7qRUJ8iUBjBBmiJGhXi8JtTfhMUb6fJ/Add vk@vkotrachev-ws"
+                sudoers: yes
+                noPassSudo: yes
+              - username: "iogolikhin"
+                ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDs7tWjrigMeiLw3hJLOKQ8dYL/2e2fz3d4rO3rM6SSydQDc+STYjjWvmS8M0baG9/ojiTi86aoDCwa6mN03kbZeeL/2yf0EZBtK32qfBwpo+dfuVOMjla8Zd7LWuT/0absSnRHlJh5JSOYlTJuVRiT05mi23czOrIwIXUjt1znwp1oQ3Gj7VKv8hmxCQzT6tqc/D5BJ8Xnek3yQfhAd1JaGczSufEXHVBnF48DeuAyEsY39A2H12HsRNCN7GogNW2RT88k5hoSzbKoeb6zORj0+PA1OyvLkHEljfIeGrlsaYeuzQN7PtafF1dN/7eaTZL1eeI4jtzHN5dZA83Acnr0kRR3vYHhvdZfPIVMwIPlK58JQpsaAXPZtES4OhBBFV1mi6yLRQYE6nYyIo3UMmoNcOJuZtF/L6f+PlaP8GoUQ71gw2boCFKmUrd+X+v3Aly8xWxuaord2QGMYNKVBcwNq0AK2WFU9Wc4clEWI/BeY3X6eOdyLd+211TObRX3OzM= iogolikhin"
+                sudoers: yes
+                noPassSudo: yes
+            type: array
+            sub_type: composite
+            sub_type_schema:
+              username:
+                type: string
+                default_value: ""
+                sub_type:
+                sub_type_schema:
+                readonly: False
+                description: ""
+                render:
+                  control: input_control
+                  display_name: "User name"
+                  constraints:
+              ssh_key:
+                type: string
+                default_value: ""
+                sub_type:
+                sub_type_schema:
+                readonly: False
+                description: ""
+                render:
+                  control: textarea_control
+                  display_name: "Ssh key"
+                  constraints:
+              sudoers:
+                type: string
+                default_value: "no"
+                sub_type:
+                sub_type_schema:
+                readonly: False
+                description: ""
+                render:
+                  control: input_control
+                  display_name: "Sudoers"
+                  constraints:
+                    - pattern:
+                        value: "^(yes|no)$"
+                        message: "Valid values: yes, no"
+              noPassSudo:
+                type: string
+                default_value: no
+                sub_type:
+                sub_type_schema:
+                readonly: False
+                description: ""
+                render:
+                  control: input_control
+                  display_name: "NoPassSudo"
+                  constraints:
+                    - pattern:
+                        value: "^(yes|no)$"
+                        message: "Valid values: yes, no"
+            readonly: False
+            description: ""
+            render:
+              control: label_control
+              display_name: "Users dict"
+              constraints:
+        description: ""
+        id: 5
+        render:
+          control: label_control
+          display_name: "Ssh users"
+          constraints:
+    - vsphere:
+        default_value:
+        type: dict
+        sub_type:
+        sub_type_schema:
+          datacenter:
+            type: string
+            default_value: vsphere.mcdevops
+            sub_type:
+            sub_type_schema:
+            readonly: False
+            description: "Datacenter name in vCenter"
+            render:
+              control: input_control
+              display_name: "Data center"
+              constraints:
+          domain:
+            type: string
+            default_value: vsphere.mcdevops.compassplus.com
+            sub_type:
+            sub_type_schema:
+            readonly: False
+            description: "Domain for VM configuration"
+            render:
+              control: input_control
+              display_name: "Domain"
+              constraints:
+          domain_description:
+            type: string
+            default_value: CCFA DEV
+            sub_type:
+            sub_type_schema:
+            readonly: False
+            description: "Domain name, used for VM description"
+            render:
+              control: input_control
+              display_name: "Domain description"
+              constraints:
+          content_library_name:
+            type: string
+            default_value: Templates
+            sub_type:
+            sub_type_schema:
+            readonly: False
+            description: "The name of content library to store and get templates"
+            render:
+              control: input_control
+              display_name: "Content library name"
+              constraints:
+          vCenter_folder:
+            type: string
+            default_value: ccfa-final-test
+            sub_type:
+            sub_type_schema:
+            readonly: False
+            description: "Main folder, where VM should be placed. Should be exist before creation VM."
+            render:
+              control: input_control
+              display_name: "vCenter folder"
+              constraints:
+          enable_memory_reservation:
+            type: bool
+            default_value: True
+            sub_type:
+            sub_type_schema:
+            readonly: False
+            description: ""
+            render:
+              control: checkbox_control
+              display_name: "Enable memory reservation"
+              constraints:
+          resource_pool:
+            type: string
+            default_value: Main-cluster
+            sub_type:
+            sub_type_schema:
+            readonly: False
+            description: ""
+            render:
+              control: input_control
+              display_name: "Resource pool"
+              constraints:
+        description: ""
+        id: 5
+        render:
+          control: label_control
+          display_name: Vsphere
+          constraints:
+    - vcd/templates_catalog:
+        default_value: Templates
+        type: string
+        sub_type:
+        sub_type_schema:
+        readonly: False
+        description: ""
+        id: 5
+        render:
+          control: input_control
+          display_name: Vcd templates catalog
           constraints:

@@ -4,6 +4,29 @@ namespace DefaultNamespace;
 
 public class WizardModel
 {
-    public string Title { get; set; }
-    public ControlsMeta ControlsMeta { get; set; }
+    private string title;
+
+    public string Title
+    {
+        get => title;
+        set
+        {
+            title = value;
+            NotifyStateChanged();
+        }
+    }
+
+    private ControlsMeta controlsMeta;
+
+    public ControlsMeta ControlsMeta
+    {
+        get => controlsMeta;
+        set
+        {
+            controlsMeta = value;
+            NotifyStateChanged();
+        }
+    }
+    public event Action? OnChange;
+    private void NotifyStateChanged() => OnChange?.Invoke();
 }

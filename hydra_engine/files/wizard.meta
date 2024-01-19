@@ -1,25 +1,5 @@
 root:
   display_name: Infrastructure
-  description: Choose arch
+  description: Choose one of arch
   type: form
-  id: w2
-root/common:
-  display_name: Common
-  description: Base settings
-  type: form
-  id: w6
-root/common/hosts:
-  display_name: Hosts
-  description: Configuration for hosts
-  type: form
-  id: w7
-root/common/k8s:
-  display_name: k8s cluster
-  description: k8s cluster configuration
-  type: form
-  id: w8
-root/common1:
-  display_name: Common1
-  description: Base settings
-  type: form
-  id: w9
+  id: 1

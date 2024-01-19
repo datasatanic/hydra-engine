@@ -1,11 +1,11 @@
-import json
-import yaml
+import os
+import ruamel.yaml
 import maya
 from typing import List, Literal, Dict
 from pydantic import BaseModel, validator, Extra, root_validator, ValidationError
 
-import hydra_engine.filewatcher
 from hydra_engine.parser import write_file, HydraParametersInfo
+from hydra_engine.configs import config
 import logging
 import re
 
@@ -665,3 +665,39 @@ def find_form(path, all_tree, is_wizard=False):
                         condition = all_tree[name].child[child_name].condition
                         [cond.allow.clear() for cond in condition]
             return {name: all_tree[name]}
+
+
+yaml = ruamel.yaml.YAML(typ="rt")
+base_dir = os.path.dirname(os.path.abspath(__file__))
+
+
+def update_wizard_meta(directory, arch_name):
+    file = open(os.path.join(base_dir, "files/wizard.meta"), 'r+')
+    wizard_data = yaml.load(file)
+    last_id = None
+    last_path = None
+    for root, dirs, files in os.walk(os.path.join(base_dir, directory)):
+        for name in files:
+            if name.endswith(
+                    "meta") and "frameworks" not in root and name != config.wizard_filename and name != config.tree_filename:
+                last_key, last_value = list(wizard_data.items())[-1]
+                file_path = os.path.join(root, name)
+                directory_path = os.path.dirname(file_path)
+                files_in_directory = os.listdir(directory_path)
+                if last_id is None:
+                    last_id = last_value["id"]
+                else:
+                    last_id += 1
+                if last_path is None:
+                    last_path = f"root/{arch_name}/{name.replace('.yml.meta', '')}"
+                else:
+                    last_path += "/" + name.replace('.yml.meta', '')
+                wizard_form = {
+                    last_path: {"display_name": name.replace('.yml.meta', ''),
+                                "description": "", "type": "form",
+                                "id": last_id + 1, "action": "deploy" if name == files_in_directory[-1] else None}}
+                if last_path not in wizard_data:
+                    file.write('\n')
+                    yaml.dump(wizard_form, file)
+                    HydraParametersInfo().was_modified = True
+    file.close()

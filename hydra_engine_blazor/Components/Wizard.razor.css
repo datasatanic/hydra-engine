@@ -104,15 +104,10 @@
     background: var(--hydra-secondary-30) !important;
 }
 .wizard-content{
-    display: flex;
-    flex-direction: row;
     height: 100%;
 }
 .wizard-child-forms{
-    border-right: 1px solid var(--hydra-secondary-65);
-    height: 100%;
     padding: 10px;
-    position: sticky;
     top:0;
     display: flex;
     flex-direction: column;

@@ -46,6 +46,9 @@ public class JsonParser
                 case "type":
                     tree.Type = keyValue.Value.ToString();
                     break;
+                case "action":
+                    tree.Action = keyValue.Value.ToString();
+                    break;
                 case "condition":
                     tree.Condition = JsonSerializer.Deserialize<List<Condition>>(keyValue.Value.ToString());
                     break;

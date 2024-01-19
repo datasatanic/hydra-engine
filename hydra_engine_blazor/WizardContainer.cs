@@ -9,8 +9,6 @@ namespace hydra_engine_blazor;
 
 public class WizardContainer
 {
-    public event Action? OnChange;
-    private void NotifyStateChanged() => OnChange?.Invoke();
     private readonly HttpClient _client;
     private JsonSerializerOptions options = new()
     {
@@ -37,5 +35,17 @@ public class WizardContainer
         var json = JsonSerializer.Serialize(condition, options);
         HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
         return await _client.PostAsync($"api/wizard/form/condition?path={path}",content);
+    }
+
+    public async Task<HttpResponseMessage> InitArch(string archName)
+    {
+        HttpContent content = new StringContent("", Encoding.UTF8, "application/json");
+        return await _client.PostAsync($"api/wizard/init_arch?name={archName}",content);
+    }
+
+    public async Task<HttpResponseMessage> DeploySite(string siteName)
+    {
+        HttpContent content = new StringContent("", Encoding.UTF8, "application/json");
+        return await _client.PostAsync($"api/wizard/deploy?name={siteName}",content);
     }
 }

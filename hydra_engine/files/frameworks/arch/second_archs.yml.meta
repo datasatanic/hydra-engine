@@ -33,7 +33,7 @@ PARAMS:
             display_name: "Type"
             constraints:
       readonly: True
-      id: w2
+      id: 3
       description: ""
       render:
         control: label_control

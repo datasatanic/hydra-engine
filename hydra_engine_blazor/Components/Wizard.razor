@@ -1,5 +1,6 @@
 ﻿@using hydra_engine_blazor.Models
 @using DefaultNamespace
+@using System.Text.Json
 @inject WizardContainer WizardContainer
 <button class="open-wizard-button" @onclick="async ()=> await WizardModal.Open()">Open Wizard</button>
 <div class="wizard-container">
@@ -11,15 +12,13 @@
                 {
                     <div class="path-container">
                         @{
-                            var urlsList = Output_URL.Split("/").ToList();
-                            var href = "";
+                            var urlsList = Output_URL.Split("/").Where(item=>!string.IsNullOrEmpty(item)).ToList();
                             @foreach (var url in urlsList)
                             {
-                                href += "/" + url;
                                 <div class="path" last-child="@(urlsList.IndexOf(url) == urlsList.Count - 1)">
                                     @formNamesPath.Split("/")[urlsList.IndexOf(url)]
                                 </div>
-                                <img class="@(urlsList.IndexOf(url) != urlsList.Count - 1 && !string.IsNullOrEmpty(url) ? "right-arrow" : "")"/>
+                                <img class="@(urlsList.IndexOf(url) != urlsList.Count - 1 ? "right-arrow" : "")"/>
                             }
                         }
                     </div>
@@ -29,18 +28,6 @@
         </Header>
         <Body>
         <div class="wizard-content">
-            @if (WizardModel.ControlsMeta.Child.Count(x => x.Type.Equals("form")) > 1)
-            {
-                <div class="wizard-child-forms">
-                    <h2>Next step</h2>
-                    @foreach (var item in WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("form")))
-                    {
-                        <div class="child-form-container @(item.Name == nextFormUrl.Split("/")[^1] ? "selected-form" : "")" @onclick="@(() => SelectForm(item.Name, item.DisplayName))">
-                            @item.DisplayName
-                        </div>
-                    }
-                </div>
-            }
             <div class="wizard-elements form-elements-container">
                 <h3>@WizardModel.ControlsMeta.Description</h3>
                 @foreach (var elem in WizardModel.ControlsMeta.Elem)
@@ -78,12 +65,23 @@
                     }
                 </div>
             </div>
+            @if (WizardModel.ControlsMeta.Child.Count(x => x.Type.Equals("form")) > 1)
+            {
+                <div class="wizard-child-forms">
+                    @foreach (var item in WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("form")))
+                    {
+                        <div class="child-form-container @(item.Name == nextFormUrl.Split("/")[^1] ? "selected-form" : "")" @onclick="@(() => SelectForm(item.Name, item.DisplayName))">
+                            @item.DisplayName
+                        </div>
+                    }
+                </div>
+            }
         </div>
         </Body>
         <Footer>
             <div class="prev-next-container">
                 <button style="@(!string.IsNullOrEmpty(Output_URL) ? "visibility:visible" : "visibility:hidden")" type="reset" @onclick="PrevCallback">Back</button>
-                <button style="@(WizardModel.ControlsMeta.Child.Count > 0 ? "visibility:visible" : "visibility:hidden")" type="reset" class="next-button" @onclick="NextCallback"
+                <button style="@(WizardModel.ControlsMeta.Child.Count > 0 || WizardModel.ControlsMeta.Action == "init" ? "visibility:visible" : "visibility:hidden")" type="reset" class="next-button" @onclick="NextCallback"
                          disabled="@(changeElements.Exists(item => !item.Value.isValid))" >Next</button>
             </div>
         </Footer>
@@ -101,7 +99,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await UpdateWizardData();   
+        await UpdateWizardData();
+        WizardModel.OnChange += StateHasChanged;
     }
 
     private async Task PrevCallback()
@@ -125,6 +124,14 @@
 
     private async Task NextCallback()
     {
+        if (WizardModel.ControlsMeta.Action == "init")
+        {
+            var response = await WizardContainer.InitArch(WizardModel.ControlsMeta.Name);
+            if (response.IsSuccessStatusCode)
+            {
+                await UpdateWizardData(); // обновляем wizard после init.sh
+            }
+        }
         var condition = new List<Condition>();
         var conditions = WizardModel.ControlsMeta.Child.Find(item => item.Name == nextFormUrl.Split("/")[^1])?.Condition;
         if (conditions != null)
@@ -154,13 +161,23 @@
                 }
             }
         }
-        var response = await WizardContainer.CheckCondition(nextFormUrl, condition);
-        if (response.IsSuccessStatusCode)
+        var conditionResponse = await WizardContainer.CheckCondition(nextFormUrl, condition);
+        if (conditionResponse.IsSuccessStatusCode)
         {
-            Output_URL = nextFormUrl;
-            formNamesPath = nextFormName;
-            await UpdateWizardData();
+            HttpResponseMessage? deployResponse = null;
+            if (WizardModel.ControlsMeta.Action == "deploy")
+            {
+                deployResponse = await WizardContainer.DeploySite(WizardModel.Title);
+            }
+            if (deployResponse is null or {IsSuccessStatusCode: true })
+            {
+                Output_URL = nextFormUrl;
+                formNamesPath = nextFormName;
+                await UpdateWizardData();
+            }
+            
         }
+        
     }
     private void ChangeValue(ElemInfo obj,string key)
     {
