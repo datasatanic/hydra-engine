@@ -43,7 +43,8 @@ def init_arch(name: str):
             HydraParametersInfo().was_modified = False
         return JSONResponse(content={"message": "OK"}, status_code=200)
     except Exception as e:
-        return JSONResponse(content={"message": e}, status_code=400)
+        logger.error(e)
+        return JSONResponse(content={"message": "Bad request"}, status_code=400)
 
 
 @router.post("/deploy")

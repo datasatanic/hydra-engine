@@ -167,7 +167,7 @@
             HttpResponseMessage? deployResponse = null;
             if (WizardModel.ControlsMeta.Action == "deploy")
             {
-                deployResponse = await WizardContainer.DeploySite(WizardModel.Title);
+                if (WizardModel.ControlsMeta.SiteName != null) deployResponse = await WizardContainer.DeploySite(WizardModel.ControlsMeta.SiteName);
             }
             if (deployResponse is null or {IsSuccessStatusCode: true })
             {

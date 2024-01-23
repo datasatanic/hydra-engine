@@ -29,6 +29,10 @@ public class ControlsMeta
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [JsonPropertyName("action")]
     public string? Action { get; set; }
+    
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [JsonPropertyName("site_name")]
+    public string? SiteName { get; set; }
 
     public ControlsMeta(string name,List<ControlsMeta> child, List<Dictionary<string,ElemInfo>> elem, string description,string displayName,List<Condition> condition)
     {

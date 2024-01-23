@@ -677,13 +677,19 @@ def update_wizard_meta(directory, arch_name):
     last_id = None
     last_path = None
     for root, dirs, files in os.walk(os.path.join(base_dir, directory)):
+        arch_file = open(os.path.join(base_dir, f"files/frameworks/arch/{arch_name}.yml"), 'r')
+        site_names = list(map(lambda x: x["name"],yaml.load(arch_file)["sites"]))
+        arch_file.close()
+        dirs.sort(key=lambda x: site_names.index(x) if x in site_names else float('inf'))
         for name in files:
             if name.endswith(
                     "meta") and "frameworks" not in root and name != config.wizard_filename and name != config.tree_filename:
                 last_key, last_value = list(wizard_data.items())[-1]
                 file_path = os.path.join(root, name)
                 directory_path = os.path.dirname(file_path)
-                files_in_directory = os.listdir(directory_path)
+                files_in_directory = list(
+                    filter(lambda filename: filename.endswith("meta"), os.listdir(directory_path)))
+                last_dir = os.path.basename(directory_path)
                 if last_id is None:
                     last_id = last_value["id"]
                 else:
@@ -695,7 +701,8 @@ def update_wizard_meta(directory, arch_name):
                 wizard_form = {
                     last_path: {"display_name": name.replace('.yml.meta', ''),
                                 "description": "", "type": "form",
-                                "id": last_id + 1, "action": "deploy" if name == files_in_directory[-1] else None}}
+                                "id": last_id + 1, "action": "deploy" if name == files_in_directory[-1] else None,
+                                "site_name": last_dir}}
                 if last_path not in wizard_data:
                     file.write('\n')
                     yaml.dump(wizard_form, file)
