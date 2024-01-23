@@ -125,7 +125,7 @@ def generate_wizard_meta(directory):
                     last_id = last_value["id"]
                 else:
                     last_id += 1
-                wizard_form = {f"root/{name.replace('.yml.meta', '')}": {"display_name": name.replace('.yml.meta', ''),
+                wizard_form = {f"root/{name.replace('.yml.meta', '')}": {"display_name": name.replace('.yml.meta', '').title(),
                                                                          "description": "", "type": "form",
                                                                          "id": last_id + 1, "action": "init"}}
                 if f"root/{name.replace('.yml.meta', '')}" not in wizard_data:

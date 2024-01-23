@@ -6,29 +6,25 @@
 <div class="wizard-container">
     <Modal Model="WizardModel" @ref="WizardModal" IsOpened="true" OpenedAfterCreate="true">
         <Header>
-            <div class="d-block">
+            <div class="title-info">
                 <h2 class="title">@WizardModel.Title</h2>
-                @if (!string.IsNullOrEmpty(Output_URL) && Output_URL.Split("/").Length > 1)
+                @if (!string.IsNullOrEmpty(WizardModel.ControlsMeta.SiteName) && !string.IsNullOrEmpty(_archName))
                 {
-                    <div class="path-container">
-                        @{
-                            var urlsList = Output_URL.Split("/").Where(item=>!string.IsNullOrEmpty(item)).ToList();
-                            @foreach (var url in urlsList)
-                            {
-                                <div class="path" last-child="@(urlsList.IndexOf(url) == urlsList.Count - 1)">
-                                    @formNamesPath.Split("/")[urlsList.IndexOf(url)]
-                                </div>
-                                <img class="@(urlsList.IndexOf(url) != urlsList.Count - 1 ? "right-arrow" : "")"/>
-                            }
-                        }
-                    </div>
+                    <h3>Architecture: @_archName</h3>
+                    <h3>Site: @WizardModel.ControlsMeta.SiteName</h3>
                 }
             </div>
             <img @onclick="async () => await WizardModal.Close()" alt=""/>
         </Header>
         <Body>
         <div class="wizard-content">
-            <div class="wizard-elements form-elements-container">
+            @if (string.IsNullOrEmpty(Output_URL))
+            {
+                <h1 style="text-align: center">Welcome to the installation wizard Hydra</h1>
+            }
+            else
+            {
+              <div class="wizard-elements form-elements-container">
                 <h3>@WizardModel.ControlsMeta.Description</h3>
                 @foreach (var elem in WizardModel.ControlsMeta.Elem)
                 {
@@ -65,16 +61,17 @@
                     }
                 </div>
             </div>
-            @if (WizardModel.ControlsMeta.Child.Count(x => x.Type.Equals("form")) > 1)
-            {
-                <div class="wizard-child-forms">
-                    @foreach (var item in WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("form")))
-                    {
-                        <div class="child-form-container @(item.Name == nextFormUrl.Split("/")[^1] ? "selected-form" : "")" @onclick="@(() => SelectForm(item.Name, item.DisplayName))">
-                            @item.DisplayName
-                        </div>
-                    }
-                </div>
+                @if (WizardModel.ControlsMeta.Child.Count(x => x.Type.Equals("form")) > 1)
+                {
+                    <div class="wizard-child-forms">
+                        @foreach (var item in WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("form")))
+                        {
+                            <div class="child-form-container @(item.Name == nextFormUrl.Split("/")[^1] ? "selected-form" : "")" @onclick="@(() => SelectForm(item.Name, item.DisplayName))">
+                                @item.DisplayName
+                            </div>
+                        }
+                    </div>
+                }
             }
         </div>
         </Body>
@@ -82,7 +79,7 @@
             <div class="prev-next-container">
                 <button style="@(!string.IsNullOrEmpty(Output_URL) ? "visibility:visible" : "visibility:hidden")" type="reset" @onclick="PrevCallback">Back</button>
                 <button style="@(WizardModel.ControlsMeta.Child.Count > 0 || WizardModel.ControlsMeta.Action == "init" ? "visibility:visible" : "visibility:hidden")" type="reset" class="next-button" @onclick="NextCallback"
-                         disabled="@(changeElements.Exists(item => !item.Value.isValid))" >Next</button>
+                        disabled="@(changeElements.Exists(item => !item.Value.isValid))">Next</button>
             </div>
         </Footer>
     </Modal>
@@ -95,11 +92,12 @@
     private string nextFormUrl = "";
     private string nextFormName = "";
     private string formNamesPath = "";
+    private string _archName = "";
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
 
     protected override async Task OnInitializedAsync()
     {
-        await UpdateWizardData();
+        await UpdateWizardData(new List<Condition>(),new List<Dictionary<string, object>>());
         WizardModel.OnChange += StateHasChanged;
     }
 
@@ -113,7 +111,7 @@
         formsNameList.Remove(formsNameList.Last());
         if (formsNameList.Count == 0) formNamesPath = "";
         formNamesPath = string.Join("/", formsNameList);
-        await UpdateWizardData();
+        await UpdateWizardData(new List<Condition>(),new List<Dictionary<string, object>>());
     }
 
     private void SelectForm(string formName,string formDisplayName)
@@ -129,7 +127,8 @@
             var response = await WizardContainer.InitArch(WizardModel.ControlsMeta.Name);
             if (response.IsSuccessStatusCode)
             {
-                await UpdateWizardData(); // обновляем wizard после init.sh
+                _archName = WizardModel.ControlsMeta.DisplayName;
+                await UpdateWizardData(new List<Condition>(),new List<Dictionary<string, object>>()); // обновляем wizard после init.sh
             }
         }
         var condition = new List<Condition>();
@@ -161,21 +160,17 @@
                 }
             }
         }
-        var conditionResponse = await WizardContainer.CheckCondition(nextFormUrl, condition);
-        if (conditionResponse.IsSuccessStatusCode)
+        HttpResponseMessage? deployResponse = null;
+        if (WizardModel.ControlsMeta.Action == "deploy")
         {
-            HttpResponseMessage? deployResponse = null;
-            if (WizardModel.ControlsMeta.Action == "deploy")
-            {
-                if (WizardModel.ControlsMeta.SiteName != null) deployResponse = await WizardContainer.DeploySite(WizardModel.ControlsMeta.SiteName);
-            }
-            if (deployResponse is null or {IsSuccessStatusCode: true })
-            {
-                Output_URL = nextFormUrl;
-                formNamesPath = nextFormName;
-                await UpdateWizardData();
-            }
-            
+            if (WizardModel.ControlsMeta.SiteName != null) deployResponse = await WizardContainer.DeploySite(WizardModel.ControlsMeta.SiteName);
+        }
+        if (deployResponse is null or {IsSuccessStatusCode: true })
+        {
+            Output_URL = nextFormUrl;
+            formNamesPath = nextFormName;
+            var prevFormValues = WizardModel.ControlsMeta.Elem.Select(dictionary => dictionary.ToDictionary(pair => pair.Key, pair => pair.Value.value)).ToList();
+            await UpdateWizardData(condition,prevFormValues);
         }
         
     }
@@ -196,25 +191,30 @@
         
     }
 
-    private async Task UpdateWizardData()
+    private async Task UpdateWizardData(List<Condition> conditions,List<Dictionary<string,object>> prevFormValues)
     {
         WizardModel.ControlsMeta = new ControlsMeta();
         changeElements.Clear();
         if (string.IsNullOrEmpty(Output_URL)) WizardModel.ControlsMeta.Name = "tree";
-        var query = await WizardContainer.GetFormInfo(Output_URL);
-        if (query != null) JsonParser.DeserializeTree(query.ToString(),WizardModel.ControlsMeta,WizardModel.ControlsMeta.Child);
-        WizardModel.Title = !string.IsNullOrEmpty(Output_URL) ? WizardModel.ControlsMeta.DisplayName : "Main window";
-        if (string.IsNullOrEmpty(Output_URL)) WizardModel.ControlsMeta.Name = string.Empty;
-        if (WizardModel.ControlsMeta.Child.Count > 0)
+        var responseMessage = await WizardContainer.GetFormInfo(Output_URL,conditions,prevFormValues);
+        if (responseMessage.IsSuccessStatusCode)
         {
-            nextFormUrl = (!string.IsNullOrEmpty(Output_URL) ? $"{Output_URL}/" : "") + WizardModel.ControlsMeta.Child.Where(item => item.Type == "form").ToList()[0].Name;
-            nextFormName = (!string.IsNullOrEmpty(formNamesPath) ? $"{formNamesPath}/" : "") + WizardModel.ControlsMeta.Child.Where(item => item.Type == "form").ToList()[0].DisplayName;
+            var query = await responseMessage.Content.ReadAsStringAsync();
+            if (!string.IsNullOrEmpty(query)) JsonParser.DeserializeTree(query,WizardModel.ControlsMeta,WizardModel.ControlsMeta.Child);
+            WizardModel.Title = !string.IsNullOrEmpty(Output_URL) ? WizardModel.ControlsMeta.DisplayName : "Main window";
+            if (string.IsNullOrEmpty(Output_URL)) WizardModel.ControlsMeta.Name = string.Empty;
+            if (WizardModel.ControlsMeta.Child.Count > 0)
+            {
+                nextFormUrl = (!string.IsNullOrEmpty(Output_URL) ? $"{Output_URL}/" : "") + WizardModel.ControlsMeta.Child.Where(item => item.Type == "form").ToList()[0].Name;
+                nextFormName = (!string.IsNullOrEmpty(formNamesPath) ? $"{formNamesPath}/" : "") + WizardModel.ControlsMeta.Child.Where(item => item.Type == "form").ToList()[0].DisplayName;
+            }
+            else
+            {
+                nextFormUrl = "";
+                nextFormName = "";
+            }
         }
-        else
-        {
-            nextFormUrl = "";
-            nextFormName = "";
-        }
+        
     }
 
 }

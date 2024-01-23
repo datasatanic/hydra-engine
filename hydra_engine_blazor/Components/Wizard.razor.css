@@ -23,6 +23,11 @@
     color:var(--hydra-background-white);
     padding:5px;
 }
+.title-info{
+    display: flex;
+    flex-direction: column;
+    gap:5px;
+}
 .modal-header>img{
     content: url("icons/X.svg");
     height: 24px;

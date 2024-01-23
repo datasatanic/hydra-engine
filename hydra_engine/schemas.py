@@ -699,7 +699,7 @@ def update_wizard_meta(directory, arch_name):
                 else:
                     last_path += "/" + name.replace('.yml.meta', '')
                 wizard_form = {
-                    last_path: {"display_name": name.replace('.yml.meta', ''),
+                    last_path: {"display_name": name.replace('.yml.meta', '').title(),
                                 "description": "", "type": "form",
                                 "id": last_id + 1, "action": "deploy" if name == files_in_directory[-1] else None,
                                 "site_name": last_dir}}
