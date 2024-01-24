@@ -37,11 +37,12 @@ def get_wizard_form(name: str, conditions: list[Condition]):
 @router.post("/elements/values")
 async def set_values(name: str, content: list[ParameterSaveInfo]):
     try:
-        wizard_form = find_form(name.split("/"), copy.deepcopy(HydraParametersInfo().get_wizard_tree_structure()))
-        if wizard_form:
+        wizard_form = find_form(name.split("/"), copy.deepcopy(HydraParametersInfo().get_wizard_tree_structure()), True)
+        if wizard_form is None:
             return JSONResponse(content={"message": "Form not found"}, status_code=404)
         for item in content:
-            check_validate_parameter(item.input_url, item.value, item.file_id, wizard_form)
+            if not check_validate_parameter(item.input_url, item.value, item.file_id, wizard_form):
+                return JSONResponse(content={"message": "Not valid values for parameters"}, status_code=400)
             set_value(item.input_url, item.file_id, item.value)
         if HydraParametersInfo().was_modified:
             hydra_engine.filewatcher.file_event.wait()

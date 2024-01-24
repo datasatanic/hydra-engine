@@ -38,7 +38,7 @@ public class WizardContainer
         var saveElements = changeElements.Select(element => new ParameterSaveInfo(){File_id = element.Value.fileId,Input_url = element.Key,Value = element.Value.value}).ToList();
         var json = JsonSerializer.Serialize(saveElements);
         HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
-        return await _client.PostAsync($"api/hydra/elements/values?name={formurl}",content);
+        return await _client.PostAsync($"api/wizard/elements/values?name={formurl}",content);
 
     }
 

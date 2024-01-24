@@ -710,14 +710,26 @@ def update_wizard_meta(directory, arch_name):
     file.close()
 
 
-def check_validate_parameter(input_url, value, uid, form: Node):
+def check_validate_parameter(input_url, value, uid, form):
     parameter = None
-    for el in form.elem:
+    node = form[next(iter(form.keys()))]
+    for el in node.elem:
         if input_url in el:
             parameter = el[input_url]
     if parameter:
-        elem_info = generate_elem_info(value, parameter, uid, input_url, False)
-        return elem_info
+        try:
+            elem_info = ElemInfo(value=value, type=parameter.type,
+                                 description=parameter.description,
+                                 sub_type=parameter.sub_type,
+                                 sub_type_schema=parameter.sub_type_schema,
+                                 readOnly=parameter.readOnly,
+                                 display_name=parameter.display_name,
+                                 control=parameter.control,
+                                 constraints=parameter.constraints,
+                                 file_id=uid)
+            return elem_info
+        except ValidationError:
+            return False
     else:
-        for child in form.child:
+        for child in form[next(iter(form.keys()))]["child"]:
             check_validate_parameter(input_url, value, uid, child)
