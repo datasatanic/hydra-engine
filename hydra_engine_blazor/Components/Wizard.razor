@@ -77,8 +77,8 @@
         </Body>
         <Footer>
             <div class="prev-next-container">
-                <button style="@(!string.IsNullOrEmpty(Output_URL) ? "visibility:visible" : "visibility:hidden")" type="reset" @onclick="PrevCallback">Back</button>
-                <button style="@(WizardModel.ControlsMeta.Child.Count > 0 || WizardModel.ControlsMeta.Action == "init" ? "visibility:visible" : "visibility:hidden")" type="reset" class="next-button" @onclick="NextCallback"
+                <button style="@(!string.IsNullOrEmpty(Output_URL) ? "visibility:visible" : "visibility:hidden")" class="wizard-button" @onclick="PrevCallback">Back</button>
+                <button style="@(WizardModel.ControlsMeta.Child.Count > 0 || WizardModel.ControlsMeta.Action == "init" ? "visibility:visible" : "visibility:hidden")" class="next-button wizard-button" @onclick="NextCallback"
                         disabled="@(changeElements.Exists(item => !item.Value.isValid))">Next</button>
             </div>
         </Footer>
@@ -122,6 +122,10 @@
 
     private async Task NextCallback()
     {
+        if (changeElements.Exists(item => !item.Value.isValid))
+        {
+            return;
+        }
         if (WizardModel.ControlsMeta.Action == "init")
         {
             var response = await WizardContainer.InitArch(WizardModel.ControlsMeta.Name);

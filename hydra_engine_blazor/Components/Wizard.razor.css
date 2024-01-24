@@ -89,7 +89,7 @@
 .modal-footer button[type=submit]:active{
     background: var(--hydra-blue-pressed);
 }
-.modal-footer button[type=reset]{
+.modal-footer .wizard-button{
     background:var(--hydra-secondary-10);
     width: 108px;
     font-size: 16px;
@@ -99,10 +99,10 @@
     border: 0;
     border-radius: 4px;
 }
-.modal-footer button[type=reset]:hover{
+.modal-footer .wizard-button:hover{
     background: var(--hydra-secondary-20);
 }
-.modal-footer button[type=reset]:active{
+.modal-footer .wizard-button:active{
     background: var(--hydra-secondary-30);
 }
 .next-button:disabled {
