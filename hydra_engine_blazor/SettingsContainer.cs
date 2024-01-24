@@ -114,47 +114,18 @@ public class SettingsContainer
         HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
         return await _client.PostAsync(apiUrlWithQuery,content);
     }
-
-    public async Task<object?> GetElementValue(string FilePath,string Key)
-    {
-        return await _client.GetFromJsonAsync<object>($"api/hydra/element/value/{FilePath}/{Key}", options);
-    }
-
-    public async Task<object?> GetElementInfo(string Key,string FilePath)
-    {
-        return await _client.GetFromJsonAsync<object>($"api/hydra/elements/info/{Key}?file_path={FilePath}",options);
-    }
     /// <summary>
     /// Set new value to element in file
     /// </summary>
     /// <param name="Key"></param>
     /// <param name="Value"></param>
     /// <param name="FilePath"></param>
-    public async Task<HttpResponseMessage> SetValues(List<KeyValuePair<string,ElemInfo>> changeElements)
+    public async Task<HttpResponseMessage> SetValues(List<KeyValuePair<string,ElemInfo>> changeElements,string formurl)
     {
         var saveElements = changeElements.Select(element => new ParameterSaveInfo(){File_id = element.Value.fileId,Input_url = element.Key,Value = element.Value.value}).ToList();
         var json = JsonSerializer.Serialize(saveElements);
         HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
-        return await _client.PostAsync($"api/hydra/elements/values",content);
-    }
-
-    public async Task<HttpResponseMessage> ApplyPlan()
-    {
-        HttpContent content = new StringContent("", Encoding.UTF8, "application/json");
-        return await _client.PostAsync("api/hydra/plan",content);
-    }
-
-    public async Task<HttpResponseMessage> GetPlan()
-    {
-        return await _client.GetAsync("/plan.js");
-    }
-    public async Task<HttpResponseMessage> GetPlanPage()
-    {
-        return await _client.GetAsync("/plan/index.html");
-    }
-    public async Task<object?> UpdateData()
-    {
-        return await _client.GetFromJsonAsync<object>("update/data",options);
+        return await _client.PostAsync($"api/hydra/elements/values?name={formurl}",content);
     }
 
     public async Task<HttpResponseMessage> ResetInfrastructure()

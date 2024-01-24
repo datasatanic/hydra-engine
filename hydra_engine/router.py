@@ -39,13 +39,19 @@ def get_form_info(name: str):
 
 
 @router.post("/elements/values")
-async def set_values(content: list[ParameterSaveInfo]):
-    for item in content:
-        set_value(item.input_url, item.file_id, item.value)
-    if HydraParametersInfo().was_modified:
-        hydra_engine.filewatcher.file_event.wait()
-        HydraParametersInfo().was_modified = False
-    return JSONResponse(content=jsonable_encoder(HydraParametersInfo().modify_time), status_code=200)
+async def set_values(name: str, content: list[ParameterSaveInfo]):
+    try:
+        ui_form = find_form(name.split("/"), copy.deepcopy(HydraParametersInfo().get_tree_structure()))
+        if ui_form is None:
+            return JSONResponse(content={"message": "Form not found"}, status_code=404)
+        for item in content:
+            set_value(item.input_url, item.file_id, item.value)
+        if HydraParametersInfo().was_modified:
+            hydra_engine.filewatcher.file_event.wait()
+            HydraParametersInfo().was_modified = False
+        return JSONResponse(content=jsonable_encoder(HydraParametersInfo().modify_time), status_code=200)
+    except ValueError:
+        return JSONResponse(content={"message": "Bad request"}, status_code=400)
 
 
 @router.post("/check/modify")

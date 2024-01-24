@@ -678,7 +678,7 @@ def update_wizard_meta(directory, arch_name):
     last_path = None
     for root, dirs, files in os.walk(os.path.join(base_dir, directory)):
         arch_file = open(os.path.join(base_dir, f"files/frameworks/arch/{arch_name}.yml"), 'r')
-        site_names = list(map(lambda x: x["name"],yaml.load(arch_file)["sites"]))
+        site_names = list(map(lambda x: x["name"], yaml.load(arch_file)["sites"]))
         arch_file.close()
         dirs.sort(key=lambda x: site_names.index(x) if x in site_names else float('inf'))
         for name in files:
@@ -708,3 +708,16 @@ def update_wizard_meta(directory, arch_name):
                     yaml.dump(wizard_form, file)
                     HydraParametersInfo().was_modified = True
     file.close()
+
+
+def check_validate_parameter(input_url, value, uid, form: Node):
+    parameter = None
+    for el in form.elem:
+        if input_url in el:
+            parameter = el[input_url]
+    if parameter:
+        elem_info = generate_elem_info(value, parameter, uid, input_url, False)
+        return elem_info
+    else:
+        for child in form.child:
+            check_validate_parameter(input_url, value, uid, child)

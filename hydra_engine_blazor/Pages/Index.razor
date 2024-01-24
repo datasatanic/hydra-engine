@@ -188,7 +188,7 @@
         var checkResponse = await SettingsContainer.CheckModifyTime(SettingsContainer.ModifyTime);
         if (checkResponse.IsSuccessStatusCode)
         {
-            var response = await SettingsContainer.SetValues(changeElements);
+            var response = await SettingsContainer.SetValues(changeElements,Output_URL);
             if (response.IsSuccessStatusCode)
             {
                 _toastService.ShowSuccess("All changes were successfully saved");

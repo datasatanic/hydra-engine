@@ -97,7 +97,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await UpdateWizardData(new List<Condition>(),new List<Dictionary<string, object>>());
+        await UpdateWizardData(new List<Condition>());
         WizardModel.OnChange += StateHasChanged;
     }
 
@@ -111,7 +111,7 @@
         formsNameList.Remove(formsNameList.Last());
         if (formsNameList.Count == 0) formNamesPath = "";
         formNamesPath = string.Join("/", formsNameList);
-        await UpdateWizardData(new List<Condition>(),new List<Dictionary<string, object>>());
+        await UpdateWizardData(new List<Condition>());
     }
 
     private void SelectForm(string formName,string formDisplayName)
@@ -122,17 +122,20 @@
 
     private async Task NextCallback()
     {
-        if (changeElements.Exists(item => !item.Value.isValid))
+        /*if (changeElements.Exists(item => !item.Value.isValid))
         {
             return;
-        }
-        if (WizardModel.ControlsMeta.Action == "init")
+        }*/
+        var saveResponse = await WizardContainer.SetValues(changeElements,Output_URL);
+        if (saveResponse == null || saveResponse.IsSuccessStatusCode)
+        {
+            if (WizardModel.ControlsMeta.Action == "init")
         {
             var response = await WizardContainer.InitArch(WizardModel.ControlsMeta.Name);
             if (response.IsSuccessStatusCode)
             {
                 _archName = WizardModel.ControlsMeta.DisplayName;
-                await UpdateWizardData(new List<Condition>(),new List<Dictionary<string, object>>()); // обновляем wizard после init.sh
+                await UpdateWizardData(new List<Condition>()); // обновляем wizard после init.sh
             }
         }
         var condition = new List<Condition>();
@@ -173,10 +176,9 @@
         {
             Output_URL = nextFormUrl;
             formNamesPath = nextFormName;
-            var prevFormValues = WizardModel.ControlsMeta.Elem.Select(dictionary => dictionary.ToDictionary(pair => pair.Key, pair => pair.Value.value)).ToList();
-            await UpdateWizardData(condition,prevFormValues);
+            await UpdateWizardData(condition);
         }
-        
+        }
     }
     private void ChangeValue(ElemInfo obj,string key)
     {
@@ -195,12 +197,12 @@
         
     }
 
-    private async Task UpdateWizardData(List<Condition> conditions,List<Dictionary<string,object>> prevFormValues)
+    private async Task UpdateWizardData(List<Condition> conditions)
     {
         WizardModel.ControlsMeta = new ControlsMeta();
         changeElements.Clear();
         if (string.IsNullOrEmpty(Output_URL)) WizardModel.ControlsMeta.Name = "tree";
-        var responseMessage = await WizardContainer.GetFormInfo(Output_URL,conditions,prevFormValues);
+        var responseMessage = await WizardContainer.GetFormInfo(Output_URL,conditions);
         if (responseMessage.IsSuccessStatusCode)
         {
             var query = await responseMessage.Content.ReadAsStringAsync();
