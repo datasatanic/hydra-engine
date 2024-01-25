@@ -718,18 +718,33 @@ def check_validate_parameter(input_url, value, uid, form):
             parameter = el[input_url]
     if parameter:
         try:
-            elem_info = ElemInfo(value=value, type=parameter.type,
-                                 description=parameter.description,
-                                 sub_type=parameter.sub_type,
-                                 sub_type_schema=parameter.sub_type_schema,
-                                 readOnly=parameter.readOnly,
-                                 display_name=parameter.display_name,
-                                 control=parameter.control,
-                                 constraints=parameter.constraints,
-                                 file_id=uid)
-            return elem_info
-        except ValidationError:
-            return False
+            check_sub_type_schema_validate(parameter, value, uid, input_url)
+            return True
+        except ValidationError as e:
+            return str(e)
+        except ValueError as e:
+            return str(e)
     else:
         for child in form[next(iter(form.keys()))]["child"]:
             check_validate_parameter(input_url, value, uid, child)
+
+
+def check_sub_type_schema_validate(parameter, value, uid, input_url):
+    if value is None:
+        raise ValueError(f"Empty value for parameter with path {input_url}")
+    else:
+        if parameter.type != "array" and parameter.type != "dict" and str(value).strip() == '':
+            raise ValueError(f"Empty value for parameter with path {input_url}")
+    elem_info = ElemInfo(value=value, type=parameter.type,
+                         description=parameter.description,
+                         sub_type=parameter.sub_type,
+                         sub_type_schema=None,
+                         readOnly=parameter.readOnly,
+                         display_name=parameter.display_name,
+                         control=parameter.control,
+                         constraints=parameter.constraints,
+                         file_id=uid)
+    if parameter.sub_type_schema is not None:
+        for key, metadata in parameter.sub_type_schema.items():
+            check_sub_type_schema_validate(metadata, value[key], uid, f"{input_url}/{key}")
+    return elem_info

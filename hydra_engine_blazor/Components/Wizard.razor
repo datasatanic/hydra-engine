@@ -122,10 +122,10 @@
 
     private async Task NextCallback()
     {
-        /*if (changeElements.Exists(item => !item.Value.isValid))
+        if (changeElements.Exists(item => !item.Value.isValid))
         {
             return;
-        }*/
+        }
         var saveResponse = await WizardContainer.SetValues(changeElements,Output_URL);
         if (saveResponse == null || saveResponse.IsSuccessStatusCode)
         {

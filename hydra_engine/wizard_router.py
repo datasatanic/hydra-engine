@@ -41,8 +41,9 @@ async def set_values(name: str, content: list[ParameterSaveInfo]):
         if wizard_form is None:
             return JSONResponse(content={"message": "Form not found"}, status_code=404)
         for item in content:
-            if not check_validate_parameter(item.input_url, item.value, item.file_id, wizard_form):
-                return JSONResponse(content={"message": "Not valid values for parameters"}, status_code=400)
+            check = check_validate_parameter(item.input_url, item.value, item.file_id, wizard_form)
+            if check is not True:
+                return JSONResponse(content={"message": check}, status_code=400)
             set_value(item.input_url, item.file_id, item.value)
         if HydraParametersInfo().was_modified:
             hydra_engine.filewatcher.file_event.wait()
