@@ -2,7 +2,7 @@
 
 FILE:
   type: 'yaml'
-  path: 'files/frameworks/arch/archs.yml' # Optional/ default: path w/o .meta
+  path: 'files/framework/arch/second_archs.yml' # Optional/ default: path w/o .meta
 
 PARAMS:
   - sites:
@@ -33,7 +33,7 @@ PARAMS:
             display_name: "Type"
             constraints:
       readonly: True
-      id: 2
+      id: 3
       description: ""
       render:
         control: label_control

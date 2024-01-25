@@ -11,7 +11,7 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 last_trigger_time = time.time()
 file_event = threading.Event()
 apply_extension = ["meta", "yml", "json"]
-ignore_dirs = ["frameworks"]
+ignore_dirs = ["framework"]
 
 
 class EventHandler(FileSystemEventHandler):

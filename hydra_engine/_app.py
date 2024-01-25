@@ -28,7 +28,7 @@ async def startup_event(app: FastAPI):
     logger.debug("Start parsing directory")
     parse_config_files()
     read_ui_file(os.path.join(base_dir, "files"))
-    generate_wizard_meta(os.path.join(base_dir, "files/frameworks/arch"))
+    generate_wizard_meta(os.path.join(base_dir, "files/framework/arch"))
     read_wizard_file(os.path.join(base_dir, "files"))
     HydraParametersInfo().set_modify_time()
     logger.debug("Directory has been parsed successfully")
