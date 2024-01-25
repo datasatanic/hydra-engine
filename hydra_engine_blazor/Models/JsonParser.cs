@@ -128,7 +128,8 @@ public class JsonParser
                         var readonlyList = keyValue.Value.Deserialize<List<bool>>();
                         if (readonlyList != null)
                         {
-                            elemInfo.readOnly = readonlyList[index];
+                            if (index >= 0 && index < readonlyList.Count) elemInfo.readOnly = readonlyList[index];
+                            else elemInfo.readOnly = false;
                         }
                     }
                     break;
