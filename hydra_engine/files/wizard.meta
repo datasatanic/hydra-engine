@@ -3,7 +3,6 @@ root:
   description: Choose one of arch
   type: form
   id: 1
-
 root/archs:
   display_name: Archs
   description: ''
@@ -18,26 +17,34 @@ root/second_archs:
   id: 3
   action: init
 
-root/archs/common:
-  display_name: Common
+root/archs/global:
+  display_name: Global
   description: ''
   type: form
   id: 4
-  action: deploy
-  site_name: dev_ep
+  action:
+  site_name:
 
-root/archs/common/common:
+root/archs/global/common:
   display_name: Common
   description: ''
   type: form
   id: 5
   action: deploy
-  site_name: dev_fp
+  site_name: dev_ep
 
-root/archs/common/common/common:
+root/archs/global/common/common:
   display_name: Common
   description: ''
   type: form
   id: 6
+  action: deploy
+  site_name: dev_fp
+
+root/archs/global/common/common/common:
+  display_name: Common
+  description: ''
+  type: form
+  id: 7
   action: deploy
   site_name: dev_tp

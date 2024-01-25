@@ -1,0 +1,106 @@
+FILE:
+  type: 'yaml'
+  path: 'files/global.yml' # Optional/ default: path w/o .meta
+
+PARAMS:
+  - mgmt:
+      type: dict
+      default_value:
+      sub_type:
+      sub_type_schema:
+        state:
+          type: dict
+          default_value:
+          sub_type:
+          sub_type_schema:
+            subnet_name:
+              type: string
+              default_value: name
+              sub_type:
+              sub_type_schema:
+              readonly: True
+              description: ""
+              render:
+                control: input_control
+                display_name: "Subnet name"
+                constraints:
+            dc:
+              type: string
+              default_value: dc name
+              sub_type:
+              sub_type_schema:
+              readonly: False
+              description: ""
+              render:
+                control: input_control
+                display_name: "Dc"
+                constraints:
+            host_number:
+              type: int
+              default_value: 0
+              sub_type: # optional for array
+              sub_type_schema:
+              readonly: False
+              description: ""
+              render:
+                control: number_control
+                display_name: "Host number"
+                constraints:
+          readonly: False
+          description: ""
+          render:
+            control: label_control
+            display_name: "State"
+            constraints:
+        repos:
+          type: dict
+          default_value:
+          sub_type:
+          sub_type_schema:
+            repohost_number:
+              type: int
+              default_value: 100
+              sub_type: # optional for array
+              sub_type_schema:
+              readonly: False
+              description: ""
+              render:
+                control: number_control
+                display_name: "Repo host number"
+                constraints:
+            subnet_name:
+              type: string
+              default_value: repos
+              sub_type:
+              sub_type_schema:
+              readonly: True
+              description: ""
+              render:
+                control: input_control
+                display_name: "Subnet name"
+                constraints:
+          readonly: False
+          description: ""
+          render:
+            control: label_control
+            display_name: "Repos"
+            constraints:
+      readonly: False
+      description: ""
+      id: 4
+      render:
+        control: label_control
+        display_name: "Mgmt"
+        constraints:
+  - preset:
+      default_value: "preset name"
+      type: string
+      sub_type: # optional for array
+      sub_type_schema:
+      readonly: False
+      description: ""
+      id: 4
+      render:
+        control: input_control
+        display_name: "Preset"
+        constraints:

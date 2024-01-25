@@ -470,7 +470,8 @@ def add_additional_fields(node_list, additional_key, additional_value, is_wizard
     node = find_node(node_list, is_wizard)
     if additional_key in node.__dict__:
         raise ValueError("Not valid file")
-    node.__dict__[additional_key] = additional_value.replace('"', '').strip()
+    node.__dict__[additional_key] = additional_value.replace('"', '').strip() if isinstance(additional_value,
+                                                                                            str) else additional_value
 
 
 def find_node(node_list, is_wizard=False):
@@ -703,8 +704,10 @@ def update_wizard_meta(directory: str, arch_name):
                 wizard_form = {
                     last_path: {"display_name": name.replace('.yml.meta', '').title(),
                                 "description": "", "type": "form",
-                                "id": last_id + 1, "action": "deploy" if name == files_in_directory[-1] else None,
-                                "site_name": last_dir}}
+                                "id": last_id + 1, "action": "deploy" if name == files_in_directory[
+                            -1] and name != "global.yml.meta" else None,
+                                "site_name": last_dir if name == files_in_directory[
+                            -1] and name != "global.yml.meta" else None}}
                 if last_path not in wizard_data:
                     file.write('\n')
                     yaml.dump(wizard_form, file)

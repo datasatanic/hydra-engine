@@ -47,10 +47,10 @@ public class JsonParser
                     tree.Type = keyValue.Value.ToString();
                     break;
                 case "action":
-                    tree.Action = keyValue.Value.ToString();
+                    tree.Action = keyValue.Value?.ToString();
                     break;
                 case "site_name":
-                    tree.SiteName = keyValue.Value.ToString();
+                    tree.SiteName = keyValue.Value?.ToString();
                     break;
                 case "condition":
                     tree.Condition = JsonSerializer.Deserialize<List<Condition>>(keyValue.Value.ToString());
@@ -60,13 +60,13 @@ public class JsonParser
                     if (string.IsNullOrEmpty(tree.Name))
                     {
                         tree.Name = keyValue.Key;
-                        DeserializeTree(keyValue.Value.ToString(),tree,tree.Child);
+                        DeserializeTree(keyValue.Value?.ToString(),tree,tree.Child);
                     }
                     else
                     {
                         node.Name = keyValue.Key;
                         currentNode.Add(node);
-                        DeserializeTree(keyValue.Value.ToString(),node,tree.Child);
+                        DeserializeTree(keyValue.Value?.ToString(),node,tree.Child);
                     }
                     break;
                 }

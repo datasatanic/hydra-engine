@@ -1,0 +1,366 @@
+# MGMT site params
+mgmt:
+  state:
+    subnet_name: mgmt
+    dc: mgmt # [ ] CHANGEME
+    host_number: 21 # [ ] CHANGEME
+  repos:
+    repohost_number: 100 # [ ] CHANGEME
+    subnet_name: repos
+preset: 100_tps # [ ] CHANGEME
+# Network Configuration
+networks:
+  - name: vxlan-106-dvaraksin # [ ] CHANGEME
+    CIDR: "10.74.106.0/24" # [ ] CHANGEME
+  - name: mgmt
+    CIDR: "10.74.10.0/24" # [ ] CHANGEME
+  - name: repos
+    CIDR: "10.74.200.0/24" # [ ] CHANGEME
+  - name: k8s-pods
+    CIDR: "10.33.0.0/16"
+  - name: k8s-services
+    CIDR: "10.66.0.0/16"
+# locations configuration
+# servers list,  used both in distributive building/supplying and in infrastructure deployment
+servers:
+  - name: nexus # server name, used to link servers and configs, which use them
+    address: "${ cidrhost({for network in global.networks: network.name => network}[global.mgmt.repos.subnet_name].CIDR, global.mgmt.repos.repohost_number) }" #  FQDN or IP address of the server without protocol prefix. Commonly - IP address of repohost1
+    port: 443 # default port of the server, optional(INTEGER)
+  - name: ccfa_git # server name, used to link servers and configs, which use them
+    address: "${ cidrhost({for network in global.networks: network.name => network}[global.mgmt.repos.subnet_name].CIDR, global.mgmt.repos.repohost_number) }:/srv/git" # FQDN or IP address of the server without protocol prefix. Prefix should be set by module, which uses the config
+    # address: gitlab.com # [ ] CHANGEME FQDN or IP address of the server without protocol prefix. Prefix should be set by module, which uses the config
+    port: 443
+# repos configuration, used both in distributive building/supplying and in infrastructure deployment
+repos:
+  third_party_hosted_helm_repo: "https://${ cidrhost({for network in global.networks: network.name => network}[global.mgmt.repos.subnet_name].CIDR, global.mgmt.repos.repohost_number) }:443/repository/third-party-hosted-repo/" # [x] CHANGEME
+  git:
+    ### Terraform
+    - name: "ansible_inventory_output"
+      server_name: "ccfa_git"
+      path: "ccfa-terraform/modules/universalHostAnsibleOutput"
+      ref: "${ common.ccfa_version }"
+    - name: "universal_host"
+      server_name: "ccfa_git"
+      path: "ccfa-terraform/universalhostdeploy"
+      ref: "${ common.ccfa_version }"
+    - name: "consul_kv"
+      server_name: "ccfa_git"
+      path: "ccfa-terraform/modules/ccfa-consul-kv"
+      ref: "${ common.ccfa_version }"
+    - name: "vault"
+      server_name: "ccfa_git"
+      path: "ccfa-terraform/modules/vault"
+      ref: "${ common.ccfa_version }"
+    - name: "k8s_jobs"
+      server_name: "ccfa_git"
+      path: "ccfa-terraform/modules/k8sjobs"
+      ref: "${ common.ccfa_version }"
+    - name: "k8s_configs"
+      server_name: "ccfa_git"
+      path: "ccfa-terraform/modules/k8s"
+      ref: "${ common.ccfa_version }"
+    - name: "keycloak"
+      server_name: "ccfa_git"
+      path: "ccfa-terraform/modules/keycloak"
+      ref: "${ common.ccfa_version }"
+    - name: "minio"
+      server_name: "ccfa_git"
+      path: "ccfa-terraform/modules/minio"
+      ref: "${ common.ccfa_version }"
+    - name: "opensearch"
+      server_name: "ccfa_git"
+      path: "ccfa-terraform/modules/opensearch"
+      ref: "${ common.ccfa_version }"
+    - name: "nexus"
+      server_name: "ccfa_git"
+      path: "ccfa-terraform/modules/nexus"
+      ref: "${ common.ccfa_version }"
+      ### Inventories
+    - name: "ccfa_mgmt_inventory"
+      server_name: "ccfa_git"
+      path: "mcdevops1/ansible/inventories/ccfa_mgmt"
+      ref: "${ common.ccfa_version }"
+    - name: "ccfa_inventory"
+      server_name: "ccfa_git"
+      path: "mcdevops1/ansible/inventories/ccfainventory"
+      ref: "${ common.ccfa_version }"
+    - name: "ccfa_iu_inventory"
+      server_name: "ccfa_git"
+      path: "mcdevops1/ansible/inventories/ccfa_iu"
+      ref: "${ common.ccfa_version }"
+      ### Collections
+    - name: "integration_iu"
+      server_name: "ccfa_git"
+      path: "mcdevops1/ansible/collections/integration/integrationutility"
+      ref: "${ common.ccfa_version }"
+    - name: "infra_mgmt_repos"
+      server_name: "ccfa_git"
+      path: "mcdevops1/ansible/collections/infra/mgmt/repos"
+      ref: "${ common.ccfa_version }"
+    - name: "infra_core_hashicorp"
+      server_name: "ccfa_git"
+      path: "mcdevops1/ansible/collections/core/hashicorp"
+      ref: "${ common.ccfa_version }"
+    - name: "infra_core_common"
+      server_name: "ccfa_git"
+      path: "mcdevops1/ansible/collections/core/common"
+      ref: "${ common.ccfa_version }"
+    - name: "infra_logging_opensearch"
+      server_name: "ccfa_git"
+      path: "mcdevops1/ansible/collections/logging/opensearch"
+      ref: "${ common.ccfa_version }"
+    - name: "infra_monitoring_prometheus"
+      server_name: "ccfa_git"
+      path: "mcdevops1/ansible/collections/monitoring/prometheus"
+      ref: "${ common.ccfa_version }"
+    - name: "infra_storage_postgres"
+      server_name: "ccfa_git"
+      path: "mcdevops1/ansible/collections/storage/postgres"
+      ref: "${ common.ccfa_version }"
+    - name: "infra_core_k8s"
+      server_name: "ccfa_git"
+      path: "mcdevops1/ansible/collections/core/k8s"
+      ref: "${ common.ccfa_version }"
+      ### Terragrunt
+    - name: "terragrunt_framework"
+      server_name: "ccfa_git"
+      path: "mcdevops1/terragrunt/frameworks/default_infrastructure"
+      ref: "${ common.ccfa_version }"
+    - name: "grafana_dashboards"
+      ### Other
+
+      server_name: "ccfa_git"
+      path: "mcdevops1/grafanaDashboards"
+      ref: "${ common.ccfa_version }"
+  raw:
+    - name: "db_scripts-raw"
+      server_name: "nexus"
+      path: ""
+    - name: "k3s-raw"
+      server_name: "nexus"
+      path: ""
+    - name: "db_scripts-raw"
+      server_name: "nexus"
+      path: ""
+# terraform modules, published in Git
+modules:
+  - name: "ansible_inventory_output"
+    ref: "${ common.ccfa_version }"
+    repo_name: "ansible_inventory_output"
+    path: ""
+  - name: "consul_kv"
+    ref: "${ common.ccfa_version }"
+    repo_name: "consul_kv"
+    path: ""
+  - name: "vault"
+    ref: "${ common.ccfa_version }"
+    repo_name: "vault"
+    path: ""
+  - name: "universalHost"
+    ref: "${ common.ccfa_version }"
+    repo_name: "universal_host"
+    path: "modules/universalhost"
+  - name: "k8s_jobs"
+    ref: "${ common.ccfa_version }"
+    repo_name: "k8s_jobs"
+    path: ""
+  - name: "k8s_labels"
+    ref: "${ common.ccfa_version }"
+    repo_name: "k8s_configs"
+    path: "labels"
+  - name: "k8s_fluentd"
+    ref: "${ common.ccfa_version }"
+    repo_name: "k8s_configs"
+    path: "security/fluentd"
+  - name: "k8s_oidc_auth"
+    ref: "${ common.ccfa_version }"
+    repo_name: "k8s_configs"
+    path: "security/k8s_oidc_auth"
+  - name: "k8s_oidc_dashboard"
+    ref: "${ common.ccfa_version }"
+    repo_name: "k8s_configs"
+    path: "security/oidc_dashboard"
+  - name: "k8s_orex_operator"
+    ref: "${ common.ccfa_version }"
+    repo_name: "k8s_configs"
+    path: "security/orex_operator"
+  - name: "k8s_docker_registries"
+    ref: "${ common.ccfa_version }"
+    repo_name: "k8s_configs"
+    path: "security/private_registries"
+  - name: "k8s_sme"
+    ref: "${ common.ccfa_version }"
+    repo_name: "k8s_configs"
+    path: "security/servicemetricexporter"
+  - name: "k8s_pv"
+    ref: "${ common.ccfa_version }"
+    repo_name: "k8s_configs"
+    path: "storage/persistent_volumes/host_path"
+  - name: "k8s_pvc"
+    ref: "${ common.ccfa_version }"
+    repo_name: "k8s_configs"
+    path: "storage/persistent_volume_claims"
+  - name: "k8s_vault"
+    ref: "${ common.ccfa_version }"
+    repo_name: "k8s_configs"
+    path: "security/vault"
+  - name: "api_services"
+    ref: "${ common.ccfa_version }"
+    repo_name: "k8s_configs"
+    path: "api_services"
+  - name: "metrics_server"
+    ref: "${ common.ccfa_version }"
+    repo_name: "k8s_configs"
+    path: "security/metrics_server"
+  - name: "victoria_metrics_agent"
+    ref: "${ common.ccfa_version }"
+    repo_name: "k8s_configs"
+    path: "security/victoria_metrics_agent"
+  - name: "keycloak"
+    ref: "${ common.ccfa_version }"
+    repo_name: "keycloak"
+    path: ""
+  - name: "minio"
+    ref: "${ common.ccfa_version }"
+    repo_name: "minio"
+    path: ""
+  - name: "opensearch"
+    ref: "${ common.ccfa_version }"
+    repo_name: "opensearch"
+    path: ""
+ssh_users:
+  users_dict: # [ ] CHANGEME: add users to list
+    - username: "ansible"
+      ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDQST46FZJcHlzX4T27pIFSSfmc6Qcc+ZL2NkqAMoXC1sD5qw4hmeW7axdU1lGbdwZF7E0ZlBJQ37QXvqYj+kFp6PXxL9ztIm/iWcU7hkX8ZDYmS4ubxt/VKiXngNBNyRb6ebRh9fjviDWEOIGrMT2YCcjHUNK33kbIDDRTbWfzTxPwJo8b15UczTbTKwMOMRw/0H9lPXzIMuMUMq1ns/of2x2xvI5nY/2WRVytU9pMOUgOAKMESlNMf/g1rprEr4V5ZXUDGUTTHYaChevKrvTHIQ6FISogfI8RvWI05CMw27Acpuz2IyYJiOr5ox0/DIXyouOiI+v2XB6aoMGztLaGU6dA5a3vuJ2ZQJb+JkcvaDg+mjU4IA4ioXG2x1qVdZO8Ho0iydcMc9HxY8dgmZK/eQRA1IfATXf+oS7jOTj90LH2eO8ufF+XOGmMlNoyk2kmKAHmJArSZ7ysznMZg/NIjf/QM5FnpIqAt0BHG7Ed/tOwo143ezUKYFPy3dxwQVs= ansible@MCDEVOPS" # [ ] CHANGEME
+      sudoers: yes
+      noPassSudo: yes
+  enabled_users: # [ ] CHANGEME: add users to list
+    - ansible
+groups:
+  admins:
+    roles:
+      vault:
+        - admins
+      opensearch:
+        - admin
+      keycloak:
+        - admin
+      openshiftConsole:
+        - admins
+      grafana:
+        - grafanaadmin
+    members:
+      - infra_admin
+  CCFA_admins:
+    roles:
+      webApiRulesSupport:
+        - rule:read
+        - rule:write
+        - rule:execute
+        - stream:read
+      referenceDataLoader:
+        - dict:read
+        - dict:write
+        - range:read
+        - range:write
+        - schema:read
+        - schema:write
+      riskOperatorWorkplace:
+        - administrator
+        - operator
+        - supervisor
+      grafana:
+        - editor
+      searchEngine:
+        - access
+    members:
+      - ccfa_admin
+  risk_analysts:
+    roles:
+      webApiRulesSupport:
+        - rule:read
+        - rule:write
+        - rule:execute
+        - stream:read
+        - rule:read
+      referenceDataLoader:
+        - dict:read
+        - dict:write
+        - range:read
+        - range:write
+        - schema:read
+        - schema:write
+      searchEngine:
+        - access
+      grafana:
+        - editor
+    members:
+      - risk_analyst
+  row_administrators:
+    roles:
+      riskOperatorWorkplace:
+        - administrator
+      grafana:
+        - editor
+    members:
+      - row_administrator
+  row_operator:
+    roles:
+      riskOperatorWorkplace:
+        - operator
+      grafana:
+        - editor
+    members:
+      - row_operator
+  row_supervisor:
+    roles:
+      riskOperatorWorkplace:
+        - supervisor
+      grafana:
+        - editor
+    members:
+      - row_supervisor
+roles:
+  webApiRulesSupport:
+    - rule:read
+    - rule:write
+    - rule:execute
+    - stream:read
+  referenceDataLoader:
+    - dict:read
+    - dict:write
+    - range:read
+    - range:write
+    - schema:read
+    - schema:write
+  riskOperatorWorkplace:
+    - administrator
+    - operator
+    - supervisor
+  vault:
+    - admins
+    - default
+  opensearchDashboards:
+    - admin
+    - security_rest_api_full_access
+    - os_role_security_api
+    - os_role_opensearch_dashboards_user
+    - all_access
+  keycloak:
+    - admin
+  openshiftConsole:
+    - admins
+  grafana:
+    - grafanaadmin
+    - admin
+    - editor
+    - viewer
+  searchEngine:
+    - access
+users:
+  - infra_admin
+  - ccfa_admin
+  - risk_analyst
+  - row_operator
+  - row_administrator
+  - row_supervisor
