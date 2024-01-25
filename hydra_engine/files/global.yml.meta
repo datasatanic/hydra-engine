@@ -183,26 +183,86 @@ PARAMS:
         control: label_control
         display_name: "Servers"
         constraints:
-  - repos:
-      type: dict
+  - ssh_users:
       default_value:
+      type: dict
       sub_type:
       sub_type_schema:
-        third_party_hosted_helm_repo:
+        users_dict:
           default_value:
-          type: string
-          sub_type:
+          type: array
+          sub_type: composite
+          sub_type_schema:
+            username:
+              type: string
+              default_value: ""
+              sub_type:
+              sub_type_schema:
+              readonly: [True]
+              description: ""
+              render:
+                control: input_control
+                display_name: "User name"
+                constraints:
+            ssh_key:
+              type: string
+              default_value: ""
+              sub_type:
+              sub_type_schema:
+              readonly: [True]
+              description: ""
+              render:
+                control: textarea_control
+                display_name: "Ssh key"
+                constraints:
+            sudoers:
+              type: string
+              default_value: "no"
+              sub_type:
+              sub_type_schema:
+              readonly: [True]
+              description: ""
+              render:
+                control: input_control
+                display_name: "Sudoers"
+                constraints:
+                  - pattern:
+                      value: "^(yes|no)$"
+                      message: "Valid values: yes, no"
+            noPassSudo:
+              type: string
+              default_value: no
+              sub_type:
+              sub_type_schema:
+              readonly: [True]
+              description: ""
+              render:
+                control: input_control
+                display_name: "NoPassSudo"
+                constraints:
+                  - pattern:
+                      value: "^(yes|no)$"
+                      message: "Valid values: yes, no"
+          readonly: False
+          description: ""
+          render:
+            control: label_control
+            display_name: "Users dict"
+            constraints:
+        enabled_users:
+          default_value:
+          type: array
+          sub_type: string
           sub_type_schema:
           readonly: False
           description: ""
-          id: 4
           render:
             control: input_control
-            display_name: "Third party hosted helm repo"
+            display_name: "Enabled users"
             constraints:
       description: ""
       id: 4
       render:
         control: label_control
-        display_name: "Repos"
+        display_name: "Ssh users"
         constraints:

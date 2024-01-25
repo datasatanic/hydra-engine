@@ -751,5 +751,9 @@ def check_sub_type_schema_validate(parameter, value, uid, input_url):
                          file_id=uid)
     if parameter.sub_type_schema is not None:
         for key, metadata in parameter.sub_type_schema.items():
-            check_sub_type_schema_validate(metadata, value[key], uid, f"{input_url}/{key}")
+            if isinstance(value,dict):
+                check_sub_type_schema_validate(metadata, value[key], uid, f"{input_url}/{key}")
+            elif isinstance(value,list):
+                for el in value:
+                    check_sub_type_schema_validate(metadata, el[key], uid, f"{input_url}/{key}")
     return elem_info
