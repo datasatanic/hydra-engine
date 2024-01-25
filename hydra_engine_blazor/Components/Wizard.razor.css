@@ -1,9 +1,13 @@
 ﻿::deep .modal-header,::deep .modal-body,::deep .modal-footer{
     width: 75vw;
+    min-width: 550px;
 }
 ::deep .modal-body{
     height: 75vh;
     padding: 0;
+}
+::deep dialog{
+    overflow-y: hidden;
 }
 .prev-next-container{
     width: 100%;

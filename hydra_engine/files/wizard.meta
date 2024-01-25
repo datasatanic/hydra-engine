@@ -3,6 +3,7 @@ root:
   description: Choose one of arch
   type: form
   id: 1
+
 root/archs:
   display_name: Archs
   description: ''

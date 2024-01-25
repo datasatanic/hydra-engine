@@ -196,3 +196,17 @@ def parse_config_files():
     parse_meta_params()
     parse_value_files()
     HydraParametersInfo().set_lists(elements_files_info, elements_values, elements_meta)
+
+
+def read_hydra_ignore():
+    ignore_dirs = []
+    ignore_extension = []
+    file = open(os.path.join(base_dir, "files/.hydraignore"), 'r')
+    for line in file:
+        current_line = line.rstrip('\n')
+        if current_line.endswith("/"):
+            ignore_dirs.append(current_line[:-1])
+        elif current_line.startswith("*."):
+            ignore_extension.append(current_line[2:])
+    file.close()
+    return ignore_dirs, ignore_extension

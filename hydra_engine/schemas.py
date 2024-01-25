@@ -4,7 +4,7 @@ import maya
 from typing import List, Literal, Dict
 from pydantic import BaseModel, validator, Extra, root_validator, ValidationError
 
-from hydra_engine.parser import write_file, HydraParametersInfo
+from hydra_engine.parser import write_file, HydraParametersInfo, read_hydra_ignore
 from hydra_engine.configs import config
 import logging
 import re
@@ -671,8 +671,9 @@ yaml = ruamel.yaml.YAML(typ="rt")
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-def update_wizard_meta(directory, arch_name):
+def update_wizard_meta(directory: str, arch_name):
     file = open(os.path.join(base_dir, "files/wizard.meta"), 'r+')
+    ignore_dirs, ignore_extension = read_hydra_ignore()
     wizard_data = yaml.load(file)
     last_id = None
     last_path = None
@@ -680,10 +681,11 @@ def update_wizard_meta(directory, arch_name):
         arch_file = open(os.path.join(base_dir, f"files/framework/arch/{arch_name}.yml"), 'r')
         site_names = list(map(lambda x: x["name"], yaml.load(arch_file)["sites"]))
         arch_file.close()
+        dirs[:] = [d for d in dirs if d not in ignore_dirs]
         dirs.sort(key=lambda x: site_names.index(x) if x in site_names else float('inf'))
         for name in files:
             if name.endswith(
-                    "meta") and "framework" not in root and name != config.wizard_filename and name != config.tree_filename:
+                    "meta") and name != config.wizard_filename and name != config.tree_filename:
                 last_key, last_value = list(wizard_data.items())[-1]
                 file_path = os.path.join(root, name)
                 directory_path = os.path.dirname(file_path)
