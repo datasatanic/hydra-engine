@@ -74,7 +74,7 @@ public class JsonParser
         }
     }
 
-    public static ElemInfo DeserializeElemInfo(string? json)
+    public static ElemInfo DeserializeElemInfo(string? json, int index = 0)
     {
         var elemInfo = new ElemInfo();
         var jsonNode = JsonNode.Parse(json);
@@ -119,7 +119,18 @@ public class JsonParser
                     };
                     break;
                 case "readOnly":
-                    elemInfo.readOnly = (bool)keyValue.Value;
+                    if (bool.TryParse(keyValue.Value?.ToString().ToLower(), out _))
+                    {
+                        elemInfo.readOnly = (bool)keyValue.Value;
+                    }
+                    else
+                    {
+                        var readonlyList = keyValue.Value.Deserialize<List<bool>>();
+                        if (readonlyList != null)
+                        {
+                            elemInfo.readOnly = readonlyList[index];
+                        }
+                    }
                     break;
                 case "display_name":
                     elemInfo.display_name = keyValue.Value?.ToString();

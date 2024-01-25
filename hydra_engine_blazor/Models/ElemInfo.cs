@@ -36,9 +36,10 @@ public class ElemInfo
     [JsonPropertyName("readOnly")] 
     public bool readOnly { get; set; }
     
-    [DataMember(Name = "display_name", EmitDefaultValue = false)]
+    [DataMember(Name = "readOnly", EmitDefaultValue = false)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [JsonPropertyName("display_name")] 
+    [JsonPropertyName("readOnly")]
+    
     public string? display_name { get; set; }
     [DataMember(Name = "control", EmitDefaultValue = false)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

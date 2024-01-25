@@ -104,3 +104,105 @@ PARAMS:
         control: input_control
         display_name: "Preset"
         constraints:
+  - networks:
+      default_value:
+      type: array
+      sub_type: composite
+      sub_type_schema:
+        name:
+          default_value:
+          type: string
+          sub_type: # optional for array
+          sub_type_schema:
+          readonly: [True,False,False,False,False]
+          description: ""
+          render:
+            control: input_control
+            display_name: "name"
+            constraints:
+        CIDR:
+          default_value:
+          type: string
+          sub_type: # optional for array
+          sub_type_schema:
+          readonly: [True,True,True,False,False]
+          description: ""
+          render:
+            control: input_control
+            display_name: "CIDR"
+            constraints:
+      readonly: True
+      description: ""
+      id: 4
+      render:
+        control: label_control
+        display_name: "Networks"
+        constraints:
+  - servers:
+      default_value:
+      type: array
+      sub_type: composite
+      sub_type_schema:
+        name:
+          default_value:
+          type: string
+          sub_type: # optional for array
+          sub_type_schema:
+          readonly: True
+          description: ""
+          render:
+            control: input_control
+            display_name: "name"
+            constraints:
+        address:
+          default_value:
+          type: string
+          sub_type: # optional for array
+          sub_type_schema:
+          readonly: True
+          description: ""
+          render:
+            control: input_control
+            display_name: "address"
+            constraints:
+        port:
+          default_value: 0
+          type: int
+          sub_type: # optional for array
+          sub_type_schema:
+          readonly: True
+          description: ""
+          render:
+            control: number_control
+            display_name: "port"
+            constraints:
+      readonly: True
+      description: ""
+      id: 4
+      render:
+        control: label_control
+        display_name: "Servers"
+        constraints:
+  - repos:
+      type: dict
+      default_value:
+      sub_type:
+      sub_type_schema:
+        third_party_hosted_helm_repo:
+          default_value:
+          type: string
+          sub_type:
+          sub_type_schema:
+          readonly: False
+          description: ""
+          id: 4
+          render:
+            control: input_control
+            display_name: "Third party hosted helm repo"
+            constraints:
+      description: ""
+      id: 4
+      render:
+        control: label_control
+        display_name: "Repos"
+        constraints:

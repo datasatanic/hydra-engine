@@ -39,7 +39,7 @@ class ElemInfo(BaseModel):
     sub_type: sub_types = None
     sub_type_schema: Dict[str, 'ElemInfo'] = None
     array_sub_type_schema: List['ElemInfo'] = None
-    readOnly: bool = False
+    readOnly: bool | List[bool]
     display_name: str
     control: controls
     constraints: List[ConstraintItem] = None

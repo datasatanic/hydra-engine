@@ -80,7 +80,7 @@
                         <img @onclick="AddItem"/>
                     }
                 </legend>
-                <div class="d-flex flex-column gap-3">
+                <div class="d-flex flex-column gap-3 overflow-auto">
                     @if (elemInfo.array_sub_type_schema != null)
                     {
                         @foreach (var subTypeSchema in elemInfo.array_sub_type_schema)
@@ -88,7 +88,7 @@
                             <div class="elements-container" id="@SettingsContainer.GetHash(Key+elemInfo.array_sub_type_schema.IndexOf(subTypeSchema))">
                                 @foreach (var (key,value) in subTypeSchema)
                                 {
-                                    var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
+                                    var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString(),elemInfo.array_sub_type_schema.IndexOf(subTypeSchema));
                                     subElemInfo.isValid = true;
                                     <div class="position-relative">
                                         <ElemComponent Key="@key" elemInfo="@subElemInfo" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key,elemInfo.array_sub_type_schema.IndexOf(subTypeSchema)))" Depth = "@(Depth + 1)"></ElemComponent>
