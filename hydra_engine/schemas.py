@@ -517,11 +517,9 @@ def get_value_by_key(value, input_url_list):
         logger.error("Key not exist")
 
 
-def set_value_in_dict(elements, value, input_url_list, file_type):
+def set_value_in_dict(elements, value, input_url_list):
     while len(input_url_list) > 1:
-        if input_url_list[0].isdigit():
-            elements = elements[int(input_url_list[0])]
-        elif isinstance(elements, list):
+        if isinstance(elements, list):
             arr = []
             for elem in elements:
                 arr.append(elem[input_url_list[0]])
@@ -530,8 +528,31 @@ def set_value_in_dict(elements, value, input_url_list, file_type):
             elements = elements[input_url_list[0]]
         input_url_list.pop(0)
     if elements[input_url_list[0]] != value:
-        elements[input_url_list[0]] = value
+        update_parameter_value(elements[input_url_list[0]], value)
         HydraParametersInfo().was_modified = True
+
+
+def update_parameter_value(element, value):
+    if isinstance(element, dict):
+        element.update(
+            {key: update_parameter_value(element[key], value[key]) for key in element if element[key] != value[key]})
+        return element
+    elif isinstance(element, list):
+        if element != value:
+            element_len = len(element)
+            value_len = len(value)
+            if element_len > value_len:
+                element = element[:len(value)]
+            elif element_len < value_len:
+                for val in value[element_len:]:
+                    element.append(val)
+            for index, (el, val) in enumerate(zip(element, value)):
+                if el != val:
+                    element[index] = update_parameter_value(el, val)
+            return element
+    else:
+        if element != value:
+            return value
 
 
 def set_value(input_url: str, uid: str, value: object):
@@ -540,7 +561,7 @@ def set_value(input_url: str, uid: str, value: object):
     key = input_url_list[0]
     for elements in HydraParametersInfo().get_elements_values():
         if key in elements.values and elements.uid == uid:
-            set_value_in_dict(elements.values, value, input_url_list, elements.type)
+            set_value_in_dict(elements.values, value, input_url_list)
             write_file(elements.values, elements.path, elements.type, input_url, value)
             return
 
@@ -707,7 +728,7 @@ def update_wizard_meta(directory: str, arch_name):
                                 "id": last_id + 1, "action": "deploy" if name == files_in_directory[
                             -1] and name != "global.yml.meta" else None,
                                 "site_name": last_dir if name == files_in_directory[
-                            -1] and name != "global.yml.meta" else None}}
+                                    -1] and name != "global.yml.meta" else None}}
                 if last_path not in wizard_data:
                     file.write('\n')
                     yaml.dump(wizard_form, file)
@@ -751,9 +772,9 @@ def check_sub_type_schema_validate(parameter, value, uid, input_url):
                          file_id=uid)
     if parameter.sub_type_schema is not None:
         for key, metadata in parameter.sub_type_schema.items():
-            if isinstance(value,dict):
+            if isinstance(value, dict):
                 check_sub_type_schema_validate(metadata, value[key], uid, f"{input_url}/{key}")
-            elif isinstance(value,list):
+            elif isinstance(value, list):
                 for el in value:
                     check_sub_type_schema_validate(metadata, el[key], uid, f"{input_url}/{key}")
     return elem_info

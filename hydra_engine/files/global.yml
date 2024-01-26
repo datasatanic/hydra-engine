@@ -3,7 +3,7 @@ mgmt:
   state:
     subnet_name: mgmt
     dc: mgmt # [ ] CHANGEME
-    host_number: 21 # [ ] CHANGEME
+    host_number: 5  # [ ] CHANGEME
   repos:
     repohost_number: 100 # [ ] CHANGEME
     subnet_name: repos
@@ -234,12 +234,14 @@ modules:
   path: ''
 ssh_users:
   users_dict: # [ ] CHANGEME: add users to list
-    - username: "ansible"
-      ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDQST46FZJcHlzX4T27pIFSSfmc6Qcc+ZL2NkqAMoXC1sD5qw4hmeW7axdU1lGbdwZF7E0ZlBJQ37QXvqYj+kFp6PXxL9ztIm/iWcU7hkX8ZDYmS4ubxt/VKiXngNBNyRb6ebRh9fjviDWEOIGrMT2YCcjHUNK33kbIDDRTbWfzTxPwJo8b15UczTbTKwMOMRw/0H9lPXzIMuMUMq1ns/of2x2xvI5nY/2WRVytU9pMOUgOAKMESlNMf/g1rprEr4V5ZXUDGUTTHYaChevKrvTHIQ6FISogfI8RvWI05CMw27Acpuz2IyYJiOr5ox0/DIXyouOiI+v2XB6aoMGztLaGU6dA5a3vuJ2ZQJb+JkcvaDg+mjU4IA4ioXG2x1qVdZO8Ho0iydcMc9HxY8dgmZK/eQRA1IfATXf+oS7jOTj90LH2eO8ufF+XOGmMlNoyk2kmKAHmJArSZ7ysznMZg/NIjf/QM5FnpIqAt0BHG7Ed/tOwo143ezUKYFPy3dxwQVs= ansible@MCDEVOPS" # [ ] CHANGEME
-      sudoers: yes
-      noPassSudo: yes
+  - username: ansible
+    ssh_key: ssh-rsa 
+      AAAAB3NzaC1yc2EAAAADAQABAAABgQDQST46FZJcHlzX4T27pIFSSfmc6Qcc+ZL2NkqAMoXC1sD5qw4hmeW7axdU1lGbdwZF7E0ZlBJQ37QXvqYj+kFp6PXxL9ztIm/iWcU7hkX8ZDYmS4ubxt/VKiXngNBNyRb6ebRh9fjviDWEOIGrMT2YCcjHUNK33kbIDDRTbWfzTxPwJo8b15UczTbTKwMOMRw/0H9lPXzIMuMUMq1ns/of2x2xvI5nY/2WRVytU9pMOUgOAKMESlNMf/g1rprEr4V5ZXUDGUTTHYaChevKrvTHIQ6FISogfI8RvWI05CMw27Acpuz2IyYJiOr5ox0/DIXyouOiI+v2XB6aoMGztLaGU6dA5a3vuJ2ZQJb+JkcvaDg+mjU4IA4ioXG2x1qVdZO8Ho0iydcMc9HxY8dgmZK/eQRA1IfATXf+oS7jOTj90LH2eO8ufF+XOGmMlNoyk2kmKAHmJArSZ7ysznMZg/NIjf/QM5FnpIqAt0BHG7Ed/tOwo143ezUKYFPy3dxwQVs=
+      ansible@MCDEVOPS                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     # [ ] CHANGEME
+    sudoers: yes
+    noPassSudo: yes
   enabled_users: # [ ] CHANGEME: add users to list
-    - ansible
+  - ansible
 groups:
   admins:
     roles:
