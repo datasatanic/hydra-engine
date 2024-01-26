@@ -114,7 +114,7 @@ PARAMS:
           type: string
           sub_type: # optional for array
           sub_type_schema:
-          readonly: [True,False,False,False,False]
+          readonly: [False,True,True,True,True]
           description: ""
           render:
             control: input_control
@@ -125,7 +125,7 @@ PARAMS:
           type: string
           sub_type: # optional for array
           sub_type_schema:
-          readonly: [True,True,True,False,False]
+          readonly: [False,False,False,True,True]
           description: ""
           render:
             control: input_control

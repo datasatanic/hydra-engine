@@ -519,13 +519,7 @@ def get_value_by_key(value, input_url_list):
 
 def set_value_in_dict(elements, value, input_url_list):
     while len(input_url_list) > 1:
-        if isinstance(elements, list):
-            arr = []
-            for elem in elements:
-                arr.append(elem[input_url_list[0]])
-            elements = arr
-        else:
-            elements = elements[input_url_list[0]]
+        elements = elements[input_url_list[0]]
         input_url_list.pop(0)
     if elements[input_url_list[0]] != value:
         update_parameter_value(elements[input_url_list[0]], value)
@@ -541,6 +535,9 @@ def update_parameter_value(element, value):
         if element != value:
             element_len = len(element)
             value_len = len(value)
+            if value_len == 0:
+                element = None
+                return element
             if element_len > value_len:
                 element = element[:len(value)]
             elif element_len < value_len:

@@ -6,6 +6,7 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Runtime.InteropServices
 @using System.Text
+@using System.Text.Json.Nodes
 @using System.Text.RegularExpressions
 @inject IJSRuntime JSRuntime
 @inject SettingsContainer SettingsContainer
@@ -188,7 +189,7 @@
         };
         if (elemInfo.type == ElemType.Array)
         {
-            elemInfo.arrayItems = JsonSerializer.Deserialize<List<object>>(elemInfo.value.ToString(),options);
+            elemInfo.arrayItems = elemInfo.value is not null && !string.IsNullOrEmpty(elemInfo.value.ToString())? JsonSerializer.Deserialize<List<object?>>(elemInfo.value.ToString(),options) ?? new List<object?>() : new List<object?>();
         }
         AddElementAttributes(elemInfo);
         

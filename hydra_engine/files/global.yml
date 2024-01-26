@@ -240,7 +240,7 @@ ssh_users:
       ansible@MCDEVOPS                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     # [ ] CHANGEME
     sudoers: yes
     noPassSudo: yes
-  enabled_users: # [ ] CHANGEME: add users to list
+  enabled_users:  # [ ] CHANGEME: add users to list
   - ansible
 groups:
   admins:
