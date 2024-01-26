@@ -125,12 +125,8 @@ public class JsonParser
                     }
                     else
                     {
-                        var readonlyList = keyValue.Value.Deserialize<List<bool>>();
-                        if (readonlyList != null)
-                        {
-                            if (index >= 0 && index < readonlyList.Count) elemInfo.readOnly = readonlyList[index];
-                            else elemInfo.readOnly = false;
-                        }
+                        var readonlyDict = keyValue.Value.Deserialize<Dictionary<int,bool>>();
+                        if (readonlyDict != null) elemInfo.readOnly = readonlyDict.GetValueOrDefault(index + 1, false);
                     }
                     break;
                 case "display_name":

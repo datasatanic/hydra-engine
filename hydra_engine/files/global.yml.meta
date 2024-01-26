@@ -114,7 +114,11 @@ PARAMS:
           type: string
           sub_type: # optional for array
           sub_type_schema:
-          readonly: [False,True,True,True,True]
+          readonly:
+            2: True
+            3: True
+            4: True
+            5: True
           description: ""
           render:
             control: input_control
@@ -125,7 +129,9 @@ PARAMS:
           type: string
           sub_type: # optional for array
           sub_type_schema:
-          readonly: [False,False,False,True,True]
+          readonly:
+            4: True
+            5: True
           description: ""
           render:
             control: input_control
@@ -198,7 +204,8 @@ PARAMS:
               default_value: ""
               sub_type:
               sub_type_schema:
-              readonly: [True]
+              readonly:
+                1: True
               description: ""
               render:
                 control: input_control
@@ -209,7 +216,8 @@ PARAMS:
               default_value: ""
               sub_type:
               sub_type_schema:
-              readonly: [True]
+              readonly:
+                1: True
               description: ""
               render:
                 control: textarea_control
@@ -220,7 +228,8 @@ PARAMS:
               default_value: "no"
               sub_type:
               sub_type_schema:
-              readonly: [True]
+              readonly:
+                1: True
               description: ""
               render:
                 control: input_control
@@ -234,7 +243,8 @@ PARAMS:
               default_value: no
               sub_type:
               sub_type_schema:
-              readonly: [True]
+              readonly:
+                1: True
               description: ""
               render:
                 control: input_control
