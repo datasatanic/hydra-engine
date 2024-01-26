@@ -3,11 +3,11 @@ mgmt:
   state:
     subnet_name: mgmt
     dc: mgmt # [ ] CHANGEME
-    host_number: 5  # [ ] CHANGEME
+    host_number: 21 # [ ] CHANGEME
   repos:
-    repohost_number: 100 # [ ] CHANGEME
+    repohost_number: 21 # [ ] CHANGEME
     subnet_name: repos
-preset: 100_tps # [ ] CHANGEME
+preset: 100_tp # [ ] CHANGEME
 # Network Configuration
 networks:
 - name: vxlan-106-dvaraksin   # [ ] CHANGEME
@@ -242,6 +242,7 @@ ssh_users:
     noPassSudo: yes
   enabled_users:  # [ ] CHANGEME: add users to list
   - ansible
+  - keycloak
 groups:
   admins:
     roles:

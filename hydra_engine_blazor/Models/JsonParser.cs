@@ -102,6 +102,10 @@ public class JsonParser
                         "array"=>ElemType.Array,
                         _ => elemInfo.type
                     };
+                    if (elemInfo.type == ElemType.Array)
+                    {
+                        elemInfo.arrayItems =  elemInfo.value is not null && !string.IsNullOrEmpty(elemInfo.value.ToString())? JsonSerializer.Deserialize<List<object?>>(elemInfo.value.ToString() ?? string.Empty) ?? new List<object?>() : new List<object?>();
+                    }
                     break;
                 case "description":
                     elemInfo.description = keyValue.Value?.ToString();

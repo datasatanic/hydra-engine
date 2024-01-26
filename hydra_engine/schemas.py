@@ -46,6 +46,8 @@ class ElemInfo(BaseModel):
 
     @validator("type", pre=True)
     def check_type(cls, value_type, values, **kwargs):
+        if values["value"] is None:
+            return value_type
         if value_type is None:
             raise TypeError("Type can't be empty")
         elif value_type == "int":
@@ -522,7 +524,7 @@ def set_value_in_dict(elements, value, input_url_list):
         elements = elements[input_url_list[0]]
         input_url_list.pop(0)
     if elements[input_url_list[0]] != value:
-        update_parameter_value(elements[input_url_list[0]], value)
+        elements[input_url_list[0]] = update_parameter_value(elements[input_url_list[0]], value)
         HydraParametersInfo().was_modified = True
 
 
@@ -602,11 +604,19 @@ def generate_elem_info(value, element, uid, path, is_log):
             sub_type_schema = element.get("sub_type_schema")
             if element.get("type") == "array":
                 elem_info.array_sub_type_schema = []
-                for el in value:
+                value = [] if value is None else value
+                for index, el in enumerate(value):
+                    is_element_none = el is None
                     d = {
-                        key: generate_elem_info(el[key], metadata, uid, f"{path}/{key}", False)
+                        key: generate_elem_info(
+                            el[key] if not is_element_none else metadata["default_value"],
+                            metadata, uid, f"{path}/{key}", False
+                        )
                         for key, metadata in element["sub_type_schema"].items()
                     }
+                    if is_element_none:
+                        value[index] = {key: metadata["default_value"] for key, metadata in
+                                        element["sub_type_schema"].items()}
                     elem_info.array_sub_type_schema.append(d)
                 elem_info.sub_type_schema = {}
                 for key, metadata in element["sub_type_schema"].items():

@@ -115,7 +115,7 @@
                                 {
                                     case Control.Textarea:
                                         <div class="list-item-container">
-                                            <textarea @attributes="ElementAttributes" validation-error="@(!TryParseToType(elem.ToString(), elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
+                                            <textarea @attributes="ElementAttributes" validation-error="@(!TryParseToType(elem?.ToString() ?? "", elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
                                             @if (!elemInfo.readOnly)
                                             {
                                                 <img @onclick="@(() => RemoveArrayItem(j))"/>
@@ -124,7 +124,7 @@
                                         break;
                                     default:
                                         <div class="list-item-container">
-                                            <input @attributes="ElementAttributes" size="@(elem?.ToString()?.Length)" validation-error="@(!TryParseToType(elem.ToString(), elemInfo?.sub_type))" value="@elem" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))"/>
+                                            <input @attributes="ElementAttributes" size="@(elem?.ToString()?.Length)" validation-error="@(!TryParseToType(elem?.ToString() ?? "", elemInfo?.sub_type))" value="@elem" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))"/>
                                             @if (!elemInfo.readOnly)
                                             {
                                                 <img @onclick="@(() => RemoveArrayItem(j))"/>
@@ -132,17 +132,17 @@
                                         </div>
                                         break;
                                 }
-                                @if (string.IsNullOrEmpty(elem.ToString()))
+                                @if (string.IsNullOrEmpty(elem?.ToString()))
                                 {
                                     <div class="validation-message">Enter field</div>
                                 }
-                                else if (!TryParseToType(elem.ToString(), elemInfo?.sub_type))
+                                else if (!TryParseToType(elem.ToString() ?? "", elemInfo?.sub_type))
                                 {
                                     <div class="validation-message">Not @elemInfo?.sub_type type</div>
                                 }
                                 else
                                 {
-                                    foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elem.ToString(), item, elemInfo.control)))
+                                    foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elem.ToString() ?? "", item, elemInfo.control)))
                                     {
                                         <div class="validation-message">@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")</div>
                                     }
@@ -178,7 +178,6 @@
     };
     IJSObjectReference? _module;
     private bool _canScroll;
-
     protected override void OnParametersSet()
     {
         ElementAttributes = new Dictionary<string, object>
@@ -187,11 +186,27 @@
             {"tabindex",1},
             {"title",elemInfo?.description}
         };
-        if (elemInfo.type == ElemType.Array)
-        {
-            elemInfo.arrayItems = elemInfo.value is not null && !string.IsNullOrEmpty(elemInfo.value.ToString())? JsonSerializer.Deserialize<List<object?>>(elemInfo.value.ToString(),options) ?? new List<object?>() : new List<object?>();
-        }
         AddElementAttributes(elemInfo);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (elemInfo is {type: ElemType.Array })
+        {
+            if (elemInfo.arrayItems.Any(elem => !TryParseToType(elem?.ToString() ?? "", elemInfo.sub_type)))
+            {
+                elemInfo.isValid = false;
+                await SendValue.InvokeAsync(elemInfo);
+            }
+        }
+        else
+        {
+            if (!TryParseToType(elemInfo?.value.ToString() ?? string.Empty, elemInfo.type))
+            {
+                elemInfo.isValid = false;
+                await SendValue.InvokeAsync(elemInfo);
+            }
+        }
         
     }
 

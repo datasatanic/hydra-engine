@@ -60,7 +60,7 @@
 .form-elements-container{
     display: flex;
     flex-direction: column;
-    gap:10px;
+    gap:20px;
 }
 .elements-container{
     display: flex;
