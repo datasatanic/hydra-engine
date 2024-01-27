@@ -11,39 +11,4 @@ root/infras/common:
   description: Configuration for infrastructure
   display_name: Common
   type: form
-  id: 5
-root/infras/common/infra_name:
-  description: ""
-  display_name: Infrastructure name
-  type: group
   id: 6
-root/infras/common/mgmt:
-  description: ""
-  display_name: MGMT site params
-  type: group
-  id: 7
-root/infras/common/base:
-  description: ""
-  display_name: Base site parameters
-  type: group
-  id: 8
-root/infras/common/hosts:
-  description: ""
-  display_name: Hosts configuration
-  type: group
-  id: 9
-root/infras/common/k8s:
-  description: Kubernetes cluster configuration
-  display_name: Kubernetes
-  type: group
-  id: 10
-root/infras/common/ssh_users:
-  description: ""
-  display_name: Ssh users
-  type: form
-  id: 11
-root/infras/common/vSphere:
-  description: Used for creation VM
-  display_name: Vsphere parameters
-  type: group
-  id: 12
