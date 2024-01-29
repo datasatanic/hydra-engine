@@ -85,7 +85,7 @@ public class JsonParser
             switch (keyValue.Key)
             {
                 case"value":
-                    elemInfo.value = keyValue.Value?.ToString() ?? "";
+                    if (keyValue.Value != null) elemInfo.value = DeserializeJsonValue(keyValue.Value);
                     break;
                 case "file_id":
                     elemInfo.fileId = keyValue.Value.ToString();
@@ -102,10 +102,6 @@ public class JsonParser
                         "array"=>ElemType.Array,
                         _ => elemInfo.type
                     };
-                    if (elemInfo.type == ElemType.Array)
-                    {
-                        elemInfo.arrayItems =  elemInfo.value is not null && !string.IsNullOrEmpty(elemInfo.value.ToString())? JsonSerializer.Deserialize<List<object?>>(elemInfo.value.ToString() ?? string.Empty) ?? new List<object?>() : new List<object?>();
-                    }
                     break;
                 case "description":
                     elemInfo.description = keyValue.Value?.ToString();
@@ -161,8 +157,13 @@ public class JsonParser
                 case "sub_type_schema":
                     if (!string.IsNullOrEmpty(keyValue.Value?.ToString()))
                     {
-                        elemInfo.sub_type_schema =
-                            JsonSerializer.Deserialize<Dictionary<string, object>>(keyValue.Value?.ToString());
+                        var schema = new Dictionary<string, ElemInfo>();
+                        foreach (var jsonObject in keyValue.Value.AsObject())
+                        {
+                            schema.Add(jsonObject.Key,DeserializeElemInfo(jsonObject.Value?.ToJsonString()));
+                        }
+
+                        elemInfo.sub_type_schema = schema;
                     }
                     else
                     {
@@ -172,8 +173,20 @@ public class JsonParser
                 case "array_sub_type_schema":
                     if (!string.IsNullOrEmpty(keyValue.Value?.ToString()))
                     {
-                        elemInfo.array_sub_type_schema =
-                            JsonSerializer.Deserialize<List<Dictionary<string, object>>>(keyValue.Value?.ToString());
+                        var array_schema = new List<Dictionary<string, ElemInfo>>();
+                        var jsonArray = keyValue.Value.AsArray();
+                        foreach (var el in jsonArray)
+                        {
+                            var schema = new Dictionary<string, ElemInfo>();
+                            if (el != null)
+                                foreach (var jsonObject in el.AsObject())
+                                {
+                                    schema.Add(jsonObject.Key, DeserializeElemInfo(jsonObject.Value?.ToString()));
+                                }
+                            array_schema.Add(schema);
+                        }
+
+                        elemInfo.array_sub_type_schema = array_schema;
                     }
                     else
                     {
@@ -241,5 +254,29 @@ public class JsonParser
         };
 
         return node.ToJsonString();
+    }
+    private static object DeserializeJsonValue(JsonNode jsonNode)
+    {
+        switch (jsonNode)
+        {
+            case JsonArray jsonArray:
+                var list = new List<object?>();
+                foreach (var item in jsonArray)
+                {
+                    if (item != null) list.Add(DeserializeJsonValue(item));
+                }
+                return list;
+
+            case JsonObject jsonObject:
+                var result = new Dictionary<string, object?>();
+                foreach (var kvp in jsonObject)
+                {
+                    if (kvp.Value != null) result[kvp.Key] = DeserializeJsonValue(kvp.Value);
+                }
+                return result;
+
+            default:
+                return jsonNode.ToString();
+        }
     }
 }

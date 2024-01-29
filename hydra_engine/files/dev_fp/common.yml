@@ -7,7 +7,7 @@ mgmt:
     host_number: 21
   repos:
     subnet_name: repos
-    repohost_number: 21
+    repohost_number: '25'
 site:
   avg_cpu_core_hz: 2500
 preset: preset name

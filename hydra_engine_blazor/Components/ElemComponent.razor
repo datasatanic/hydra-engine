@@ -31,8 +31,7 @@
                             {
                                 <li>
                                     @{
-                                        var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
-                                        <ElemComponent Key="@key" elemInfo="@subElemInfo" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth = "@(Depth + 1)"></ElemComponent>
+                                        <ElemComponent Key="@key" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth = "@(Depth + 1)"></ElemComponent>
                                     }
                                 </li>
                             }
@@ -82,73 +81,73 @@
                     }
                 </legend>
                 <div class="d-flex flex-column gap-3 overflow-auto">
+                    @{var arrayItems = elemInfo?.value as List<object> ?? new List<object>();}
                     @if (elemInfo.array_sub_type_schema != null)
                     {
-                        @foreach (var subTypeSchema in elemInfo.array_sub_type_schema)
+                        for (var i = 0; i < elemInfo.array_sub_type_schema.Count; i++)
                         {
-                            <div class="elements-container" id="@SettingsContainer.GetHash(Key+elemInfo.array_sub_type_schema.IndexOf(subTypeSchema))">
-                                @foreach (var (key,value) in subTypeSchema)
+                            var j = i;
+                            var subTypeSchema = elemInfo.array_sub_type_schema[j];
+                            <div class="elements-container" id="@SettingsContainer.GetHash(Key + j)">
+                                @foreach (var (key, value) in subTypeSchema)
                                 {
-                                    var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString(),elemInfo.array_sub_type_schema.IndexOf(subTypeSchema));
-                                    subElemInfo.isValid = true;
                                     <div class="position-relative">
-                                        <ElemComponent Key="@key" elemInfo="@subElemInfo" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key,elemInfo.array_sub_type_schema.IndexOf(subTypeSchema)))" Depth = "@(Depth + 1)"></ElemComponent>
+                                        <ElemComponent Key="@key" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key, j))" Depth="@(Depth + 1)"></ElemComponent>
                                     </div>
                                 }
                                 @if (!elemInfo.readOnly)
                                 {
-                                    <img class="delete-image" @onclick="@(() => RemoveArrayItem(elemInfo.array_sub_type_schema.IndexOf(subTypeSchema)))"/>
+                                    <img class="delete-image" @onclick="@(() => RemoveArrayItem(j))"/>
                                 }
                                 <hr/>
                             </div>
-                            
                         }
                     }
                     else
                     {
-                        @for (var i = 0; i < elemInfo?.arrayItems.Count; i++)
-                        {
-                        var j = i;
-                        var elem = elemInfo?.arrayItems[j];
-                            <div class="position-relative" id="@SettingsContainer.GetHash(Key+j)">
-                                @switch (elemInfo?.control)
-                                {
-                                    case Control.Textarea:
-                                        <div class="list-item-container">
-                                            <textarea @attributes="ElementAttributes" validation-error="@(!TryParseToType(elem?.ToString() ?? "", elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
-                                            @if (!elemInfo.readOnly)
-                                            {
-                                                <img @onclick="@(() => RemoveArrayItem(j))"/>
-                                            }
-                                        </div>
-                                        break;
-                                    default:
-                                        <div class="list-item-container">
-                                            <input @attributes="ElementAttributes" size="@(elem?.ToString()?.Length)" validation-error="@(!TryParseToType(elem?.ToString() ?? "", elemInfo?.sub_type))" value="@elem" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))"/>
-                                            @if (!elemInfo.readOnly)
-                                            {
-                                                <img @onclick="@(() => RemoveArrayItem(j))"/>
-                                            }
-                                        </div>
-                                        break;
-                                }
-                                @if (string.IsNullOrEmpty(elem?.ToString()))
-                                {
-                                    <div class="validation-message">Enter field</div>
-                                }
-                                else if (!TryParseToType(elem.ToString() ?? "", elemInfo?.sub_type))
-                                {
-                                    <div class="validation-message">Not @elemInfo?.sub_type type</div>
-                                }
-                                else
-                                {
-                                    foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elem.ToString() ?? "", item, elemInfo.control)))
+                        for (var i = 0; i < arrayItems.Count; i++)
+                            {
+                                var j = i;
+                                var elem = (elemInfo.value as List<object>)[j];
+                                <div class="position-relative" id="@SettingsContainer.GetHash(Key + j)">
+                                    @switch (elemInfo?.control)
                                     {
-                                        <div class="validation-message">@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")</div>
+                                        case Control.Textarea:
+                                            <div class="list-item-container">
+                                                <textarea @attributes="ElementAttributes" validation-error="@(!TryParseToType(elem?.ToString() ?? "", elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
+                                                @if (!elemInfo.readOnly)
+                                                {
+                                                    <img @onclick="@(() => RemoveArrayItem(j))"/>
+                                                }
+                                            </div>
+                                            break;
+                                        default:
+                                            <div class="list-item-container">
+                                                <input @attributes="ElementAttributes" size="@(elem?.ToString()?.Length)" validation-error="@(!TryParseToType(elem?.ToString() ?? "", elemInfo?.sub_type))" value="@elem" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))"/>
+                                                @if (!elemInfo.readOnly)
+                                                {
+                                                    <img @onclick="@(() => RemoveArrayItem(j))"/>
+                                                }
+                                            </div>
+                                            break;
                                     }
-                                }
-                            </div>
-                        }
+                                    @if (string.IsNullOrEmpty(elem?.ToString()))
+                                    {
+                                        <div class="validation-message">Enter field</div>
+                                    }
+                                    else if (!TryParseToType(elem.ToString() ?? "", elemInfo?.sub_type))
+                                    {
+                                        <div class="validation-message">Not @elemInfo?.sub_type type</div>
+                                    }
+                                    else
+                                    {
+                                        foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elem.ToString() ?? "", item, elemInfo.control)))
+                                        {
+                                            <div class="validation-message">@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")</div>
+                                        }
+                                    }
+                                </div>
+                            }
                     }
                 </div>
             </fieldset>
@@ -193,7 +192,7 @@
     {
         if (elemInfo is {type: ElemType.Array })
         {
-            if (elemInfo.arrayItems.Any(elem => !TryParseToType(elem?.ToString() ?? "", elemInfo.sub_type)))
+            if (elemInfo.value is List<object> arrayItems && arrayItems.Any(elem => !TryParseToType(elem.ToString() ?? "", elemInfo.sub_type)))
             {
                 elemInfo.isValid = false;
                 await SendValue.InvokeAsync(elemInfo);
@@ -220,7 +219,7 @@
         {
             if (_canScroll)
             {
-                var id = SettingsContainer.GetHash(Key + $"{elemInfo?.arrayItems.Count - 1}");
+                var id = SettingsContainer.GetHash(Key + $"{(elemInfo.value as List<object>).Count - 1}");
                 await _module.InvokeVoidAsync("Scroll", id);
                 _canScroll = false;
             }
@@ -256,8 +255,8 @@
             await SendValue.InvokeAsync(elemInfo);
             return;
         }
-        elemInfo.value = obj.Value.ToString();
         var value = obj.Value;
+        elemInfo.value = value;
         if (TryParseToType(value.ToString(),elemInfo?.type) && !string.IsNullOrEmpty(value.ToString()) && !elemInfo.constraints.Exists(item=>!CheckConstraints(value.ToString(),item,elemInfo.control)))
         {
             ElementAttributes["validation-error"] = false;
@@ -301,39 +300,38 @@
             await SendValue.InvokeAsync(elemInfo);
             return;
         }
-        elemInfo.arrayItems[i]=obj.Value?.ToString();
-        elemInfo.value = JsonSerializer.Serialize(elemInfo.arrayItems);
-        if (elemInfo?.arrayItems.Find(item => !TryParseToType(item?.ToString(), elemInfo?.sub_type) |
+        var arrayItems = elemInfo.value as List<object>;
+        arrayItems[i]=obj.Value?.ToString();
+        if (arrayItems.Find(item => !TryParseToType(item?.ToString(), elemInfo?.sub_type) |
                                               string.IsNullOrEmpty(item.ToString()) | elemInfo.constraints.Exists(item=>!CheckConstraints(item.ToString(),item,elemInfo.control))) == null)
         {
             elemInfo.isValid = true;
             switch (type)
             {
                 case ElemType.String:
-                    elemInfo.value = elemInfo.arrayItems;
+                    elemInfo.value = arrayItems;
                     break;
                 case ElemType.Int:
-                    elemInfo.value = elemInfo?.arrayItems.Select(item => int.Parse(item.ToString())).ToList();
+                    elemInfo.value = arrayItems.Select(item => int.Parse(item.ToString())).ToList();
                     break;
                 case ElemType.Double:
                     switch (CultureInfo.CurrentCulture.TwoLetterISOLanguageName)
                     {
                         case "en":
-                            elemInfo.value = elemInfo?.arrayItems.Select(item => double.Parse(item.ToString().Replace(",", "."))).ToList();
+                            elemInfo.value = arrayItems.Select(item => double.Parse(item.ToString().Replace(",", "."))).ToList();
                             break;
                         case "ru":
-                            elemInfo.value = elemInfo?.arrayItems.Select(item => double.Parse(item.ToString().Replace(",", "."))).ToList();
+                            elemInfo.value = arrayItems.Select(item => double.Parse(item.ToString().Replace(",", "."))).ToList();
                             break;
                     }
                     break;
                 case ElemType.Bool:
-                    elemInfo.value = elemInfo?.arrayItems.Select(item => bool.Parse(item.ToString())).ToList();
+                    elemInfo.value = arrayItems.Select(item => bool.Parse(item.ToString())).ToList();
                     break;
                 case ElemType.DateTime:
-                    elemInfo.value = elemInfo?.arrayItems.Select(item => DateTime.Parse(item.ToString())).ToList();
+                    elemInfo.value = arrayItems.Select(item => DateTime.Parse(item.ToString())).ToList();
                     break;
             }
-            elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(elemInfo.value));
         }
         else
         {
@@ -381,8 +379,8 @@
     private async Task RemoveArrayItem(int pos)
     {
         elemInfo.isValid = true;
-        elemInfo?.arrayItems.RemoveAt(pos);
-        elemInfo.value = elemInfo.arrayItems;
+        var arrayItems = elemInfo.value as List<object?>;
+        arrayItems?.RemoveAt(pos);
         if (elemInfo.array_sub_type_schema != null)
         {
             elemInfo.array_sub_type_schema.RemoveAt(pos);
@@ -393,68 +391,64 @@
         }
         else
         {
-            if (elemInfo?.arrayItems.
+            if ( arrayItems?.
                 Find(item => !TryParseToType(item?.ToString(), elemInfo?.sub_type) |
                              string.IsNullOrEmpty(item.ToString()) | elemInfo.constraints.Exists(item => !CheckConstraints(item.ToString(), item, elemInfo.control))) != null)
             {
                 elemInfo.isValid = false;
             } 
         }
-        
-        elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(elemInfo.value));
         await SendValue.InvokeAsync(elemInfo);
     }
 
-    private Dictionary<string, object> getSchema(Dictionary<string,object> schema)
+    private Dictionary<string, object> GetSchema(Dictionary<string,ElemInfo> schema)
     {
         var dict = new Dictionary<string, object>();
-        foreach (var (key, value) in schema)
+        foreach (var kvp in schema)
         {
-            var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
-            dict.Add(key,subElemInfo.value);
-            if (subElemInfo.sub_type_schema != null)
-            {
-                var subDict = getSchema(subElemInfo.sub_type_schema);
-                dict[key] = subDict;
-            }
+            var subElemInfo = (ElemInfo)kvp.Value.Clone();
+            dict.Add(kvp.Key,subElemInfo.value);
+            if (subElemInfo.sub_type_schema == null) continue;
+            var subDict = GetSchema(subElemInfo.sub_type_schema);
+            dict[kvp.Key] = subDict;
         }
         return dict;
     }
 
-    private Dictionary<string, object> changeReadonly(Dictionary<string, object> schema)
+    private Dictionary<string, ElemInfo> ChangeReadonly(Dictionary<string, ElemInfo> schema)
     {
-        var dict = new Dictionary<string, object>();
-        foreach (var (key, value) in schema)
+        var dict = new Dictionary<string, ElemInfo>();
+        foreach (var kvp in schema)
         {
-            var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
+            var subElemInfo = (ElemInfo)kvp.Value.Clone();
             if (subElemInfo.sub_type_schema != null)
             {
-                var subDict = changeReadonly(subElemInfo.sub_type_schema);
+                var subDict = ChangeReadonly(subElemInfo.sub_type_schema);
                 subElemInfo.sub_type_schema = subDict;
             }
             subElemInfo.readOnly = false;
             subElemInfo.isValid = TryParseToType(subElemInfo.value.ToString(), subElemInfo.type) && !string.IsNullOrEmpty(subElemInfo.value.ToString()) && !subElemInfo.constraints.Exists(item => !CheckConstraints(subElemInfo.value.ToString(), item, subElemInfo.control));
-            dict.Add(key, JsonParser.SerializeElemInfo(subElemInfo));
+            dict.Add(kvp.Key, subElemInfo);
             
         }
         return dict;
     }
     private async Task AddItem()
     {
+        var arrayItems = elemInfo?.value as List<object>;
         if (elemInfo?.sub_type_schema != null)
         {
-            var subTypeSchema = changeReadonly(elemInfo.sub_type_schema);
+            var subTypeSchema = ChangeReadonly(elemInfo.sub_type_schema);
             CheckValidation(subTypeSchema);
             elemInfo?.array_sub_type_schema?.Add(subTypeSchema);
-            var valueDictionary = getSchema(elemInfo.sub_type_schema);
-            elemInfo?.arrayItems.Add(valueDictionary);
+            var valueDictionary = GetSchema(elemInfo.sub_type_schema);
+            arrayItems?.Add(valueDictionary);
         }
         else
         {
-            elemInfo?.arrayItems.Add(string.Empty);
+            arrayItems?.Add(string.Empty);
             elemInfo.isValid = false;
         }
-        elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(elemInfo.arrayItems));
         _canScroll = true;
         await SendValue.InvokeAsync(elemInfo);
     }
@@ -484,42 +478,45 @@
 
     private async Task HandleChanges(ElemInfo obj, string key)
     {
-        elemInfo.isValid = true;
-        var dict = JsonSerializer.Deserialize<Dictionary<string,object>>(elemInfo.value.ToString());
-        if (dict != null)
+        if (elemInfo != null)
         {
-            elemInfo.sub_type_schema[key] = JsonSerializer.Deserialize<object>(JsonParser.SerializeElemInfo(obj));
-            dict[key] = obj.value;
-            CheckValidation(elemInfo.sub_type_schema);
-            elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(dict));
+            elemInfo.isValid = true;
+            var dict = elemInfo.value as Dictionary<string, object>;
+            if (elemInfo.sub_type_schema != null)
+            {
+                elemInfo.sub_type_schema[key] = obj;
+                if (dict != null)
+                {
+                    dict[key] = obj.value;
+                    CheckValidation(elemInfo.sub_type_schema);
+                }
+            }
             await SendValue.InvokeAsync(elemInfo);
         }
-
-
     }
     private async Task HandleArrayChanges(ElemInfo obj, string key,int index)
     {
         elemInfo.isValid = true;
-        var arr = JsonSerializer.Deserialize<List<Dictionary<string,object>>>(elemInfo.value.ToString());
-        if (arr != null)
+        if (elemInfo.value is List<object?> arr)
         {
-            arr[index][key] = obj.value;
-            elemInfo.array_sub_type_schema[index][key] = JsonSerializer.Deserialize<object>(JsonParser.SerializeElemInfo(obj));
+            if (arr[index] is Dictionary<string, object> dict)
+            {
+                dict[key] = obj.value;
+            }
+            elemInfo.array_sub_type_schema[index][key] = obj;
             foreach (var item in elemInfo.array_sub_type_schema)
             {
                 CheckValidation(item);
             }
-            elemInfo.value = JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(arr));
             await SendValue.InvokeAsync(elemInfo);
         }
         
     }
 
-    private void CheckValidation(Dictionary<string, object> item)
+    private void CheckValidation(Dictionary<string, ElemInfo> item)
     {
-        foreach (var (key,value) in item)
+        foreach (var (key,subElemInfo) in item)
         {
-            var subElemInfo = JsonParser.DeserializeElemInfo(value.ToString());
             if (subElemInfo.sub_type_schema != null)
             {
                 CheckValidation(subElemInfo.sub_type_schema);

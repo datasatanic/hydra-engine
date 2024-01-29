@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace hydra_engine_blazor.Models;
 
-public class ElemInfo
+public class ElemInfo : ICloneable
 {
     [DataMember(Name = "value", EmitDefaultValue = false)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -54,16 +54,19 @@ public class ElemInfo
     [DataMember(Name = "sub_type_schema", EmitDefaultValue = false)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [JsonPropertyName("sub_type_schema")]
-    public Dictionary<string,object>? sub_type_schema { get; set; }
+    public Dictionary<string,ElemInfo>? sub_type_schema { get; set; }
     [DataMember(Name = "array_sub_type_schema", EmitDefaultValue = false)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [JsonPropertyName("array_sub_type_schema")]
-    public List<Dictionary<string,object>>? array_sub_type_schema { get; set; }
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-    public List<object?> arrayItems { get; set; }
+    public List<Dictionary<string,ElemInfo>>? array_sub_type_schema { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public bool isValid { get; set; } = true;
+
+    public object Clone()
+    {
+        return MemberwiseClone();
+    }
 
 
 
