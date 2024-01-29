@@ -160,7 +160,7 @@ public class JsonParser
                         var schema = new Dictionary<string, ElemInfo>();
                         foreach (var jsonObject in keyValue.Value.AsObject())
                         {
-                            schema.Add(jsonObject.Key,DeserializeElemInfo(jsonObject.Value?.ToJsonString()));
+                            schema.Add(jsonObject.Key,DeserializeElemInfo(jsonObject.Value?.ToString()));
                         }
 
                         elemInfo.sub_type_schema = schema;
@@ -181,7 +181,7 @@ public class JsonParser
                             if (el != null)
                                 foreach (var jsonObject in el.AsObject())
                                 {
-                                    schema.Add(jsonObject.Key, DeserializeElemInfo(jsonObject.Value?.ToString()));
+                                    schema.Add(jsonObject.Key, DeserializeElemInfo(jsonObject.Value?.ToString(),jsonArray.IndexOf(el)));
                                 }
                             array_schema.Add(schema);
                         }
@@ -276,7 +276,24 @@ public class JsonParser
                 return result;
 
             default:
-                return jsonNode.ToString();
+                var value = jsonNode.ToString();
+                if (int.TryParse(value, out _))
+                {
+                    return int.Parse(value);
+                }
+                if (double.TryParse(value, out _))
+                {
+                    return double.Parse(value);
+                }
+                if (bool.TryParse(value, out _))
+                {
+                    return bool.Parse(value);
+                }
+                if (DateTime.TryParse(value, out _))
+                {
+                    return DateTime.Parse(value);
+                }
+                return value;
         }
     }
 }
