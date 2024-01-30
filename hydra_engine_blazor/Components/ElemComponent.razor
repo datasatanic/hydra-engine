@@ -109,7 +109,7 @@
                             {
                                 var j = i;
                                 var elem = (elemInfo.value as List<object>)[j];
-                                <div class="position-relative" id="@SettingsContainer.GetHash(Key + j)">
+                                <div id="@SettingsContainer.GetHash(Key + j)">
                                     @switch (elemInfo?.control)
                                     {
                                         case Control.Textarea:
@@ -406,7 +406,7 @@
         var dict = new Dictionary<string, object>();
         foreach (var kvp in schema)
         {
-            var subElemInfo = (ElemInfo)kvp.Value.Clone();
+            var subElemInfo = kvp.Value.DeepCopy();
             dict.Add(kvp.Key,subElemInfo.value);
             if (subElemInfo.sub_type_schema == null) continue;
             var subDict = GetSchema(subElemInfo.sub_type_schema);
@@ -420,7 +420,7 @@
         var dict = new Dictionary<string, ElemInfo>();
         foreach (var kvp in schema)
         {
-            var subElemInfo = (ElemInfo)kvp.Value.Clone();
+            var subElemInfo = kvp.Value.DeepCopy();
             if (subElemInfo.sub_type_schema != null)
             {
                 var subDict = ChangeReadonly(subElemInfo.sub_type_schema);

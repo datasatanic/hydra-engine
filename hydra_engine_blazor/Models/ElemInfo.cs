@@ -1,10 +1,11 @@
 using System.ComponentModel;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Components;
 
 namespace hydra_engine_blazor.Models;
 
-public class ElemInfo : ICloneable
+public class ElemInfo
 {
     [DataMember(Name = "value", EmitDefaultValue = false)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -63,11 +64,59 @@ public class ElemInfo : ICloneable
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public bool isValid { get; set; } = true;
 
-    public object Clone()
+    public ElemInfo DeepCopy()
     {
-        return MemberwiseClone();
-    }
+        var clonedElemInfo = new ElemInfo
+        {
+            value = DeepCopyValue(value),
+            fileId = fileId,
+            type = type,
+            sub_type = sub_type,
+            description = description,
+            display_name = display_name,
+            constraints = new List<ConstraintItem>(constraints).Select(item => new ConstraintItem()
+                { value = item.value, message = item.message, type = item.type }).ToList(),
+            control = control,
+            readOnly = readOnly,
+            isValid = isValid,
+            sub_type_schema = sub_type_schema?.ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value.DeepCopy()
+            ),
+            array_sub_type_schema = array_sub_type_schema?.Select(item =>
+                item.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.DeepCopy())).ToList()
+        };
 
+        return clonedElemInfo;
+    }
+    private object DeepCopyValue(object originalValue)
+    {
+        switch (originalValue)
+        {
+            case null:
+                return null;
+            case Dictionary<string, object> originalDictionary:
+            {
+                var clonedDictionary = new Dictionary<string, object>();
+                foreach (var kvp in originalDictionary)
+                {
+                    clonedDictionary.Add(kvp.Key, DeepCopyValue(kvp.Value));
+                }
+                return clonedDictionary;
+            }
+            case List<object> originalList:
+            {
+                var clonedList = new List<object>();
+                foreach (var item in originalList)
+                {
+                    clonedList.Add(DeepCopyValue(item));
+                }
+                return clonedList;
+            }
+            default:
+                return originalValue;
+        }
+    }
 
 
 }
