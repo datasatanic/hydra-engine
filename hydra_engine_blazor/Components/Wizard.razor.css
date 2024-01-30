@@ -159,8 +159,13 @@
     cursor: pointer;
     border-radius: 8px;
 }
+.disabled{
+    background: var(--hydra-secondary-10) !important;
+    border: 1px solid var(--hydra-secondary-10) !important
+}
 .selected-form{
     background: var(--hydra-secondary-65);
+    color:white;
 }
 .wizard-container{
     display: flex;

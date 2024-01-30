@@ -34,7 +34,7 @@
                         <div class="wizard-child-groups">
                             @foreach (var item in WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("group")))
                             {
-                                <div class="child-group-container @(_currentGroup == item ? "selected-form" : "")" @onclick="@(()=>SelectGroup(item))">
+                                <div class="child-group-container @(_currentGroup == item ? "selected-form" : "") @(CheckForbid(item) ? "disabled" : "")" @onclick="@(()=>SelectGroup(item))">
                                     @item.DisplayName
                                 </div>
                             }
@@ -259,13 +259,18 @@
             }
             else
             {
-                if (changeElements.Exists(item => !item.Value.isValid && group.Elem.Find(x => x.ContainsKey(item.Key)) == null))
+                if (CheckForbid(group))
                 {
                     return;
                 }
                 _currentGroup = group;
             }
         }
+    }
+
+    private bool CheckForbid(ControlsMeta group)
+    {
+        return changeElements.Exists(item => !item.Value.isValid && group.Elem.Find(dict => dict.GetValueOrDefault(item.Key, new ElemInfo()) == item.Value) == null);
     }
 
 }
