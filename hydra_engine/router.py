@@ -46,7 +46,7 @@ async def set_values(name: str, content: list[ParameterSaveInfo]):
         if ui_form is None:
             return JSONResponse(content={"message": "Form not found"}, status_code=404)
         for item in content:
-            check = check_validate_parameter(item.input_url, item.value, item.file_id, ui_form)
+            check = check_validate_parameter(item.input_url, item.value, item.file_id, ui_form[next(iter(ui_form.keys()))])
             if check is not True:
                 return JSONResponse(content={"message": check}, status_code=400)
             set_value(item.input_url, item.file_id, item.value)

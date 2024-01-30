@@ -706,6 +706,7 @@ def update_wizard_meta(directory: str, arch_name):
     wizard_data = yaml.load(file)
     last_id = None
     last_path = None
+    last_dir = None
     for root, dirs, files in os.walk(os.path.join(base_dir, directory)):
         arch_file = open(os.path.join(base_dir, f"files/framework/arch/{arch_name}.yml"), 'r')
         site_names = list(map(lambda x: x["name"], yaml.load(arch_file)["sites"]))
@@ -720,32 +721,49 @@ def update_wizard_meta(directory: str, arch_name):
                 directory_path = os.path.dirname(file_path)
                 files_in_directory = list(
                     filter(lambda filename: filename.endswith("meta"), os.listdir(directory_path)))
-                last_dir = os.path.basename(directory_path)
+                _dir = os.path.basename(directory_path)
                 if last_id is None:
                     last_id = last_value["id"]
                 else:
                     last_id += 1
                 if last_path is None:
                     last_path = f"root/{arch_name}/{name.replace('.yml.meta', '')}"
+                    wizard_form = {
+                        last_path: {"display_name": name.replace('.yml.meta', '').title(),
+                                    "description": "", "type": "form",
+                                    "id": last_id + 1}}
+                    if last_path not in wizard_data:
+                        file.write('\n')
+                        yaml.dump(wizard_form, file)
                 else:
-                    last_path += "/" + name.replace('.yml.meta', '')
-                wizard_form = {
-                    last_path: {"display_name": name.replace('.yml.meta', '').title(),
-                                "description": "", "type": "form",
-                                "id": last_id + 1, "action": "deploy" if name == files_in_directory[
-                            -1] and name != "global.yml.meta" else None,
-                                "site_name": last_dir if name == files_in_directory[
-                                    -1] and name != "global.yml.meta" else None}}
-                if last_path not in wizard_data:
-                    file.write('\n')
-                    yaml.dump(wizard_form, file)
-                    HydraParametersInfo().was_modified = True
+                    if _dir != last_dir:
+                        last_dir = _dir
+                        last_path += "/" + _dir
+                        wizard_form = {
+                            last_path: {"display_name": _dir.title(),
+                                        "description": "", "type": "form",
+                                        "id": last_id + 1}}
+                        if last_path not in wizard_data:
+                            file.write('\n')
+                            yaml.dump(wizard_form, file)
+                        last_id += 1
+                    path = last_path + "/" + name.replace('.yml.meta', '')
+                    wizard_group = {
+                        path: {"display_name": name.replace('.yml.meta', '').title(),
+                               "description": "", "type": "group",
+                               "id": last_id + 1, "action": "deploy" if name == files_in_directory[
+                                -1] and name != "global.yml.meta" else None,
+                               "site_name": _dir if name == files_in_directory[
+                                   -1] and name != "global.yml.meta" else None}}
+                    if last_path not in wizard_data:
+                        file.write('\n')
+                        yaml.dump(wizard_group, file)
+                        HydraParametersInfo().was_modified = True
     file.close()
 
 
-def check_validate_parameter(input_url, value, uid, form):
+def check_validate_parameter(input_url, value, uid, node):
     parameter = None
-    node = form[next(iter(form.keys()))]
     for el in node.elem:
         if input_url in el:
             parameter = el[input_url]
@@ -758,8 +776,10 @@ def check_validate_parameter(input_url, value, uid, form):
         except ValueError as e:
             return str(e)
     else:
-        for child in form[next(iter(form.keys()))]["child"]:
-            check_validate_parameter(input_url, value, uid, child)
+        for key in node.child:
+            if not check_validate_parameter(input_url, value, uid, node.child[key]):
+                return False
+        return True
 
 
 def check_sub_type_schema_validate(parameter, value, uid, input_url):

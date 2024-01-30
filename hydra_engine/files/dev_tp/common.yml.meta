@@ -12,7 +12,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: 7
+        id: 10
         render:
           control: input_control
           display_name: "Site name"
@@ -24,7 +24,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: 7
+        id: 10
         render:
           control: input_control
           display_name: "CCFA version"
@@ -110,7 +110,7 @@ PARAMS:
               display_name: "Repos"
               constraints:
         description: ""
-        id: 7
+        id: 10
         render:
           control: label_control
           display_name: "Mgmt"
@@ -132,7 +132,7 @@ PARAMS:
               display_name: "avg_cpu_core_hz"
               constraints:
         description: ""
-        id: 7
+        id: 10
         render:
           control: label_control
           display_name: "site"
@@ -144,7 +144,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: 7
+        id: 10
         render:
           control: input_control
           display_name: "Preset"
@@ -166,7 +166,7 @@ PARAMS:
               display_name: "Cloud"
               constraints:
         description: ""
-        id: 7
+        id: 10
         render:
           control: label_control
           display_name: "Providers"
@@ -204,7 +204,7 @@ PARAMS:
               display_name: "Forwarded zones"
               constraints:
         description: ""
-        id: 7
+        id: 10
         render:
           control: label_control
           display_name: "Dns"
@@ -217,7 +217,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: 7
+        id: 10
         render:
           control: input_control
           display_name: "Enabled hosts"
@@ -270,7 +270,7 @@ PARAMS:
               display_name: "images"
               constraints:
         description: ""
-        id: 7
+        id: 10
         render:
           control: label_control
           display_name: "hosts"
@@ -518,7 +518,7 @@ PARAMS:
               display_name: "storage"
               constraints:
         description: ""
-        id: 7
+        id: 10
         render:
           control: label_control
           display_name: "k8s"
@@ -642,7 +642,7 @@ PARAMS:
               display_name: "Users dict"
               constraints:
         description: ""
-        id: 7
+        id: 10
         render:
           control: label_control
           display_name: "Ssh users"
@@ -730,7 +730,7 @@ PARAMS:
               display_name: "Resource pool"
               constraints:
         description: ""
-        id: 7
+        id: 10
         render:
           control: label_control
           display_name: Vsphere
@@ -742,7 +742,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: 7
+        id: 10
         render:
           control: input_control
           display_name: Vcd templates catalog

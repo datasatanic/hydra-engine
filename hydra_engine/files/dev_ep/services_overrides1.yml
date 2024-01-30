@@ -1,0 +1,313 @@
+ad2db:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        ad2db:
+          image_tag: ${ common.ccfa_version}
+
+alertmanager:
+  module_version: ${ common.ccfa_version}
+
+ccfa-docs:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        ccfa-docs:
+          image_tag: ${ common.ccfa_version}
+
+chronicler:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        chronicler:
+          image_tag: ${ common.ccfa_version}
+
+dmcl:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        chronicler:
+          image_tag: ${ common.ccfa_version}
+
+fluentd-aggregator:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        fluentd-aggregator:
+          image_tag: ${ common.ccfa_version}
+
+fluentd-forwarder:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        fluentd-forwarder:
+          image_tag: ${ common.ccfa_version}
+
+grafana:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        grafana:
+          image_tag: ${ common.ccfa_version}
+          env:
+            GRAFANA_URL: http://grafana-np.service.${ common.site_name }.consul:${
+              common.nodePorts.grafana.http }
+            KEYCLOAK_URL: https://keycloak-np.service.${ common.site_name }.consul:${
+              common.nodePorts.keycloak.https}
+
+grafanaExporter:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        grafanaExporter:
+          image_tag: ${ common.ccfa_version}
+
+gatekeeper:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        gatekeeper:
+          image_tag: ${ common.ccfa_version}
+
+geocache:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        geocache:
+          image_tag: ${ common.ccfa_version}
+
+csExternalTask:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      replicas: 1
+      containers:
+        csExternalTask:
+          image_tag: ${ common.ccfa_version}
+          env:
+            RDL_URL: https://referencedataloader-np.service.${ common.site_name }.consul:${
+              common.nodePorts.referenceDataLoader.https }
+
+keycloak:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        keycloak:
+          image_tag: ${ common.ccfa_version}
+          env:
+            KC_HOSTNAME: keycloak-np.service.${ common.site_name }.consul
+
+metricsServer:
+  module_version: ${ common.ccfa_version}
+
+nginxRexGw:
+  module_version: ${ common.ccfa_version}
+
+
+opensearch:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        opensearch:
+          image_tag: ${ common.ccfa_version}
+
+opensearchDashboards:
+  module_version: ${ common.ccfa_version}
+
+openshiftConsole:
+  module_version: ${ common.ccfa_version}
+
+orex-operator:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        orex-operator:
+          image_tag: ${ common.ccfa_version}
+
+orexAD:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        orexAD:
+          image_tag: ${ common.ccfa_version}
+
+orexpgMaintenance:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      affinities:
+        node_affinity_host_type:
+        - pghost
+      containers:
+        orexpgMaintenance:
+          image_tag: ${ common.ccfa_version}
+          env:
+            HTTP_METRIC_IP: '*'
+
+postgresqlExporter:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        postgresqlExporter:
+          image_tag: ${ common.ccfa_version}
+
+prometheusBot:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        prometheusBot:
+          image_tag: ${ common.ccfa_version}
+
+prometheusPushGateway:
+  module_version: ${ common.ccfa_version}
+
+redis-cluster:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        redis-cluster:
+          image_tag: ${ common.ccfa_version}
+
+referenceDataLoader:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        referenceDataLoader:
+          image_tag: ${ common.ccfa_version}
+
+rex:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        rex:
+          image_tag: ${ common.ccfa_version}
+
+
+rulesDeveloperWorkspace:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        rulesDeveloperWorkspace:
+          image_tag: ${ common.ccfa_version}
+  job_specific:
+    rulesDeveloperWorkspace:
+      configs:
+        appsettings:
+          Auth:
+            ProviderOptions:
+              Authority: https://keycloak-np.service.${ common.site_name }.consul:${
+                common.nodePorts.keycloak.https}/realms/CCFA
+          ConnectionStrings:
+            WebApiRules: https://webapirulessupport-np.service.${ common.site_name
+              }.consul:${ common.nodePorts.webApiRulesSupport.http }/api/v1
+            WebApiDictionaries: https://referencedataloader-np.service.${ common.site_name
+              }.consul:${ common.nodePorts.referenceDataLoader.https }/api/v1/
+            searchEngine: https://searchengine-np.service.${ common.site_name }.consul:${
+              common.nodePorts.searchEngine.http }/
+          Toast:
+            BaseURL: http://ccfa-docs-np.service.${ common.site_name }.consul:${ common.nodePorts.ccfa-docs.http
+              }
+            Version: ${ common.ccfa_version}
+          GrafanaDashboards:
+            RuleVersion: http://grafana-np.service.${ common.site_name }.consul:${
+              common.nodePorts.grafana.http }/d/b1ccd159-6728-4e3c-aab7-67295bfbed80/rule-version-info
+            RuleOverview: http://grafana-np.service.${ common.site_name }.consul:${
+              common.nodePorts.grafana.http }/d/aa07a42a-4f77-4690-b48e-f8588c344164/rule-overview
+
+searchEngine:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        searchEngine:
+          image_tag: ${ common.ccfa_version}
+          env:
+            AUTH_SERVER_ADDRESS: https://keycloak-np.service.${ common.site_name }.consul:${
+              common.nodePorts.keycloak.https}/realms/CCFA
+            PROVIDER_WARS_ADDRESS: webApiRulesSupport-np.service.${ common.site_name
+              }.consul:${ common.nodePorts.webApiRulesSupport.http }
+            PROVIDER_RDL_ADDRESS: referenceDataLoader-np.service.${ common.site_name
+              }.consul:${ common.nodePorts.referenceDataLoader.https }
+            SEARCH_BACKEND_ADDRESS: opensearch.service.consul:9200
+            PROVIDER_DBSTORAGE_ADDRESS: master.pgfp01.service.${ common.site_name
+              }.consul:5432
+            DB_URL_FPDB: master.pgfp01.service.${ common.site_name }.consul:5432
+            IS_LAUNCH_WORKPLACE: 'true'
+            IS_LAUNCH_RISKOPERATOR: 'false'
+
+serviceMetricExporter:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        serviceMetricExporter:
+          image_tag: ${ common.ccfa_version}
+
+victoriaMetrics:
+  module_version: ${ common.ccfa_version}
+
+watcherRedirector:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      containers:
+        watcherRedirector:
+          image_tag: ${ common.ccfa_version}
+
+webApiRulesSupport:
+  module_version: ${ common.ccfa_version}
+  pods:
+    main:
+      replicas: 1
+      containers:
+        webApiRulesSupport:
+          image_tag: ${ common.ccfa_version}
+          env:
+            Tracing__Jaeger__AgentHost: jaegertool-np-agent.service.${ common.site_name
+              }.consul
+            Tracing__Jaeger__AgentPort: ${ common.nodePorts.jaegerTool.jaeger-agent
+              }
+            Auth__Authority: https://keycloak-np.service.${ common.site_name }.consul:${
+              common.nodePorts.keycloak.https}/realms/CCFA
+            PG__ClusterName: pgep01
+            PG__Schema: rules
+            AllowedHosts: '*'
+            Auth__Audience: webApiRulesSupport
+            PG__UsePatroni: 'true'
+            Chronicler__UseConsul: 'true'
+            CORS__AllowOrigins: https://rulesdeveloperworkspace-np.service.${ common.site_name
+              }.consul:${ common.nodePorts.rulesDeveloperWorkspace.http };http://localhost:8000;https://localhost:8001;
+
+sqlExporter:
+  module_version: ${ common.ccfa_version}
+  job_specific:
+    sqlExporter:
+      configs:
+        jobs:
+          addb:
+            site_name: ${ common.site_name }
+          fpdb:
+            site_name: ${ common.site_name }
+
+minio:
+  module_version: ${ common.ccfa_version}

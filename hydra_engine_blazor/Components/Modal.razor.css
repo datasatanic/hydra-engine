@@ -21,7 +21,7 @@ dialog::backdrop {
 
 .modal-header {
     padding: 20px 30px;
-    border-bottom: 1px solid #E3E6F0
+    border-bottom: 1px solid var(--hydra-secondary-20)
 }
 
 .modal-body {

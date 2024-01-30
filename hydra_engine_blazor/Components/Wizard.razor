@@ -8,6 +8,10 @@
         <Header>
             <div class="title-info">
                 <h2 class="title">@WizardModel.Title</h2>
+                @if (!string.IsNullOrEmpty(WizardModel.ControlsMeta.Description))
+                {
+                    <h3>@WizardModel.ControlsMeta.Description</h3>
+                }
                 @if (!string.IsNullOrEmpty(WizardModel.ControlsMeta.SiteName) && !string.IsNullOrEmpty(_archName))
                 {
                     <h3>Architecture: @_archName</h3>
@@ -24,54 +28,66 @@
             }
             else
             {
-                <div class="wizard-elements form-elements-container">
-                    <h3>@WizardModel.ControlsMeta.Description</h3>
-                    @foreach (var elem in WizardModel.ControlsMeta.Elem)
+                <div class="wizard-container">
+                    @if (WizardModel.ControlsMeta.Child.Any(item => item.Type.Equals("group")))
                     {
-                        <div class="elements-container">
-                            <div>
-                                @foreach (var kvp in elem)
-                                {
-                                    <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))" Depth="1">
-                                    </ElemComponent>
-                                }
-                            </div>
+                        <div class="wizard-child-groups">
+                            @foreach (var item in WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("group")))
+                            {
+                                <div class="child-group-container @(_currentGroup == item ? "selected-form" : "")" @onclick="@(()=>SelectGroup(item))">
+                                    @item.DisplayName
+                                </div>
+                            }
                         </div>
                     }
-                    <div class="groups @(WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("group")).ToList().Count == 0 ? "hide" : "")">
-                        @foreach (var item in WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("group")))
+                    <div class="wizard-elements form-elements-container">
+                        @foreach (var elem in WizardModel.ControlsMeta.Elem)
                         {
-                            <div tabindex="1">
-                                <h2>@item.DisplayName</h2>
-                                <h4>@item.Description</h4>
-                                <div class="elements-container">
-                                    @foreach (var elem in item.Elem)
+                            <div class="elements-container">
+                                <div>
+                                    @foreach (var kvp in elem)
                                     {
-                                        var uid = elem.Keys.ToList()[0];
-                                        <div class="elems-group">
-                                            @foreach (var kvp in elem)
-                                            {
-                                                <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))" Depth="1">
-                                                </ElemComponent>
-                                            }
-                                        </div>
+                                        <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))" Depth="1">
+                                        </ElemComponent>
                                     }
                                 </div>
                             </div>
                         }
+                        <div class="groups @(WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("group")).ToList().Count == 0 ? "hide" : "")">
+                            @foreach (var item in WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("group") && item == _currentGroup))
+                            {
+                                <div tabindex="1">
+                                    <h2>@item.DisplayName</h2>
+                                    <h4>@item.Description</h4>
+                                    <div class="elements-container" style="@(_currentGroup != item ? "display:none" : "")">
+                                        @foreach (var elem in item.Elem)
+                                        {
+                                            var uid = elem.Keys.ToList()[0];
+                                            <div class="elems-group">
+                                                @foreach (var kvp in elem)
+                                                {
+                                                    <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))" Depth="1">
+                                                    </ElemComponent>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                         @if (WizardModel.ControlsMeta.Child.Count(x => x.Type.Equals("form")) > 1)
+                         {
+                             <div class="wizard-child-forms">
+                                 @foreach (var item in WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("form")))
+                                 {
+                                     <div class="child-form-container @(item.Name == nextFormUrl.Split("/")[^1] ? "selected-form" : "")" @onclick="@(() => SelectForm(item.Name, item.DisplayName))">
+                                         @item.DisplayName
+                                     </div>
+                                 }
+                             </div>
+                         }
                     </div>
                 </div>
-                @if (WizardModel.ControlsMeta.Child.Count(x => x.Type.Equals("form")) > 1)
-                {
-                    <div class="wizard-child-forms">
-                        @foreach (var item in WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("form")))
-                        {
-                            <div class="child-form-container @(item.Name == nextFormUrl.Split("/")[^1] ? "selected-form" : "")" @onclick="@(() => SelectForm(item.Name, item.DisplayName))">
-                                @item.DisplayName
-                            </div>
-                        }
-                    </div>
-                }
             }
         </div>
         </Body>
@@ -94,6 +110,7 @@
     private string formNamesPath = "";
     private string _archName = "";
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
+    private ControlsMeta _currentGroup;
 
     protected override async Task OnInitializedAsync()
     {
@@ -222,6 +239,33 @@
             }
         }
         
+    }
+
+    private void SelectGroup(ControlsMeta group)
+    {
+        if (_currentGroup == group) return;
+        var index = WizardModel.ControlsMeta.Child.IndexOf(group);
+        if (index == 0)
+        {
+            _currentGroup = group;
+        }
+        else
+        {
+            var currentIndex = WizardModel.ControlsMeta.Child.IndexOf(_currentGroup);
+            if (currentIndex == -1) return;
+            if (currentIndex > index)
+            {
+                _currentGroup = group;
+            }
+            else
+            {
+                if (changeElements.Exists(item => !item.Value.isValid && group.Elem.Find(x => x.ContainsKey(item.Key)) == null))
+                {
+                    return;
+                }
+                _currentGroup = group;
+            }
+        }
     }
 
 }

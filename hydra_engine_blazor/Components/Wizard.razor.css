@@ -122,6 +122,14 @@
     flex-direction: column;
     gap:5px;
 }
+.wizard-child-groups{
+    padding: 10px;
+    top:0;
+    display: flex;
+    flex-direction: column;
+    gap:5px;
+    border-right: 1px solid var(--hydra-secondary-20);
+}
 .wizard-elements{
     padding: 10px 30px;
     width: 100%;
@@ -140,6 +148,22 @@
     border-radius: 8px;
     text-wrap: nowrap;
 }
+.child-group-container{
+    background: var(--hydra-background-white);
+    border: 1px solid var(--hydra-secondary-65);
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 8px;
+}
 .selected-form{
     background: var(--hydra-secondary-65);
+}
+.wizard-container{
+    display: flex;
+    flex-direction: row;
+    height: 100%;
 }

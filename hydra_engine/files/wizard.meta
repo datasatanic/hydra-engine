@@ -3,6 +3,7 @@ root:
   description: Choose one of arch
   type: form
   id: 1
+
 root/archs:
   display_name: Archs
   description: ''
@@ -22,29 +23,53 @@ root/archs/global:
   description: ''
   type: form
   id: 4
-  action:
-  site_name:
 
-root/archs/global/common:
-  display_name: Common
+root/archs/global/dev_ep:
+  display_name: Dev_Ep
   description: ''
   type: form
   id: 5
+
+root/archs/global/dev_ep/common:
+  display_name: Common
+  description: ''
+  type: group
+  id: 6
+  action:
+  site_name:
+
+root/archs/global/dev_ep/services_overrides1:
+  display_name: Services_Overrides1
+  description: ''
+  type: group
+  id: 7
   action: deploy
   site_name: dev_ep
 
-root/archs/global/common/common:
-  display_name: Common
+root/archs/global/dev_ep/dev_fp:
+  display_name: Dev_Fp
   description: ''
   type: form
-  id: 6
+  id: 8
+
+root/archs/global/dev_ep/dev_fp/common:
+  display_name: Common
+  description: ''
+  type: group
+  id: 9
   action: deploy
   site_name: dev_fp
 
-root/archs/global/common/common/common:
-  display_name: Common
+root/archs/global/dev_ep/dev_fp/dev_tp:
+  display_name: Dev_Tp
   description: ''
   type: form
-  id: 7
+  id: 10
+
+root/archs/global/dev_ep/dev_fp/dev_tp/common:
+  display_name: Common
+  description: ''
+  type: group
+  id: 11
   action: deploy
   site_name: dev_tp

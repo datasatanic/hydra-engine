@@ -12,7 +12,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: 5
+        id: 6
         render:
           control: input_control
           display_name: "Site name"
@@ -24,7 +24,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: 5
+        id: 6
         render:
           control: input_control
           display_name: "CCFA version"
@@ -113,7 +113,7 @@ PARAMS:
               constraints:
         readonly: False
         description: ""
-        id: 5
+        id: 6
         render:
           control: label_control
           display_name: "Mgmt"
@@ -136,7 +136,7 @@ PARAMS:
               constraints:
         readonly: False
         description: ""
-        id: 5
+        id: 6
         render:
           control: label_control
           display_name: "site"
@@ -148,7 +148,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: 5
+        id: 6
         render:
           control: input_control
           display_name: "Preset"
@@ -171,7 +171,7 @@ PARAMS:
               constraints:
         readonly: False
         description: ""
-        id: 5
+        id: 6
         render:
           control: label_control
           display_name: "Providers"
@@ -210,7 +210,7 @@ PARAMS:
               constraints:
         readonly: False
         description: ""
-        id: 5
+        id: 6
         render:
           control: label_control
           display_name: "Dns"
@@ -223,7 +223,7 @@ PARAMS:
         sub_type_schema:
         readonly: False
         description: ""
-        id: 5
+        id: 6
         render:
           control: input_control
           display_name: "Enabled hosts"
@@ -278,7 +278,7 @@ PARAMS:
               constraints:
         readonly: False
         description: ""
-        id: 5
+        id: 6
         render:
           control: label_control
           display_name: "hosts"
@@ -529,7 +529,7 @@ PARAMS:
               constraints:
         readonly: False
         description: ""
-        id: 5
+        id: 6
         render:
           control: label_control
           display_name: "k8s"
