@@ -93,9 +93,15 @@
         </Body>
         <Footer>
             <div class="prev-next-container">
-                <button style="@(!string.IsNullOrEmpty(Output_URL) ? "visibility:visible" : "visibility:hidden")" class="wizard-button" @onclick="PrevCallback">Back</button>
-                <button style="@(WizardModel.ControlsMeta.Child.Count > 0 || WizardModel.ControlsMeta.Action == "init" ? "visibility:visible" : "visibility:hidden")" class="next-button wizard-button" @onclick="NextCallback"
-                        disabled="@(changeElements.Exists(item => !item.Value.isValid))">Next</button>
+                @if (!string.IsNullOrEmpty(Output_URL))
+                {
+                    <button class="wizard-button" @onclick="PrevCallback">Back</button>
+                }
+                @if (WizardModel.ControlsMeta.Child.Any(item => item.Type == "form") || WizardModel.ControlsMeta.Action == "init")
+                {
+                    <button class="next-button wizard-button" @onclick="NextCallback"
+                            disabled="@(changeElements.Exists(item => !item.Value.isValid))">Next</button>
+                }
             </div>
         </Footer>
     </Modal>
@@ -110,7 +116,7 @@
     private string formNamesPath = "";
     private string _archName = "";
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
-    private ControlsMeta _currentGroup;
+    private ControlsMeta? _currentGroup;
 
     protected override async Task OnInitializedAsync()
     {
@@ -227,16 +233,18 @@
             if (!string.IsNullOrEmpty(query)) JsonParser.DeserializeTree(query,WizardModel.ControlsMeta,WizardModel.ControlsMeta.Child);
             WizardModel.Title = !string.IsNullOrEmpty(Output_URL) ? WizardModel.ControlsMeta.DisplayName : "Main window";
             if (string.IsNullOrEmpty(Output_URL)) WizardModel.ControlsMeta.Name = string.Empty;
-            if (WizardModel.ControlsMeta.Child.Count > 0)
+            var childForms = WizardModel.ControlsMeta.Child.Where(item => item.Type == "form").ToList();
+            if (childForms.Count > 0)
             {
-                nextFormUrl = (!string.IsNullOrEmpty(Output_URL) ? $"{Output_URL}/" : "") + WizardModel.ControlsMeta.Child.Where(item => item.Type == "form").ToList()[0].Name;
-                nextFormName = (!string.IsNullOrEmpty(formNamesPath) ? $"{formNamesPath}/" : "") + WizardModel.ControlsMeta.Child.Where(item => item.Type == "form").ToList()[0].DisplayName;
+                nextFormUrl = (!string.IsNullOrEmpty(Output_URL) ? $"{Output_URL}/" : "") + childForms[0].Name;
+                nextFormName = (!string.IsNullOrEmpty(formNamesPath) ? $"{formNamesPath}/" : "") + childForms[0].DisplayName;
             }
             else
             {
                 nextFormUrl = "";
                 nextFormName = "";
             }
+            _currentGroup = WizardModel.ControlsMeta.Child.Find(item => item.Type.Equals("group")) ?? null;
         }
         
     }
@@ -244,7 +252,7 @@
     private void SelectGroup(ControlsMeta group)
     {
         if (_currentGroup == group) return;
-        var index = WizardModel.ControlsMeta.Child.IndexOf(group);
+        var index = WizardModel.ControlsMeta.Child.Where(item=>item.Type == "group").ToList().IndexOf(group);
         if (index == 0)
         {
             _currentGroup = group;
@@ -270,7 +278,10 @@
 
     private bool CheckForbid(ControlsMeta group)
     {
-        return changeElements.Exists(item => !item.Value.isValid && group.Elem.Find(dict => dict.GetValueOrDefault(item.Key, new ElemInfo()) == item.Value) == null);
+        var groups = WizardModel.ControlsMeta.Child.Where(item => item.Type == "group").ToList();
+        return _currentGroup != null
+               && changeElements.Exists(item => !item.Value.isValid && group.Elem.Find(dict => dict.GetValueOrDefault(item.Key, new ElemInfo()) == item.Value) == null) 
+               && groups.IndexOf(group) > groups.IndexOf(_currentGroup);
     }
 
 }

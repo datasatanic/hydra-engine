@@ -83,26 +83,30 @@ class ElemInfo(BaseModel):
         elif sub_type == "int":
             for item in values["value"]:
                 try:
-                    int(item)
+                    if item:
+                        int(item)
                 except Exception:
                     raise TypeError(f"item {item} in array is not integer")
         elif sub_type == "bool":
             for item in values["value"]:
                 try:
-                    bool(item)
+                    if item:
+                        bool(item)
                 except Exception:
                     raise TypeError(f"item {item} in array is not boolean")
         elif sub_type == "double":
             for item in values["value"]:
                 try:
-                    float(item)
+                    if item:
+                        float(item)
                 except Exception:
                     raise TypeError(f"item {item} in array is not double")
         elif sub_type == "datetime":
             for item in values["value"]:
                 try:
-                    date = maya.parse(item).datetime()
-                    values["value"][values["value"].index(item)] = date
+                    if item:
+                        date = maya.parse(item).datetime()
+                        values["value"][values["value"].index(item)] = date
                 except Exception:
                     raise TypeError(f"item {item} in array is not datetime format")
         return sub_type
@@ -170,6 +174,8 @@ class ElemInfo(BaseModel):
             raise ValueError("Parameter with dict type can't have constraints")
         if values.get('control') != "checkbox_control":
             check_allowed_constraints(elem_constraints, values.get('control'))
+            if values["value"] is None:
+                return elem_constraints
             check_constraints_values(elem_constraints, values)
             return elem_constraints
         else:

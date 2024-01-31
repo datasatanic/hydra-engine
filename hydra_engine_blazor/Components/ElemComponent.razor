@@ -15,60 +15,63 @@
 {
     @if (elemInfo.type != ElemType.Array)
     {
-        switch (elemInfo.control)
-        {
-            case Control.Label:
-
+        <div class="position-relative">
+            @switch (elemInfo.control)
             {
-                var id = elemInfo.GetHashCode();
-                <ul>
-                    <li>@elemInfo.display_name
-                        <img data-bs-toggle="collapse" data-bs-target="@($"#el{id}")" aria-controls="@($"el{id}")" aria-expanded="@(Depth <= 2 ? "true" : "false")"/>
+                case Control.Label:
+                {
+                    var id = elemInfo.GetHashCode();
+                    <ul>
+                        <li>@elemInfo.display_name
+                            <img data-bs-toggle="collapse" data-bs-target="@($"#el{id}")" aria-controls="@($"el{id}")" aria-expanded="@(Depth <= 2 ? "true" : "false")"/>
                         </li>
-                    <div class="collapse @(Depth <= 2 ? "show" : "") nested-element" id="@($"el{id}")">
-                        <ul class="elements-container">
-                            @foreach (var (key,value) in elemInfo.sub_type_schema)
-                            {
-                                <li>
-                                    @{
-                                        <ElemComponent Key="@key" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth = "@(Depth + 1)"></ElemComponent>
-                                    }
-                                </li>
-                            }
-                        </ul>
+                        <div class="collapse @(Depth <= 2 ? "show" : "") nested-element" id="@($"el{id}")">
+                            <ul class="elements-container">
+                                @foreach (var (key,value) in elemInfo.sub_type_schema)
+                                {
+                                    <li>
+                                        @{
+                                            <ElemComponent Key="@key" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth = "@(Depth + 1)"></ElemComponent>
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </ul>
+                }
+                    break;
+                case Control.Textarea:
+                    <div class="elem-container">
+                        <h4>@elemInfo.display_name</h4>
+                        <textarea @attributes="ElementAttributes" validation-error="@(!TryParseToType(elemInfo.value, elemInfo?.type))" @onchange="@((e)=>ChangeValue(e,elemInfo.type))">@elemInfo?.value</textarea>
                     </div>
-                </ul>
-            }
-                break;
-            case Control.Textarea:
-                <div class="elem-container">
-                    <h4>@elemInfo.display_name</h4>
-                    <textarea @attributes="ElementAttributes" validation-error="@(!TryParseToType(elemInfo.value.ToString(), elemInfo?.type))" @onchange="@((e)=>ChangeValue(e,elemInfo.type))">@elemInfo.value</textarea>
-                </div>
-                break;
-            default:
-                <div class="elem-container @(elemInfo.control==Control.Checkbox ? "elem-reverse" : "")">
-                    <h4>@elemInfo.display_name</h4>
-                    <input @attributes="ElementAttributes" validation-error="@(!TryParseToType(elemInfo.value.ToString(), elemInfo?.type))" size="@(elemInfo.value.ToString()?.Length)" value="@(elemInfo.control==Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e)=>ChangeValue(e,elemInfo.type))"/>
-                </div>
-                break;
+                    break;
+                default:
+                    <div class="elem-container @(elemInfo.control==Control.Checkbox ? "elem-reverse" : "")">
+                        <h4>@elemInfo.display_name</h4>
+                        <input @attributes="ElementAttributes" validation-error="@(!TryParseToType(elemInfo.value, elemInfo?.type))" size="@(elemInfo?.value != null ? elemInfo.value.ToString().Length : 0)" value="@(elemInfo.control==Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e)=>ChangeValue(e,elemInfo.type))"/>
+                    </div>
+                    break;
 
-        }
-        @if (string.IsNullOrEmpty(elemInfo.value.ToString()))
-        {
-            <div class="validation-message">Enter field</div>
-        }
-        else if (!TryParseToType(elemInfo.value.ToString(),elemInfo?.type))
-        {
-            <div class="validation-message">Not @elemInfo.type type</div>
-        }
-        else
-        {
-            foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elemInfo.value.ToString(), item, elemInfo.control)))
-            {
-                <div class="validation-message">@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")</div>
             }
-        }
+            @if (elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString()))
+            {
+                <div class="validation-message">Enter field</div>
+                
+            }
+            else if (!TryParseToType(elemInfo.value,elemInfo?.type))
+            {
+                <div class="validation-message">Not @elemInfo.type type</div>
+            }
+            else
+            {
+                foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elemInfo.value, item, elemInfo.control)))
+                {
+                    <div class="validation-message">@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")</div>
+                                                                                                                                
+                }
+            }  
+        </div>
     }
     else
     {
@@ -114,7 +117,7 @@
                                     {
                                         case Control.Textarea:
                                             <div class="list-item-container">
-                                                <textarea @attributes="ElementAttributes" validation-error="@(!TryParseToType(elem?.ToString() ?? "", elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
+                                                <textarea @attributes="ElementAttributes" validation-error="@(!TryParseToType(elem, elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
                                                 @if (!elemInfo.readOnly)
                                                 {
                                                     <img @onclick="@(() => RemoveArrayItem(j))"/>
@@ -123,7 +126,7 @@
                                             break;
                                         default:
                                             <div class="list-item-container">
-                                                <input @attributes="ElementAttributes" size="@(elem?.ToString()?.Length)" validation-error="@(!TryParseToType(elem?.ToString() ?? "", elemInfo?.sub_type))" value="@elem" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))"/>
+                                                <input @attributes="ElementAttributes" size="@(elem != null ? elem.ToString().Length : 0)" validation-error="@(!TryParseToType(elem, elemInfo?.sub_type))" value="@elem" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))"/>
                                                 @if (!elemInfo.readOnly)
                                                 {
                                                     <img @onclick="@(() => RemoveArrayItem(j))"/>
@@ -131,17 +134,17 @@
                                             </div>
                                             break;
                                     }
-                                    @if (string.IsNullOrEmpty(elem?.ToString()))
+                                    @if (elem == null || string.IsNullOrEmpty(elem.ToString()))
                                     {
                                         <div class="validation-message">Enter field</div>
                                     }
-                                    else if (!TryParseToType(elem.ToString() ?? "", elemInfo?.sub_type))
+                                    else if (!TryParseToType(elem, elemInfo?.sub_type))
                                     {
                                         <div class="validation-message">Not @elemInfo?.sub_type type</div>
                                     }
                                     else
                                     {
-                                        foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elem.ToString() ?? "", item, elemInfo.control)))
+                                        foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elem, item, elemInfo.control)))
                                         {
                                             <div class="validation-message">@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")</div>
                                         }
@@ -200,7 +203,8 @@
         }
         else
         {
-            if (!TryParseToType(elemInfo?.value.ToString() ?? string.Empty, elemInfo.type))
+            var value = elemInfo?.value ?? string.Empty;
+            if (!TryParseToType(value.ToString() ?? string.Empty, elemInfo.type))
             {
                 elemInfo.isValid = false;
                 await SendValue.InvokeAsync(elemInfo);
@@ -226,9 +230,10 @@
         }
     }
 
-    private bool TryParseToType(string value,ElemType? type)
+    private bool TryParseToType(object? value,ElemType? type)
     {
-        if (string.IsNullOrEmpty(value))
+        var valueString = value != null ? value.ToString() : string.Empty;
+        if (string.IsNullOrEmpty(valueString))
         {
             return false;
         }
@@ -236,13 +241,13 @@
         {
             ElemType.Double => CultureInfo.CurrentCulture.TwoLetterISOLanguageName switch
             {
-                "en" => double.TryParse(value.Replace(",", "."), out _),
-                "ru" => double.TryParse(value.Replace(".", ","), out _),
+                "en" => double.TryParse(valueString.Replace(",", "."), out _),
+                "ru" => double.TryParse(valueString.Replace(".", ","), out _),
                 _ => false
                 },
-            ElemType.Int => int.TryParse(value, out _),
-            ElemType.DateTime => DateTime.TryParse(value, out _),
-            ElemType.Bool => bool.TryParse(value, out _),
+            ElemType.Int => int.TryParse(valueString, out _),
+            ElemType.DateTime => DateTime.TryParse(valueString, out _),
+            ElemType.Bool => bool.TryParse(valueString, out _),
             _ => true
             };
     }
@@ -453,25 +458,26 @@
         await SendValue.InvokeAsync(elemInfo);
     }
 
-    private bool CheckConstraints(string value, ConstraintItem constraintItem,Control control)
+    private bool CheckConstraints(object? value, ConstraintItem constraintItem,Control control)
     {
-        return constraintItem.type switch
+        var stringValue = value != null ? value.ToString() : string.Empty;
+        return stringValue != null && constraintItem.type switch
         {
-            "maxlength" => int.Parse(constraintItem.value) > value.Length,
-            "minlength" => int.Parse(constraintItem.value) < value.Length,
+            "maxlength" => int.Parse(constraintItem.value) > stringValue.Length,
+            "minlength" => int.Parse(constraintItem.value) < stringValue.Length,
             "max" => control switch
             {
-                Control.Number or Control.Text or Control.Textarea => int.Parse(constraintItem.value) > int.Parse(value),
-                Control.Datetime or Control.Date or Control.Time => DateTime.Parse(constraintItem.value) > DateTime.Parse(value),
+                Control.Number or Control.Text or Control.Textarea => int.Parse(constraintItem.value) > int.Parse(stringValue),
+                Control.Datetime or Control.Date or Control.Time => DateTime.Parse(constraintItem.value) > DateTime.Parse(stringValue),
                 _ => true
                 },
             "min" => control switch
             {
-                Control.Number or Control.Text or Control.Textarea => int.Parse(constraintItem.value) < int.Parse(value),
-                Control.Datetime or Control.Date or Control.Time => DateTime.Parse(constraintItem.value) < DateTime.Parse(value),
+                Control.Number or Control.Text or Control.Textarea => int.Parse(constraintItem.value) < int.Parse(stringValue),
+                Control.Datetime or Control.Date or Control.Time => DateTime.Parse(constraintItem.value) < DateTime.Parse(stringValue),
                 _ => true
                 },
-            "pattern" => Regex.IsMatch(value, constraintItem.value, RegexOptions.IgnoreCase),
+            "pattern" => Regex.IsMatch(stringValue, constraintItem.value, RegexOptions.IgnoreCase),
             _ => true
             };
     }
