@@ -29,10 +29,10 @@
             else
             {
                 <div class="wizard-container">
-                    @if (WizardModel.ControlsMeta.Child.Any(item => item.Type.Equals("group")))
+                    @if (formGroups.Count > 0)
                     {
                         <div class="wizard-child-groups">
-                            @foreach (var item in WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("group")))
+                            @foreach (var item in formGroups)
                             {
                                 <div class="child-group-container @(_currentGroup == item ? "selected-form" : "") @(CheckForbid(item) ? "disabled" : "")" @onclick="@(()=>SelectGroup(item))">
                                     @item.DisplayName
@@ -53,13 +53,17 @@
                                 </div>
                             </div>
                         }
-                        <div class="groups @(WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("group")).ToList().Count == 0 ? "hide" : "")">
-                            @foreach (var item in WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("group") && item == _currentGroup))
+                        <div class="groups @(formGroups.Count == 0 ? "hide" : "")">
+                            @if (formGroups.Count > 0)
                             {
-                                <div tabindex="1">
+                                <button disabled="@(formGroups.Any(item=>item.Elem.SelectMany(x=>x.Values).Any(x=>!x.isValid)))" @onclick="DeploySite">Deploy site</button>
+                            }
+                            @foreach (var item in formGroups)
+                            {
+                                <div tabindex="1" class="group-elements @(_currentGroup != item ? "hidden-group" : "")">
                                     <h2>@item.DisplayName</h2>
                                     <h4>@item.Description</h4>
-                                    <div class="elements-container" style="@(_currentGroup != item ? "display:none" : "")">
+                                    <div class="elements-container">
                                         @foreach (var elem in item.Elem)
                                         {
                                             var uid = elem.Keys.ToList()[0];
@@ -100,7 +104,7 @@
                 @if (WizardModel.ControlsMeta.Child.Any(item => item.Type == "form") || WizardModel.ControlsMeta.Action == "init")
                 {
                     <button class="next-button wizard-button" @onclick="NextCallback"
-                            disabled="@(changeElements.Exists(item => !item.Value.isValid))">Next</button>
+                            disabled="@(changeElements.Exists(item => !item.Value.isValid) && formGroups.Count == 0 || formGroups.Count > 0 && deployResponse is null or {IsSuccessStatusCode: false })">Next</button>
                 }
             </div>
         </Footer>
@@ -117,6 +121,8 @@
     private string _archName = "";
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
     private ControlsMeta? _currentGroup;
+    private HttpResponseMessage? deployResponse = null;
+    private List<ControlsMeta> formGroups = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -145,14 +151,8 @@
 
     private async Task NextCallback()
     {
-        if (changeElements.Exists(item => !item.Value.isValid))
-        {
-            return;
-        }
-        var saveResponse = await WizardContainer.SetValues(changeElements,Output_URL);
-        if (saveResponse == null || saveResponse.IsSuccessStatusCode)
-        {
-            if (WizardModel.ControlsMeta.Action == "init")
+        HttpResponseMessage? saveResponse = null;
+        if (WizardModel.ControlsMeta.Action == "init")
         {
             var response = await WizardContainer.InitArch(WizardModel.ControlsMeta.Name);
             if (response.IsSuccessStatusCode)
@@ -161,46 +161,47 @@
                 await UpdateWizardData(new List<Condition>()); // обновляем wizard после init.sh
             }
         }
-        var condition = new List<Condition>();
-        var conditions = WizardModel.ControlsMeta.Child.Find(item => item.Name == nextFormUrl.Split("/")[^1])?.Condition;
-        if (conditions != null)
+        else if (formGroups.Count == 0)
         {
-            foreach (var cond in conditions)
+            saveResponse = await WizardContainer.SetValues(changeElements,Output_URL);
+        }
+        if (saveResponse is null or {IsSuccessStatusCode:true})
+        {
+            var condition = new List<Condition>();
+            var conditions = WizardModel.ControlsMeta.Child.Find(item => item.Name == nextFormUrl.Split("/")[^1])?.Condition;
+            if (conditions != null)
             {
-                var values = new List<object>();
-                var allow = new Dictionary<string, List<object>>();
-                foreach (var elem in WizardModel.ControlsMeta.Elem.Where(item => item.ContainsKey(cond.Key)))
+                foreach (var cond in conditions)
                 {
-                    foreach (var kvp in elem)
+                    var values = new List<object>();
+                    var allow = new Dictionary<string, List<object>>();
+                    foreach (var elem in WizardModel.ControlsMeta.Elem.Where(item => item.ContainsKey(cond.Key)))
                     {
-                        var findEl = changeElements.Find(item => item.Key == kvp.Key);
-                        if (!string.IsNullOrEmpty(findEl.Key))
+                        foreach (var kvp in elem)
                         {
-                            values.Add(findEl.Value.value);
-                            allow.Add("equals", values);
-                            condition.Add(new Condition() { Key = findEl.Key, Allow = allow });
-                        }
-                        else
-                        {
-                            values.Add(kvp.Value.value);
-                            allow.Add("equals", values);
-                            condition.Add(new Condition() { Key = kvp.Key, Allow = allow });
+                            var findEl = changeElements.Find(item => item.Key == kvp.Key);
+                            if (!string.IsNullOrEmpty(findEl.Key))
+                            {
+                                values.Add(findEl.Value.value);
+                                allow.Add("equals", values);
+                                condition.Add(new Condition() { Key = findEl.Key, Allow = allow });
+                            }
+                            else
+                            {
+                                values.Add(kvp.Value.value);
+                                allow.Add("equals", values);
+                                condition.Add(new Condition() { Key = kvp.Key, Allow = allow });
+                            }
                         }
                     }
                 }
             }
-        }
-        HttpResponseMessage? deployResponse = null;
-        if (WizardModel.ControlsMeta.Action == "deploy")
-        {
-            if (WizardModel.ControlsMeta.SiteName != null) deployResponse = await WizardContainer.DeploySite(WizardModel.ControlsMeta.SiteName);
-        }
-        if (deployResponse is null or {IsSuccessStatusCode: true })
-        {
-            Output_URL = nextFormUrl;
-            formNamesPath = nextFormName;
-            await UpdateWizardData(condition);
-        }
+            if (formGroups.Count == 0 || deployResponse is {IsSuccessStatusCode: true })
+            {
+                Output_URL = nextFormUrl;
+                formNamesPath = nextFormName;
+                await UpdateWizardData(condition);
+            }
         }
     }
     private void ChangeValue(ElemInfo obj,string key)
@@ -244,7 +245,9 @@
                 nextFormUrl = "";
                 nextFormName = "";
             }
-            _currentGroup = WizardModel.ControlsMeta.Child.Find(item => item.Type.Equals("group")) ?? null;
+            formGroups = WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("group")).ToList();
+            if (formGroups.Count > 0) _currentGroup = formGroups[0];
+
         }
         
     }
@@ -252,14 +255,14 @@
     private void SelectGroup(ControlsMeta group)
     {
         if (_currentGroup == group) return;
-        var index = WizardModel.ControlsMeta.Child.Where(item=>item.Type == "group").ToList().IndexOf(group);
+        var index = formGroups.IndexOf(group);
         if (index == 0)
         {
             _currentGroup = group;
         }
         else
         {
-            var currentIndex = WizardModel.ControlsMeta.Child.IndexOf(_currentGroup);
+            var currentIndex = formGroups.IndexOf(_currentGroup);
             if (currentIndex == -1) return;
             if (currentIndex > index)
             {
@@ -278,10 +281,22 @@
 
     private bool CheckForbid(ControlsMeta group)
     {
-        var groups = WizardModel.ControlsMeta.Child.Where(item => item.Type == "group").ToList();
         return _currentGroup != null
-               && changeElements.Exists(item => !item.Value.isValid && group.Elem.Find(dict => dict.GetValueOrDefault(item.Key, new ElemInfo()) == item.Value) == null) 
-               && groups.IndexOf(group) > groups.IndexOf(_currentGroup);
+               && _currentGroup.Elem.SelectMany(item=>item.Values).Any(item=>!item.isValid) 
+               && formGroups.IndexOf(group) > formGroups.IndexOf(_currentGroup);
+    }
+
+    private async Task DeploySite()
+    {
+        if (formGroups.Any(item => item.Elem.SelectMany(x => x.Values).Any(x => !x.isValid)))
+        {
+            return;
+        }
+        var saveResponse = await WizardContainer.SetValues(changeElements,Output_URL);
+        if (saveResponse is null or {IsSuccessStatusCode: true})
+        {
+            deployResponse = await WizardContainer.DeploySite(WizardModel.ControlsMeta.Name.ToLower());
+        }
     }
 
 }

@@ -1,9 +1,9 @@
+import asyncio
 import copy
-import json
 import logging
-from typing import Dict, List
+import time
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Query, Request, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
@@ -41,7 +41,8 @@ async def set_values(name: str, content: list[ParameterSaveInfo]):
         if wizard_form is None:
             return JSONResponse(content={"message": "Form not found"}, status_code=404)
         for item in content:
-            check = check_validate_parameter(item.input_url, item.value, item.file_id, wizard_form[next(iter(wizard_form.keys()))])
+            check = check_validate_parameter(item.input_url, item.value, item.file_id,
+                                             wizard_form[next(iter(wizard_form.keys()))])
             if check is not True:
                 return JSONResponse(content={"message": check}, status_code=400)
             set_value(item.input_url, item.file_id, item.value)
@@ -54,7 +55,7 @@ async def set_values(name: str, content: list[ParameterSaveInfo]):
 
 
 @router.post("/init_arch")
-def init_arch(name: str):
+async def init_arch(name: str):
     try:
         logger.info(f"init arch with name: {name}")
         update_wizard_meta("files", name)
@@ -68,10 +69,16 @@ def init_arch(name: str):
 
 
 @router.post("/deploy")
-def deploy_site(name: str):
+async def deploy_site(name: str, background_tasks: BackgroundTasks):
     try:
         logger.info(f"deploy site with name: {name}")
-        return JSONResponse(content={"message": "OK"}, status_code=200)
+        background_tasks.add_task(use_deploy_script, name)
+        return JSONResponse(content={"message": f"Starting deploy {name}"}, status_code=200)
     except Exception as e:
         logger.error(e)
         return JSONResponse(content={"message": e}, status_code=400)
+
+
+async def use_deploy_script(site_name):
+    time.sleep(60)
+    logger.debug(f"Deploy ending for {site_name}")

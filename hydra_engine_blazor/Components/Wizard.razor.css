@@ -172,3 +172,6 @@
     flex-direction: row;
     height: 100%;
 }
+.hidden-group{
+    display: none !important;
+}

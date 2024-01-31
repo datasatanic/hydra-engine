@@ -58,7 +58,9 @@ main{
 .validation-message {
     color: red;
 }
-
+[tabindex]:focus {
+    outline: none;
+}
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;

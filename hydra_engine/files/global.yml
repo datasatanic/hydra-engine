@@ -3,7 +3,7 @@ mgmt:
   state:
     subnet_name: mgmt
     dc: mgmt # [ ] CHANGEME
-    host_number: 21 # [ ] CHANGEME
+    host_number: 25 # [ ] CHANGEME
   repos:
     repohost_number: 21 # [ ] CHANGEME
     subnet_name: repos
