@@ -1,18 +1,29 @@
 import asyncio
 import copy
 import logging
+import subprocess
+import sys
 import time
-
-from fastapi import APIRouter, Query, Request, BackgroundTasks
-from fastapi.responses import JSONResponse
+from enum import Enum
+from typing import Optional
+from fastapi import APIRouter
+from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.encoders import jsonable_encoder
-
 import hydra_engine.filewatcher
 from hydra_engine.schemas import HydraParametersInfo, find_form, Condition, update_wizard_meta, ParameterSaveInfo, \
     set_value, check_validate_parameter
 
 logger = logging.getLogger("common_logger")
 router = APIRouter(prefix="/wizard", tags=["wizard"])
+
+
+class DeployProcess:
+    def __init__(self):
+        self.deploy_process: Optional[subprocess.Popen] = None
+        self.site_name: str = ""
+
+
+deploy_site = DeployProcess()
 
 
 @router.post("/tree/{name:path}")
@@ -69,16 +80,34 @@ async def init_arch(name: str):
 
 
 @router.post("/deploy")
-async def deploy_site(name: str, background_tasks: BackgroundTasks):
+def deploy_site(name: str):
     try:
         logger.info(f"deploy site with name: {name}")
-        background_tasks.add_task(use_deploy_script, name)
+        command = f'python -c "from hydra_engine.wizard_router import use_deploy_script; use_deploy_script(\'{name}\')"'
+        deploy_site.deploy_process = subprocess.Popen(command, shell=True)
+        deploy_site.site_name = name
         return JSONResponse(content={"message": f"Starting deploy {name}"}, status_code=200)
     except Exception as e:
         logger.error(e)
-        return JSONResponse(content={"message": e}, status_code=400)
+        return JSONResponse(content={"message": str(e)}, status_code=400)
 
 
-async def use_deploy_script(site_name):
-    time.sleep(60)
-    logger.debug(f"Deploy ending for {site_name}")
+@router.get("/check-deploy")
+def check_deploy():
+    if deploy_site.deploy_process is None:
+        return PlainTextResponse("stop")
+    elif deploy_site.deploy_process.poll() is None:
+        return PlainTextResponse("completing")
+    elif deploy_site.deploy_process.poll() is not None:
+        if deploy_site.deploy_process.returncode == 0:
+            deploy_site.deploy_process = None
+            return PlainTextResponse("completed")
+        else:
+            deploy_site.deploy_process = None
+            return PlainTextResponse("failed")
+
+
+def use_deploy_script(site_name):
+    time.sleep(10)
+    print(f"Deploy ending for {site_name}")
+    sys.exit(1)

@@ -7,7 +7,7 @@ ad2db:
           image_tag: ${ common.ccfa_version}
 
 alertmanager:
-  module_version: 0.0.2
+  module_version: 0.0.1
 
 ccfa-docs:
   module_version: ${ common.ccfa_version}

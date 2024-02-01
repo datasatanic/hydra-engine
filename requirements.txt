@@ -1,5 +1,4 @@
 h11~=0.14.0
-pip~=23.0.1
 pytz~=2022.7.1
 humanize~=4.6.0
 dateparser~=1.1.7

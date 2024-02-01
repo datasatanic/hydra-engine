@@ -53,4 +53,9 @@ public class WizardContainer
         HttpContent content = new StringContent("", Encoding.UTF8, "application/json");
         return await _client.PostAsync($"api/wizard/deploy?name={siteName}",content);
     }
+
+    public async Task<string> CheckDeploy()
+    {
+        return await _client.GetStringAsync("/api/wizard/check-deploy");
+    }
 }
