@@ -73,7 +73,9 @@ async def init_arch(name: str):
         if init_process.returncode == 0:
             logger.info(f"init arch with name: {name}")
             update_wizard_meta(config.filespath, name)
-            hydra_engine.filewatcher.file_event.wait(timeout=60)
+            if HydraParametersInfo().was_modified:
+                hydra_engine.filewatcher.file_event.wait(timeout=60)
+                HydraParametersInfo().was_modified = False
             return JSONResponse(content={"message": "OK"}, status_code=200)
         else:
             return JSONResponse(content={"message": "Bad request"}, status_code=400)

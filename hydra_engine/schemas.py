@@ -729,7 +729,7 @@ def update_wizard_meta(directory: str, arch_name):
                 directory_path = os.path.dirname(file_path)
                 files_in_directory = list(
                     filter(lambda filename: filename.endswith("meta"), os.listdir(directory_path)))
-                _dir = os.path.basename(directory_path)
+                _dir = os.path.basename(os.path.dirname(os.path.dirname(file_path)))
                 if last_id is None:
                     last_id = last_value["id"]
                 else:
@@ -760,9 +760,7 @@ def update_wizard_meta(directory: str, arch_name):
                         path: {"display_name": name.replace('.yml.meta', '').title(),
                                "description": "", "type": "group",
                                "id": last_id + 1, "action": "deploy" if name == files_in_directory[
-                                -1] and name != "global.yml.meta" else None,
-                               "site_name": _dir if name == files_in_directory[
-                                   -1] and name != "global.yml.meta" else None}}
+                                -1] and name != "global.yml.meta" else None}}
                     if last_path not in wizard_data:
                         file.write('\n')
                         yaml.dump(wizard_group, file)
