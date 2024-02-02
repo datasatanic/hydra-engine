@@ -6,6 +6,7 @@ from pydantic import BaseModel, validator, Extra, root_validator, ValidationErro
 
 from hydra_engine.parser import write_file, HydraParametersInfo, read_hydra_ignore
 from hydra_engine.configs import config
+import hydra_engine.filewatcher
 import logging
 import re
 
@@ -743,6 +744,7 @@ def update_wizard_meta(directory: str, arch_name):
                     if last_path not in wizard_data:
                         file.write('\n')
                         yaml.dump(wizard_form, file)
+                        hydra_engine.filewatcher.file_event.wait(timeout=60)
                 else:
                     if _dir != last_dir:
                         last_dir = _dir
@@ -754,6 +756,7 @@ def update_wizard_meta(directory: str, arch_name):
                         if last_path not in wizard_data:
                             file.write('\n')
                             yaml.dump(wizard_form, file)
+                            hydra_engine.filewatcher.file_event.wait(timeout=60)
                         last_id += 1
                     path = last_path + "/" + name.replace('.yml.meta', '')
                     wizard_group = {
@@ -764,7 +767,7 @@ def update_wizard_meta(directory: str, arch_name):
                     if last_path not in wizard_data:
                         file.write('\n')
                         yaml.dump(wizard_group, file)
-                        HydraParametersInfo().was_modified = True
+                        hydra_engine.filewatcher.file_event.wait(timeout=60)
     file.close()
 
 

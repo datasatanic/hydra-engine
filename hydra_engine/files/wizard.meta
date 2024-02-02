@@ -1,5 +1,0 @@
-root:
-  display_name: Infrastructure
-  description: Choose one of arch
-  type: form
-  id: 1
