@@ -22,7 +22,7 @@ class Config(BaseSettings):
     json_inline: bool = Field(1, env='JSON_INLINE')
 
     # index
-    filespath: str = Field('files/', env='FILES_PATH')
+    filespath: str = Field('/mnt/c/Users/mdryo/PycharmProjects/default_infrastructure/', env='FILES_PATH')
     tree_filename: str = Field('ui.meta', env='TREE_FILENAME')
     wizard_filename: str = Field('wizard.meta', env='WIZARD_FILENAME')
     index_path: str = Field('hydra_engine/files/index/', env='INDEX_PATH')

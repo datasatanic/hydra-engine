@@ -27,6 +27,10 @@
             {
                 <h1 style="text-align: center">Welcome to the installation wizard Hydra</h1>
             }
+            else if (_initProcessing)
+            {
+                <div>Initialize @WizardModel.ControlsMeta.Name architecture...</div>
+            }
             else
             {
                 <div class="wizard-container">
@@ -93,7 +97,7 @@
                                 </div>
                             }
                         </div>
-                        @if (WizardModel.ControlsMeta.Child.Count(x => x.Type.Equals("form")) > 1)
+                        @if (WizardModel.ControlsMeta.Child.Count(x => x.Type.Equals("form")) > 1 || WizardModel.ControlsMeta.Name == "root")
                         {
                             <div class="wizard-child-forms">
                                 @foreach (var item in WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("form")))
@@ -141,6 +145,7 @@
     private Timer? _timer;
     private string _deployingStatus = "stop";
     private string _deployingSiteName = "";
+    private bool _initProcessing = false;
     protected override async Task OnInitializedAsync()
     {
         await UpdateWizardData(new List<Condition>());
@@ -171,11 +176,13 @@
         HttpResponseMessage? saveResponse = null;
         if (WizardModel.ControlsMeta.Action == "init")
         {
+            _initProcessing = true;
             var response = await WizardContainer.InitArch(WizardModel.ControlsMeta.Name);
             if (response.IsSuccessStatusCode)
             {
                 _archName = WizardModel.ControlsMeta.DisplayName;
                 await UpdateWizardData(new List<Condition>()); // обновляем wizard после init.sh
+                _initProcessing = false;
             }
             else
             {

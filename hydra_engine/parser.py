@@ -80,7 +80,7 @@ def parse_meta_params():
     """
     ui_meta_data = {}
     elements_meta.clear()
-    for root, dirs, files in os.walk(os.path.join(base_dir, "files")):
+    for root, dirs, files in os.walk(config.filespath):
         files.sort(key=lambda x: (x != config.tree_filename and x != config.wizard_filename, x))
         for filename in files:
             if filename == "ui.meta":  # для связывания id и output_url
@@ -91,12 +91,13 @@ def parse_meta_params():
             if "meta" in filename and filename != config.tree_filename and filename != config.wizard_filename:
                 with open(os.path.join(root, filename), 'r') as stream:
                     data_loaded = yaml.load(stream)
-                    _elements = data_loaded["PARAMS"]
-                    for el in _elements:
-                        for key in el:
-                            if el[key]["id"] in ui_meta_data:
-                                el[key]["output_url"] = ui_meta_data[el[key]["id"]]
-                    elements_meta.append(_elements)
+                    if data_loaded is not None and "PARAMS" in data_loaded:
+                        _elements = data_loaded["PARAMS"]
+                        for el in _elements:
+                            for key in el:
+                                if el[key]["id"] in ui_meta_data:
+                                    el[key]["output_url"] = ui_meta_data[el[key]["id"]]
+                        elements_meta.append(_elements)
 
 
 def parse_elements_fileinfo():
@@ -104,16 +105,18 @@ def parse_elements_fileinfo():
         Parse files with metadata and get info about configuration files paths and formats
     """
     elements_files_info.clear()
-    for root, dirs, files in os.walk(os.path.join(base_dir, "files")):
+    for root, dirs, files in os.walk(config.filespath):
         for filename in files:
             if "meta" in filename and filename != config.tree_filename and filename != config.wizard_filename:
                 if os.path.isfile(os.path.join(root, filename)):
                     with open(os.path.join(root, filename), 'r') as stream:
                         data_loaded = yaml.load(stream)
                         if data_loaded is not None:
-                            _elements = data_loaded["FILE"]
-                            _elements["meta_path"] = os.path.join(root, filename)
-                            elements_files_info.append(_elements)
+                            if "FILE" in data_loaded:
+                                data_loaded["FILE"]["path"] = os.path.join(root, data_loaded["FILE"]["path"])
+                                _elements = data_loaded["FILE"]
+                                _elements["meta_path"] = os.path.join(root, filename)
+                                elements_files_info.append(_elements)
 
 
 def parse_value_files():
@@ -122,7 +125,7 @@ def parse_value_files():
     """
     elements_values.clear()
     for file in elements_files_info:
-        if not os.path.exists(os.path.join(base_dir, file["path"])):
+        if not os.path.exists(os.path.join(config.filespath, file["path"])):
             d = {}
             with open(os.path.join(base_dir, file["path"]), 'w') as new_file:
                 elements = elements_meta[elements_files_info.index(file)]
@@ -141,14 +144,14 @@ def parse_value_files():
                 elements_values.append(value_instance)
         else:
             if file["type"] == "json":
-                with open(os.path.join(base_dir, file["path"]), 'r') as stream:
+                with open(os.path.join(config.filespath, file["path"]), 'r') as stream:
                     data_loaded = json.load(stream)
                     value_instance = ValuesInstance(file["type"], file["path"],
                                                     hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
                                                     data_loaded)
                     elements_values.append(value_instance)
             if file["type"] == "yaml":
-                with open(os.path.join(base_dir, file["path"]), 'r') as stream:
+                with open(os.path.join(config.filespath, file["path"]), 'r') as stream:
                     data_loaded = yaml.load(stream)
                     value_instance = ValuesInstance(file["type"], file["path"],
                                                     hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
@@ -180,7 +183,7 @@ def generate_config_structure(element, key, sub_d):
 
 def write_file(data, file_path, file_type, key, value):
     try:
-        with open(os.path.join(base_dir, file_path), 'w') as file:
+        with open(os.path.join(config.filespath, file_path), 'w') as file:
             if file_type == "json":
                 json.dump(data, file, indent=2)
             if file_type == "yaml":
@@ -201,7 +204,7 @@ def parse_config_files():
 def read_hydra_ignore():
     ignore_dirs = []
     ignore_extension = []
-    file = open(os.path.join(base_dir, "files/.hydraignore"), 'r')
+    file = open(os.path.join(base_dir, ".hydraignore"), 'r')
     for line in file:
         current_line = line.rstrip('\n')
         if current_line.endswith("/"):

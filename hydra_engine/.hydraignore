@@ -1,0 +1,4 @@
+*.sh
+*.txt
+_framework/
+scripts/

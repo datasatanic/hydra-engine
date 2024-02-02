@@ -4,7 +4,7 @@ import logging
 import subprocess
 import sys
 import time
-from enum import Enum
+from configs import config
 from typing import Optional
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse, PlainTextResponse
@@ -68,14 +68,17 @@ async def set_values(name: str, content: list[ParameterSaveInfo]):
 @router.post("/init_arch")
 async def init_arch(name: str):
     try:
-        logger.info(f"init arch with name: {name}")
-        update_wizard_meta("files", name)
-        if HydraParametersInfo().was_modified:
-            hydra_engine.filewatcher.file_event.wait()
-            HydraParametersInfo().was_modified = False
-        return JSONResponse(content={"message": "OK"}, status_code=200)
+        command = f"GIT_SERVER_ADDRESS=10.74.106.14:/srv/git CCFA_VERSION=0.1.0-pc ENVIRONMENT_DIR=. ./_framework/scripts/env/init.sh {name}"
+        init_process = subprocess.run(command, cwd=config.filespath, shell=True, check=True)
+        if init_process.returncode == 0:
+            logger.info(f"init arch with name: {name}")
+            update_wizard_meta(config.filespath, name)
+            hydra_engine.filewatcher.file_event.wait(timeout=60)
+            return JSONResponse(content={"message": "OK"}, status_code=200)
+        else:
+            return JSONResponse(content={"message": "Bad request"}, status_code=400)
     except Exception as e:
-        logger.error(e)
+        print(e)
         return JSONResponse(content={"message": "Bad request"}, status_code=400)
 
 

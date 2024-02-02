@@ -1,7 +1,7 @@
 import logging
 import os
 from contextlib import asynccontextmanager
-from datetime import datetime
+from configs import config
 
 import ruamel.yaml
 from fastapi import FastAPI, Request
@@ -27,9 +27,9 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 async def startup_event(app: FastAPI):
     logger.debug("Start parsing directory")
     parse_config_files()
-    read_ui_file(os.path.join(base_dir, "files"))
-    generate_wizard_meta(os.path.join(base_dir, "files/framework/arch"))
-    read_wizard_file(os.path.join(base_dir, "files"))
+    read_ui_file(config.filespath)
+    generate_wizard_meta(config.filespath)
+    read_wizard_file(config.filespath)
     HydraParametersInfo().set_modify_time()
     logger.debug("Directory has been parsed successfully")
     await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
@@ -114,10 +114,10 @@ def read_wizard_file(directory):
 
 
 def generate_wizard_meta(directory):
-    file = open(os.path.join(base_dir, "files/wizard.meta"), 'r+')
+    file = open(os.path.join(directory, "wizard.meta"), 'r+')
     wizard_data = yaml.load(file)
     last_id = None
-    for root, dirs, files in os.walk(directory):
+    for root, dirs, files in os.walk(os.path.join(config.filespath, "_framework/arch")):
         for name in files:
             if name.endswith("meta"):
                 last_key, last_value = list(wizard_data.items())[-1]
@@ -125,9 +125,10 @@ def generate_wizard_meta(directory):
                     last_id = last_value["id"]
                 else:
                     last_id += 1
-                wizard_form = {f"root/{name.replace('.yml.meta', '')}": {"display_name": name.replace('.yml.meta', '').title(),
-                                                                         "description": "", "type": "form",
-                                                                         "id": last_id + 1, "action": "init"}}
+                wizard_form = {
+                    f"root/{name.replace('.yml.meta', '')}": {"display_name": name.replace('.yml.meta', '').title(),
+                                                              "description": "", "type": "form",
+                                                              "id": last_id + 1, "action": "init"}}
                 if f"root/{name.replace('.yml.meta', '')}" not in wizard_data:
                     file.write("\n")
                     yaml.dump(wizard_form, file)

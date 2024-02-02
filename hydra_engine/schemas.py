@@ -613,13 +613,15 @@ def generate_elem_info(value, element, uid, path, is_log):
                 value = [] if value is None else value
                 for index, el in enumerate(value):
                     is_element_none = el is None
-                    d = {
-                        key: generate_elem_info(
-                            el[key] if not is_element_none else metadata["default_value"],
-                            metadata, uid, f"{path}/{key}", False
-                        )
-                        for key, metadata in element["sub_type_schema"].items()
-                    }
+                    d = {}
+                    for key, metadata in element["sub_type_schema"].items():
+                        if key in el:
+                            d.update({
+                                key: generate_elem_info(
+                                    el[key] if not is_element_none else metadata["default_value"],
+                                    metadata, uid, f"{path}/{key}", False
+                                )
+                            })
                     if is_element_none:
                         value[index] = {key: metadata["default_value"] for key, metadata in
                                         element["sub_type_schema"].items()}
@@ -707,14 +709,14 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 def update_wizard_meta(directory: str, arch_name):
-    file = open(os.path.join(base_dir, "files/wizard.meta"), 'r+')
+    file = open(os.path.join(config.filespath, "wizard.meta"), 'r+')
     ignore_dirs, ignore_extension = read_hydra_ignore()
     wizard_data = yaml.load(file)
     last_id = None
     last_path = None
     last_dir = None
-    for root, dirs, files in os.walk(os.path.join(base_dir, directory)):
-        arch_file = open(os.path.join(base_dir, f"files/framework/arch/{arch_name}.yml"), 'r')
+    for root, dirs, files in os.walk(directory):
+        arch_file = open(os.path.join(config.filespath, f"_framework/arch/{arch_name}.yml"), 'r')
         site_names = list(map(lambda x: x["name"], yaml.load(arch_file)["sites"]))
         arch_file.close()
         dirs[:] = [d for d in dirs if d not in ignore_dirs]
