@@ -764,7 +764,6 @@ def update_wizard_meta(directory: str, arch_name):
                     if last_path not in wizard_data:
                         file.write('\n')
                         yaml.dump(wizard_group, file)
-                        HydraParametersInfo().was_modified = True
     file.close()
 
 

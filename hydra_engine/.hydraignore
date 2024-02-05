@@ -1,5 +1,7 @@
 *.sh
 *.txt
+*.gitignore
+*.md
 _framework/
 scripts/
 modules/

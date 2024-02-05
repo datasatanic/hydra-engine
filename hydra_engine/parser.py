@@ -81,23 +81,24 @@ def parse_meta_params():
     ui_meta_data = {}
     elements_meta.clear()
     for root, dirs, files in os.walk(config.filespath):
-        files.sort(key=lambda x: (x != config.tree_filename and x != config.wizard_filename, x))
-        for filename in files:
-            if filename == "ui.meta":  # для связывания id и output_url
-                with open(os.path.join(root, filename), 'r') as stream:
-                    data = yaml.load(stream)
-                    for key in data:
-                        ui_meta_data[data[key]["id"]] = key
-            if "meta" in filename and filename != config.tree_filename and filename != config.wizard_filename:
-                with open(os.path.join(root, filename), 'r') as stream:
-                    data_loaded = yaml.load(stream)
-                    if data_loaded is not None and "PARAMS" in data_loaded:
-                        _elements = data_loaded["PARAMS"]
-                        for el in _elements:
-                            for key in el:
-                                if el[key]["id"] in ui_meta_data:
-                                    el[key]["output_url"] = ui_meta_data[el[key]["id"]]
-                        elements_meta.append(_elements)
+        if "_framework" and "arch" in root or "_framework" not in root:
+            files.sort(key=lambda x: (x != config.tree_filename and x != config.wizard_filename, x))
+            for filename in files:
+                if filename == "ui.meta":  # для связывания id и output_url
+                    with open(os.path.join(root, filename), 'r') as stream:
+                        data = yaml.load(stream)
+                        for key in data:
+                            ui_meta_data[data[key]["id"]] = key
+                if "meta" in filename and filename != config.tree_filename and filename != config.wizard_filename:
+                    with open(os.path.join(root, filename), 'r') as stream:
+                        data_loaded = yaml.load(stream)
+                        if data_loaded is not None and "PARAMS" in data_loaded:
+                            _elements = data_loaded["PARAMS"]
+                            for el in _elements:
+                                for key in el:
+                                    if el[key]["id"] in ui_meta_data:
+                                        el[key]["output_url"] = ui_meta_data[el[key]["id"]]
+                            elements_meta.append(_elements)
 
 
 def parse_elements_fileinfo():
@@ -106,17 +107,18 @@ def parse_elements_fileinfo():
     """
     elements_files_info.clear()
     for root, dirs, files in os.walk(config.filespath):
-        for filename in files:
-            if "meta" in filename and filename != config.tree_filename and filename != config.wizard_filename:
-                if os.path.isfile(os.path.join(root, filename)):
-                    with open(os.path.join(root, filename), 'r') as stream:
-                        data_loaded = yaml.load(stream)
-                        if data_loaded is not None:
-                            if "FILE" in data_loaded:
-                                data_loaded["FILE"]["path"] = os.path.join(root, data_loaded["FILE"]["path"])
-                                _elements = data_loaded["FILE"]
-                                _elements["meta_path"] = os.path.join(root, filename)
-                                elements_files_info.append(_elements)
+        if "_framework" and "arch" in root or "_framework" not in root:
+            for filename in files:
+                if "meta" in filename and filename != config.tree_filename and filename != config.wizard_filename:
+                    if os.path.isfile(os.path.join(root, filename)):
+                        with open(os.path.join(root, filename), 'r') as stream:
+                            data_loaded = yaml.load(stream)
+                            if data_loaded is not None:
+                                if "FILE" in data_loaded:
+                                    data_loaded["FILE"]["path"] = os.path.join(root, data_loaded["FILE"]["path"])
+                                    _elements = data_loaded["FILE"]
+                                    _elements["meta_path"] = os.path.join(root, filename)
+                                    elements_files_info.append(_elements)
 
 
 def parse_value_files():
@@ -210,6 +212,7 @@ def read_hydra_ignore():
         if current_line.endswith("/"):
             ignore_dirs.append(current_line[:-1])
         elif current_line.startswith("*."):
+            print(current_line[2:])
             ignore_extension.append(current_line[2:])
     file.close()
     return ignore_dirs, ignore_extension

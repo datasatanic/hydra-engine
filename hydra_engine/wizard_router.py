@@ -4,12 +4,12 @@ import logging
 import subprocess
 import sys
 import time
-from configs import config
 from typing import Optional
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.encoders import jsonable_encoder
 import hydra_engine.filewatcher
+from hydra_engine.configs import config
 from hydra_engine.schemas import HydraParametersInfo, find_form, Condition, update_wizard_meta, ParameterSaveInfo, \
     set_value, check_validate_parameter
 
@@ -57,9 +57,8 @@ async def set_values(name: str, content: list[ParameterSaveInfo]):
             if check is not True:
                 return JSONResponse(content={"message": check}, status_code=400)
             set_value(item.input_url, item.file_id, item.value)
-        if HydraParametersInfo().was_modified:
+        if hydra_engine.filewatcher.file_event.is_set():
             hydra_engine.filewatcher.file_event.wait()
-            HydraParametersInfo().was_modified = False
         return JSONResponse(content=jsonable_encoder(HydraParametersInfo().modify_time), status_code=200)
     except ValueError:
         return JSONResponse(content={"message": "Bad request"}, status_code=400)
@@ -70,12 +69,11 @@ async def init_arch(name: str):
     try:
         command = f"GIT_SERVER_ADDRESS=10.74.106.14:/srv/git CCFA_VERSION=0.1.0-pc ENVIRONMENT_DIR=. ./_framework/scripts/env/init.sh {name}"
         init_process = subprocess.run(command, cwd=config.filespath, shell=True, check=True)
+        hydra_engine.filewatcher.file_event.wait()
         if init_process.returncode == 0:
             logger.info(f"init arch with name: {name}")
             update_wizard_meta(config.filespath, name)
-            if HydraParametersInfo().was_modified:
-                hydra_engine.filewatcher.file_event.wait(timeout=60)
-                HydraParametersInfo().was_modified = False
+            hydra_engine.filewatcher.file_event.wait()
             return JSONResponse(content={"message": "OK"}, status_code=200)
         else:
             return JSONResponse(content={"message": "Bad request"}, status_code=400)

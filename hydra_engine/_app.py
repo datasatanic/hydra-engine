@@ -1,7 +1,6 @@
 import logging
 import os
 from contextlib import asynccontextmanager
-from configs import config
 
 import ruamel.yaml
 from fastapi import FastAPI, Request

@@ -50,9 +50,8 @@ async def set_values(name: str, content: list[ParameterSaveInfo]):
             if check is not True:
                 return JSONResponse(content={"message": check}, status_code=400)
             set_value(item.input_url, item.file_id, item.value)
-        if HydraParametersInfo().was_modified:
+        if hydra_engine.filewatcher.file_event.is_set():
             hydra_engine.filewatcher.file_event.wait()
-            HydraParametersInfo().was_modified = False
         return JSONResponse(content=jsonable_encoder(HydraParametersInfo().modify_time), status_code=200)
     except ValueError:
         return JSONResponse(content={"message": "Bad request"}, status_code=400)
