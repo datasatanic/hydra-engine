@@ -22,17 +22,16 @@ class EventHandler(FileSystemEventHandler):
         global last_trigger_time
         global file_event
         current_time = time.time()
-        with self.event_lock:
-            if (not event.is_directory and len([item for item in self.ignore_dirs if item in event.src_path]) == 0
-                    and len([item for item in self.ignore_extension if item in event.src_path]) == 0
-                    and event.src_path.find('~') == -1 and (current_time - last_trigger_time) > 1):
-                _app.parse_config_files()
-                _app.read_ui_file(config.filespath)
-                _app.read_wizard_file(config.filespath)
-                HydraParametersInfo().set_modify_time()
-                last_trigger_time = current_time
-                file_event.set()
-                file_event.clear()
+        if (not event.is_directory and len([item for item in self.ignore_dirs if item in event.src_path.split("/")]) == 0
+                and len([item for item in self.ignore_extension if item in event.src_path.split("/")]) == 0
+                and event.src_path.find('~') == -1 and (current_time - last_trigger_time) > 1):
+            _app.parse_config_files()
+            _app.read_ui_file(config.filespath)
+            _app.read_wizard_file(config.filespath)
+            HydraParametersInfo().set_modify_time()
+            last_trigger_time = current_time
+            file_event.set()
+            file_event.clear()
 
 
 def start_monitoring_files():
