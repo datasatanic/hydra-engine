@@ -70,10 +70,12 @@ async def init_arch(name: str):
     try:
         command = f"GIT_SERVER_ADDRESS=10.74.106.14:/srv/git CCFA_VERSION=0.1.0-pc ENVIRONMENT_DIR=. ./_framework/scripts/env/init.sh {name}"
         init_process = subprocess.run(command, cwd=config.filespath, shell=True, check=True)
-        hydra_engine.filewatcher.file_event.wait(timeout=60)
         if init_process.returncode == 0:
             logger.info(f"init arch with name: {name}")
             update_wizard_meta(config.filespath, name)
+            if HydraParametersInfo().was_modified:
+                hydra_engine.filewatcher.file_event.wait(timeout=60)
+                HydraParametersInfo().was_modified = False
             return JSONResponse(content={"message": "OK"}, status_code=200)
         else:
             return JSONResponse(content={"message": "Bad request"}, status_code=400)

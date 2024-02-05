@@ -1,0 +1,14 @@
+root:
+  display_name: Root
+  type: form
+  id: 1
+root/infras:
+  description: Exist infrastructures
+  display_name: Infrastructures
+  type: form
+  id: 2
+root/infras/common:
+  description: Configuration for infrastructure
+  display_name: Common
+  type: form
+  id: 6

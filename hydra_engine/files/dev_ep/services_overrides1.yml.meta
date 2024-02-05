@@ -1,0 +1,102 @@
+# File metadata
+
+FILE:
+  type: 'yaml'
+  path: 'files/dev_ep/services_overrides1.yml' # Optional/ default: path w/o .meta
+
+PARAMS:
+  - alertmanager:
+      default_value:
+      type: dict
+      sub_type:
+      sub_type_schema:
+        module_version:
+          default_value:
+          type: string
+          sub_type: # optional for array
+          sub_type_schema:
+          readonly: False
+          description: ""
+          render:
+            control: input_control
+            display_name: "Module version"
+            constraints:
+      description: ""
+      id: 7
+      render:
+        control: label_control
+        display_name: "Alert manager"
+        constraints:
+  - ccfa-docs:
+      default_value:
+      type: dict
+      sub_type:
+      sub_type_schema:
+        module_version:
+          default_value:
+          type: string
+          sub_type: # optional for array
+          sub_type_schema:
+          readonly: False
+          description: ""
+          render:
+            control: input_control
+            display_name: "Module version"
+            constraints:
+        pods:
+          default_value:
+          type: dict
+          sub_type:
+          sub_type_schema:
+            main:
+              default_value:
+              type: dict
+              sub_type:
+              sub_type_schema:
+                containers:
+                  default_value:
+                  type: dict
+                  sub_type:
+                  sub_type_schema:
+                    ccfa-docs:
+                      default_value:
+                      type: dict
+                      sub_type:
+                      sub_type_schema:
+                        image_tag:
+                          default_value:
+                          type: string
+                          sub_type: # optional for array
+                          sub_type_schema:
+                          readonly: False
+                          description: ""
+                          render:
+                            control: input_control
+                            display_name: "Image tag"
+                            constraints:
+                      description: ""
+                      render:
+                        control: label_control
+                        display_name: "CCFA docs"
+                        constraints:
+                  description: ""
+                  render:
+                    control: label_control
+                    display_name: "Containers"
+                    constraints:
+              description: ""
+              render:
+                control: label_control
+                display_name: "Main"
+                constraints:
+          description: ""
+          render:
+            control: label_control
+            display_name: "Pods"
+            constraints:
+      description: ""
+      id: 7
+      render:
+        control: label_control
+        display_name: "CCFA docs"
+        constraints:

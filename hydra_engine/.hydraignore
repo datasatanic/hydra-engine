@@ -1,3 +1,7 @@
 *.sh
 *.txt
 _framework/
+scripts/
+modules/
+artifacts/
+ansible/
