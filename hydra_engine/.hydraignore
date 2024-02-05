@@ -7,3 +7,5 @@ scripts/
 modules/
 artifacts/
 ansible/
+.git/
+.idea/
