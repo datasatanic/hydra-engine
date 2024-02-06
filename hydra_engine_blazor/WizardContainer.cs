@@ -8,7 +8,32 @@ using hydra_engine_blazor.Models;
 namespace hydra_engine_blazor;
 
 public class WizardContainer
-{
+{  
+    public event Action? OnChange;
+    private void NotifyStateChanged() => OnChange?.Invoke();
+    private string _currentOutputUrl;
+
+    public string CurrentOutputUrl
+    {
+        get => _currentOutputUrl;
+        set
+        {
+            _currentOutputUrl = value;
+            NotifyStateChanged();
+        }
+    }
+
+    private ControlsMeta wizardTree = new();
+
+    public ControlsMeta WizardTree
+    {
+        get => wizardTree;
+        set
+        {
+            wizardTree = value;
+            NotifyStateChanged();
+        }
+    }
     private readonly HttpClient _client;
     private JsonSerializerOptions options = new()
     {
@@ -21,10 +46,6 @@ public class WizardContainer
     public WizardContainer(IHttpClientFactory ClientFactory)
     {
         _client = ClientFactory.CreateClient("WebApi");
-    }
-    public async Task<object?> GetTree()
-    {
-        return await _client.GetFromJsonAsync<object>($"api/wizard/tree");
     }
     public async Task<HttpResponseMessage> GetFormInfo(string url, List<Condition> conditions)
     {
@@ -57,5 +78,18 @@ public class WizardContainer
     public async Task<string> CheckDeploy()
     {
         return await _client.GetStringAsync("/api/wizard/check-deploy");
+    }
+
+    public async Task<ControlsMeta> UpdateLayoutTree()
+    {
+        var tree = new ControlsMeta();
+        var query = await _client.GetFromJsonAsync<object>($"api/wizard/tree");
+        tree.Name = "tree";
+        if (query != null)
+        {
+            JsonParser.DeserializeTree(query.ToString(),tree,tree.Child);
+        }
+
+        return tree;
     }
 }

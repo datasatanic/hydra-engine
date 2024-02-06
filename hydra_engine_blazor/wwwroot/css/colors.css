@@ -10,4 +10,14 @@
     --hydra-blue-default:#5C73E5;
     --hydra-blue-hover:#304DDE;
     --hydra-blue-pressed:#172C91;
+    
+    --hydra-gray-30: #EEF0F9;
+    --hydra-gray-800: #292C5C;
+    --hydra-blue-500-primary: #4A67F4;
+    --hydra-blue-700: #3349B6;
+    --hydra-blue-800: #1F2D77;
+    --hydra-blue-50: #F0F2FF;
+    --hydra-gray-200: #A6ACCD;
+    --hydra-gray-50: #DBDEEE;
+    --hydra-success-600: #2D8852;
 }

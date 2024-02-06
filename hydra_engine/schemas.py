@@ -4,6 +4,7 @@ import maya
 from typing import List, Literal, Dict
 from pydantic import BaseModel, validator, Extra, root_validator, ValidationError
 
+import hydra_engine.filewatcher
 from hydra_engine.parser import write_file, HydraParametersInfo, read_hydra_ignore
 from hydra_engine.configs import config
 import logging
@@ -568,6 +569,9 @@ def set_value(input_url: str, uid: str, value: object):
         if key in elements.values and elements.uid == uid:
             set_value_in_dict(elements.values, value, input_url_list)
             write_file(elements.values, elements.path, elements.type, input_url, value)
+            print(hydra_engine.filewatcher.file_event.is_set())
+            if hydra_engine.filewatcher.file_event.is_set():
+                hydra_engine.filewatcher.file_event.wait()
             return
 
 
@@ -735,7 +739,7 @@ def update_wizard_meta(directory: str, arch_name):
                 else:
                     last_id += 1
                 if last_path is None:
-                    last_path = f"root/{arch_name}/{name.replace('.yml.meta', '')}"
+                    last_path = f"root/{name.replace('.yml.meta', '')}"
                     wizard_form = {
                         last_path: {"display_name": name.replace('.yml.meta', '').title(),
                                     "description": "", "type": "form",
@@ -758,7 +762,7 @@ def update_wizard_meta(directory: str, arch_name):
                     path = last_path + "/" + name.replace('.yml.meta', '')
                     wizard_group = {
                         path: {"display_name": name.replace('.yml.meta', '').title(),
-                               "description": "", "type": "group",
+                               "description": "", "type": "form",
                                "id": last_id + 1, "action": "deploy" if name == files_in_directory[
                                 -1] and name != "global.yml.meta" else None}}
                     if last_path not in wizard_data:

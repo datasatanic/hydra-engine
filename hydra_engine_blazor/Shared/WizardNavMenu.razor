@@ -1,0 +1,38 @@
+﻿@using hydra_engine_blazor.Models
+@inject WizardContainer WizardContainer
+<ul class="tree">
+    <li
+        @ondblclick:stopPropagation="true">
+        <div class="item-container @(WizardContainer.CurrentOutputUrl == Root ? "active-link" : "") @(Settings.Type == "group" ? "hidden" : "") @(!string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) 
+                                                                                                                                                   && WizardContainer.CurrentOutputUrl.Split("/").Contains(Root) 
+                                                                                                                                                   && WizardContainer.CurrentOutputUrl.Split("/").Length > Root.Split("/").Length ? "passed-step" : "") ">
+            <h4>@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]</h4>
+        </div>
+    </li>
+    <div class="collapse show" id="@($"r{Root.GetHashCode()}")">
+        @foreach (var item in Settings.Child)
+        {
+            var href = Root + "/" + item.Name;
+            var displayName = DisplayNamePath + "/" + item.DisplayName;
+            <WizardNavMenu Settings="@item" Root="@href" DisplayNamePath="@displayName"/>
+        }
+    </div>
+</ul>
+
+@code {
+    [Parameter]
+    public ControlsMeta Settings { get; set; }
+    [Parameter]
+    public string Root{ get; set; }
+    [Parameter]
+    public string DisplayNamePath { get; set; }
+    private string link_margin;
+    private string[] OutputUrlList=>Root.Split("/");
+    private bool collapseNavMenu = true;
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    protected override void OnParametersSet()
+    {
+        var count = OutputUrlList.Length;
+        link_margin = $"margin-left:{(count - 1) * 20}px";
+    }
+}

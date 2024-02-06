@@ -1,0 +1,65 @@
+﻿@using Blazored.Toast.Configuration
+@using hydra_engine_blazor.Models
+@inherits LayoutComponentBase
+@inject IJSRuntime _jsRuntime
+@inject WizardContainer WizardContainer
+@implements IAsyncDisposable
+<div class="page">
+    <div @ref="menuContainer" class="menu-container">
+        <h1>Hydra</h1>
+        <div class="sidebar">
+            <div style="width: 190px;border-radius: 4px;padding: 5px" class="@(string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) ? "active-link": "")">
+                <h4 class="@(!string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) ? "green-color" : "")">Welcome page</h4>
+            </div>
+            @foreach (var node in WizardContainer.WizardTree.Child)
+            {
+                <WizardNavMenu Settings="@node" Root="@node.Name" DisplayNamePath="@node.DisplayName"/>
+            }
+        </div>
+        <div class="slider-container" @ref="resizeContainer">
+            <img class="slider"/>
+        </div>
+    </div>
+    <main>
+        <article>
+            @Body
+        </article>
+    </main>
+    <BlazoredToasts Position="ToastPosition.BottomRight"
+                    Timeout="5"/>
+</div>
+
+
+@code {
+    private IJSObjectReference _module;
+    ElementReference menuContainer;
+    ElementReference resizeContainer;
+
+    protected override void OnInitialized()
+    {
+        WizardContainer.OnChange += StateHasChanged;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        WizardContainer.WizardTree = await WizardContainer.UpdateLayoutTree();
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./Shared/WizardLayout.razor.js");
+            await _module.InvokeVoidAsync("addListenersResize", resizeContainer);
+        }
+    }
+    public async ValueTask DisposeAsync()
+    {
+        if (_module != null)
+        {
+            await _module.InvokeVoidAsync("clearListenersResize",resizeContainer);
+            await _module.DisposeAsync();
+        }
+        WizardContainer.OnChange -= StateHasChanged;
+    }
+
+}

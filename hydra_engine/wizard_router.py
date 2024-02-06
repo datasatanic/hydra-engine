@@ -25,7 +25,13 @@ class DeployProcess:
 
 deploy_site = DeployProcess()
 
-
+@router.get("/tree")
+def get_wizard_tree():
+    try:
+        forms = HydraParametersInfo().get_wizard_tree_structure()
+        return JSONResponse(content=jsonable_encoder(forms), status_code=200)
+    except FileNotFoundError:
+        return JSONResponse(content={"detail": "File or directory not found"}, status_code=400)
 @router.post("/tree/{name:path}")
 def get_wizard_form(name: str, conditions: list[Condition]):
     if name is None or name == "":
@@ -57,8 +63,6 @@ async def set_values(name: str, content: list[ParameterSaveInfo]):
             if check is not True:
                 return JSONResponse(content={"message": check}, status_code=400)
             set_value(item.input_url, item.file_id, item.value)
-        if hydra_engine.filewatcher.file_event.is_set():
-            hydra_engine.filewatcher.file_event.wait()
         return JSONResponse(content=jsonable_encoder(HydraParametersInfo().modify_time), status_code=200)
     except ValueError:
         return JSONResponse(content={"message": "Bad request"}, status_code=400)

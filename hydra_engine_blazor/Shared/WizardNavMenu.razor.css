@@ -1,0 +1,21 @@
+﻿.tree{
+    margin:0 !important;
+    padding:0 !important;
+}
+.item-container{
+    width: 190px;
+    border-radius: 4px;
+    padding: 5px;
+}
+.active-link{
+    background: var(--hydra-gray-30);
+}
+.item-container h4{
+    color: var(--hydra-gray-800);
+}
+.hidden{
+    display: none;
+}
+.passed-step{
+    color: var(--hydra-success-600) !important;
+}

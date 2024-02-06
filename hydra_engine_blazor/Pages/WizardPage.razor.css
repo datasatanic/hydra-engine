@@ -1,1 +1,120 @@
-﻿
+﻿.wizard-page-container{
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    gap:10px;
+    min-width: 950px;
+    width: fit-content;
+    max-width: 100%;
+    height: 100vh;
+}
+.welcome-container{
+    width: 950px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.welcome-title{
+    font-weight: 600;
+}
+.welcome-button{
+    padding: 7px 30px 7px 30px;
+    height: 38px;
+    width: 186px;
+    border-radius: 8px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+}
+.hydra-welcome-image{
+    content: url("icons/hydra_welcome.svg");
+    margin-top: 10px;
+    width: 390px;
+    height: 278px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.wizard-container{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+.title-info{
+    display: flex;
+    flex-direction: column;
+    gap:10px
+}
+.title{
+    font-weight: 600;
+}
+.prev-next-container{
+    margin-top: auto;
+    margin-left: auto;
+    display: flex;
+    flex-direction: row;
+    gap:5px;
+}
+.next-button {
+    width: 111px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    padding: 7px 20px 7px 25px;
+    align-items: center;
+    font-weight: 600;
+}
+
+.next-button>img{
+    content: url("icons/Arrow2_Right.svg");
+}
+.prev-button{
+    width: 111px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: row;
+    gap:5px;
+    padding: 7px 20px 7px 25px;
+    align-items: center;
+    font-weight: 600;
+}
+.prev-button>img{
+    content: url("icons/Arrow2_Left.svg");
+}
+.child-group-container{
+    min-height: 98px;
+    background: white;
+    width: 435px;
+    padding: 20px 30px 20px 30px;
+    border:1px solid var(--hydra-gray-50);
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+}
+.child-group-container:hover{
+    background: var(--hydra-blue-50);
+}
+.selected-form{
+    border:1px solid var(--hydra-blue-500-primary);
+    background: var(--hydra-blue-50);
+}
+.selected-icon{
+    content: url("icons/Check.svg");
+    position: absolute;
+    right: -10px;
+    top: -10px;
+}
+.wizard-child-groups{
+    display: flex;
+    flex-direction: row;
+    gap:10px;
+    flex-wrap: wrap;
+}
+.wizard-content{
+    overflow-y: auto;
+    padding: 10px 0;
+    margin-top: -10px;
+}

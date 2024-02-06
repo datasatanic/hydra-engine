@@ -1,8 +1,320 @@
 ﻿@page "/wizard"
-
-<Wizard></Wizard>
-
+@using DefaultNamespace
+@using hydra_engine_blazor.Models
+@layout WizardLayout
+@inject WizardContainer WizardContainer;
+@inject IToastService _toastService
+<div class="wizard-page-container">
+    @if (string.IsNullOrEmpty(Output_URL))
+    {
+        <div class="welcome-container">
+            <h1 class="welcome-title">Welcome to the CCFA Product Installation Wizard</h1>
+            <h4>The wizard will guide you through the process of creating a new project. The result will be... Please note that the wizard is... The wizard will guide you through the process of creating a new project.</h4>
+            <img class="hydra-welcome-image"/>
+            <button class="welcome-button primary-button" @onclick="StartCallback">Let's get started</button>
+        </div>
+    }
+    else
+    {
+        <div class="wizard-container">
+            <div class="title-info">
+                <h3 class="title">@WizardModel.Title</h3>
+                @if (!string.IsNullOrEmpty(WizardModel.ControlsMeta.Description))
+                {
+                    <h4>@WizardModel.ControlsMeta.Description</h4>
+                }
+            </div>
+            <div class="wizard-content">
+                @if (string.IsNullOrEmpty(Output_URL))
+                {
+                    <h1 style="text-align: center">Welcome to the installation wizard Hydra</h1>
+                }
+                else if (_initProcessing)
+                {
+                    <div>Initialize @WizardModel.ControlsMeta.Name architecture...</div>
+                }
+                else
+                {
+                    <div class="wizard-container">
+                        @if (_deployingStatus == "completing" && _deployingSiteName == WizardModel.ControlsMeta.Name)
+                        {
+                            <h2>Deploying site with name @(WizardModel.ControlsMeta.Name)...</h2>
+                        }
+                        else if (_deployingStatus == "completed" && _deployingSiteName == WizardModel.ControlsMeta.Name)
+                        {
+                            <h2>Site with name @(WizardModel.ControlsMeta.Name) has been deployed succesfully.
+                                @(WizardModel.ControlsMeta.Child.Any(item => item.Type.Equals("form")) ? "Go to next step" : "Installation complete")</h2>
+                        }
+                        else
+                        {
+                            <div class="wizard-elements form-elements-container">
+                                @foreach (var elem in WizardModel.ControlsMeta.Elem)
+                                {
+                                    <div class="elements-container">
+                                        <div>
+                                            @foreach (var kvp in elem)
+                                            {
+                                                <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))" Depth="1">
+                                                </ElemComponent>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                                <div class="wizard-child-groups @(formGroups.Count == 0 ? "hide" : "")">
+                                    @foreach (var item in formGroups)
+                                    {
+                                        <div class="child-group-container @(item.Name == archName ? "selected-form" : "")" @onclick="@(() => SelectArch(item.Name))">
+                                            <h3 style="font-weight: 600">@item.DisplayName</h3>
+                                            <h4>@item.Description</h4>
+                                            @if (item.Name == archName)
+                                            {
+                                                <img class="selected-icon"/>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="prev-next-container">
+                @if (!string.IsNullOrEmpty(Output_URL) && _deployingStatus is not "completing" && _deployingStatus is not "completed")
+                {
+                    <button class="prev-button ghost-button" @onclick="PrevCallback">
+                        <img/>
+                        Back
+                    </button>
+                }
+                @if (WizardModel.ControlsMeta.Child.Any(item => item.Type == "form") || WizardModel.ControlsMeta.Action == "init")
+                {
+                    <button class="next-button primary-button" @onclick="NextCallback"
+                            disabled="@(changeElements.Exists(item => !item.Value.isValid))">
+                        Next
+                        <img/>
+                    </button>
+                }
+            </div>
+        </div>
+    }
+</div>
 @code {
-    
+    private string Output_URL { get; set; }
+    private WizardModel WizardModel = new();
+    private string nextFormUrl = "";
+    private string nextFormName = "";
+    private string formNamesPath = "";
+    private string archName = "";
+    private List<KeyValuePair<string, ElemInfo>> changeElements = new();
+    private ControlsMeta? _currentGroup;
+    private HttpResponseMessage? deployResponse;
+    private List<ControlsMeta> formGroups = new();
+    private Timer? _timer;
+    private string _deployingStatus = "stop";
+    private string _deployingSiteName = "";
+    private bool _initProcessing;
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateWizardData(new List<Condition>());
+        WizardModel.OnChange += StateHasChanged;
+    }
+
+    private async Task PrevCallback()
+    {
+        var urlList = Output_URL.Split("/").ToList();
+        urlList.Remove(urlList.Last());
+        if (urlList.Count == 0) Output_URL = "";
+        Output_URL = string.Join("/", urlList);
+        var formsNameList = formNamesPath.Split("/").ToList();
+        formsNameList.Remove(formsNameList.Last());
+        if (formsNameList.Count == 0) formNamesPath = "";
+        formNamesPath = string.Join("/", formsNameList);
+        WizardContainer.CurrentOutputUrl = Output_URL;
+        await UpdateWizardData(new List<Condition>());
+    }
+
+    private void SelectArch(string formName)
+    {
+        archName = formName;
+    }
+
+    private async Task NextCallback()
+    {
+        HttpResponseMessage? saveResponse = null;
+        if (WizardModel.ControlsMeta.Action == "init")
+        {
+            _initProcessing = true;
+            var response = await WizardContainer.InitArch(archName);
+            if (response.IsSuccessStatusCode)
+            {
+                await UpdateWizardData(new List<Condition>()); // обновляем wizard после init.sh
+                WizardContainer.WizardTree = await WizardContainer.UpdateLayoutTree();
+                _initProcessing = false;
+            }
+            else
+            {
+                _toastService.ShowError($"An error occured when trying to init architecture of {WizardModel.ControlsMeta.Name}");
+            }
+        }
+        else if (formGroups.Count == 0)
+        {
+            saveResponse = await WizardContainer.SetValues(changeElements,Output_URL);
+        }
+        if (saveResponse is null or {IsSuccessStatusCode:true})
+        {
+            var condition = new List<Condition>();
+            //var conditions = WizardModel.ControlsMeta.Child.Find(item => item.Name == nextFormUrl.Split("/")[^1])?.Condition;
+            Output_URL = nextFormUrl;
+            WizardContainer.CurrentOutputUrl = Output_URL;
+            formNamesPath = nextFormName;
+            await UpdateWizardData(condition);
+        }
+        else
+        {
+            _toastService.ShowError("An error occured when trying to save new values of parameters");
+        }
+    }
+    private void ChangeValue(ElemInfo obj,string key)
+    {
+        var elem = new KeyValuePair<string, ElemInfo>(key, obj);
+        if (changeElements.Exists(item=>item.Key.Equals(elem.Key)))
+        {
+            var existElem = changeElements.Find(item => item.Key.Equals(elem.Key));
+            var index = changeElements.IndexOf(existElem);
+            changeElements.RemoveAt(index);
+            changeElements.Insert(index,elem);
+        }
+        else
+        {
+            changeElements.Add(elem);
+        }
+        
+    }
+
+    private async Task UpdateWizardData(List<Condition> conditions)
+    {
+        WizardModel.ControlsMeta = new ControlsMeta();
+        WizardModel.Title = "Loading...";
+        changeElements.Clear();
+        if (string.IsNullOrEmpty(Output_URL)) WizardModel.ControlsMeta.Name = "tree";
+        var responseMessage = await WizardContainer.GetFormInfo(Output_URL,conditions);
+        if (responseMessage.IsSuccessStatusCode)
+        {
+            var query = await responseMessage.Content.ReadAsStringAsync();
+            if (!string.IsNullOrEmpty(query)) JsonParser.DeserializeTree(query,WizardModel.ControlsMeta,WizardModel.ControlsMeta.Child);
+            WizardModel.Title = !string.IsNullOrEmpty(Output_URL) ? WizardModel.ControlsMeta.DisplayName : "Main window";
+            if (string.IsNullOrEmpty(Output_URL)) WizardModel.ControlsMeta.Name = string.Empty;
+            var childForms = WizardModel.ControlsMeta.Child.Where(item => item.Type == "form").ToList();
+            if (childForms.Count > 0)
+            {
+                nextFormUrl = (!string.IsNullOrEmpty(Output_URL) ? $"{Output_URL}/" : "") + childForms[0].Name;
+                nextFormName = (!string.IsNullOrEmpty(formNamesPath) ? $"{formNamesPath}/" : "") + childForms[0].DisplayName;
+            }
+            else
+            {
+                nextFormUrl = "";
+                nextFormName = "";
+            }
+            formGroups = WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("group")).ToList();
+            if (formGroups.Count > 0)
+            {
+                _currentGroup = formGroups[0];
+                archName = _currentGroup.Name;
+            }
+            deployResponse = null;
+        }
+        else
+        {
+            _toastService.ShowError("An error occured when updating wizard data");
+        }
+        
+    }
+
+    private void SelectGroup(ControlsMeta group)
+    {
+        if (_currentGroup == group) return;
+        var index = formGroups.IndexOf(group);
+        if (index == 0)
+        {
+            _currentGroup = group;
+        }
+        else
+        {
+            var currentIndex = formGroups.IndexOf(_currentGroup);
+            if (currentIndex == -1) return;
+            if (currentIndex > index)
+            {
+                _currentGroup = group;
+            }
+            else
+            {
+                if (CheckForbid(group))
+                {
+                    return;
+                }
+                _currentGroup = group;
+            }
+        }
+    }
+
+    private bool CheckForbid(ControlsMeta group)
+    {
+        return _currentGroup != null
+               && _currentGroup.Elem.SelectMany(item=>item.Values).Any(item=>!item.isValid) 
+               && formGroups.IndexOf(group) > formGroups.IndexOf(_currentGroup);
+    }
+
+    private async Task DeploySite()
+    {
+        if (formGroups.Any(item => item.Elem.SelectMany(x => x.Values).Any(x => !x.isValid)) 
+            || _deployingStatus == "completing" ||  _deployingStatus == "failed" && _deployingSiteName != WizardModel.ControlsMeta.Name)
+        {
+            return;
+        }
+        var saveResponse = await WizardContainer.SetValues(changeElements,Output_URL);
+        if (saveResponse is null or {IsSuccessStatusCode: true})
+        {
+            deployResponse = await WizardContainer.DeploySite(WizardModel.ControlsMeta.Name.ToLower());
+            if (deployResponse.IsSuccessStatusCode)
+            {
+                _deployingStatus = "completing";
+                _deployingSiteName = WizardModel.ControlsMeta.Name;
+                StateHasChanged();
+                _timer = new Timer(async _ =>
+                {
+                    _deployingStatus = await WizardContainer.CheckDeploy();
+                    switch (_deployingStatus)
+                    {
+                        case "completed":
+                            _timer?.DisposeAsync();
+                            _toastService.ShowSuccess($"Site {_deployingSiteName} has been deployed successfully");
+                            StateHasChanged();
+                            break;
+                        case "failed":
+                            _timer?.DisposeAsync();
+                            deployResponse = null;
+                            _toastService.ShowError($"An error occured when deploying site {_deployingSiteName}");
+                            StateHasChanged();
+                            break;
+                    }
+                }, null, 10000, 10000);
+            }
+            else
+            {
+                _toastService.ShowError($"An error occured when trying to start deploy {_deployingSiteName}");
+                deployResponse = null;
+            }
+        }
+        else
+        {
+            _toastService.ShowError("An error occured when trying to save new values of parameters");
+        }
+    }
+    private async Task StartCallback()
+    {
+        Output_URL = "root";
+        WizardContainer.CurrentOutputUrl = Output_URL;
+        await NextCallback();
+    }
 
 }
