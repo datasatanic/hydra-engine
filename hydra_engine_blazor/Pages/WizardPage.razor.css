@@ -118,3 +118,8 @@
     padding: 10px 0;
     margin-top: -10px;
 }
+.wizard-elements{
+    display: flex;
+    flex-direction: column;
+    gap:10px;
+}

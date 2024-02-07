@@ -25,13 +25,9 @@
                 }
             </div>
             <div class="wizard-content">
-                @if (string.IsNullOrEmpty(Output_URL))
+                @if (_initProcessing)
                 {
-                    <h1 style="text-align: center">Welcome to the installation wizard Hydra</h1>
-                }
-                else if (_initProcessing)
-                {
-                    <div>Initialize @WizardModel.ControlsMeta.Name architecture...</div>
+                    <div>Initialize @archName architecture...</div>
                 }
                 else
                 {

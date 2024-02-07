@@ -34,6 +34,18 @@ public class WizardContainer
             NotifyStateChanged();
         }
     }
+
+    private string currentElemKey;
+
+    public string CurrentElemKey
+    {
+        get => currentElemKey;
+        set
+        {
+            currentElemKey = value;
+            NotifyStateChanged();
+        }
+    }
     private readonly HttpClient _client;
     private JsonSerializerOptions options = new()
     {

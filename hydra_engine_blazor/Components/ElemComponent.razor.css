@@ -160,19 +160,63 @@ input,textarea:invalid{
         align-items: flex-start;
     }
 }
-li>img[data-bs-toggle="collapse"]{
-    content: url("icons/arrow_right.svg");
+li>div>img[data-bs-toggle="collapse"]{
+    content: url("icons/arrow_up.svg");
     cursor: pointer;
+    margin-top: -2px;
 }
-li>img[aria-expanded="true"]{
-    transform: rotate(90deg);
+li>div>img[aria-expanded="true"]{
+    transform: rotate(180deg);
 }
 .nested-element{
-    padding: 10px;
+    padding-left: 20px;
 }
 .elements-container{
     display: flex;
     flex-direction: column;
     gap:20px;
     width: fit-content;
+}
+.dict-param{
+    display: flex;
+    flex-direction: column;
+    gap:5px;
+}
+.dict-param>li{
+    display: flex;
+    flex-direction: column;
+    gap:10px;
+    background: var(--hydra-gray-30);
+    border-radius: 8px;
+    padding: 20px;
+}
+.dict-param>li>div{
+    display: flex;
+    flex-direction: row;
+    gap:10px;
+    align-items: flex-start;
+}
+.dict-param-data{
+    display: flex;
+    flex-direction: column;
+    gap:10px;
+    padding: 2px 0;
+}
+.dot:after{
+    content: "";
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    position: absolute;
+    right: -20px;
+    top: 7px;
+    background: var(--hydra-error-500);
+}
+.array-container{
+    background: white;
+    width: fit-content;
+}
+.param-name{
+    width: fit-content;
+    position: relative;
 }

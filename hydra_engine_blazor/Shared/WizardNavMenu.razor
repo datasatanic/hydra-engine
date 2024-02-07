@@ -3,14 +3,25 @@
 <ul class="tree">
     <li
         @ondblclick:stopPropagation="true">
-        <div class="item-container @(WizardContainer.CurrentOutputUrl == Root ? "active-link" : "") @(Settings.Type == "group" ? "hidden" : "") @(!string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) 
-                                                                                                                                                   && WizardContainer.CurrentOutputUrl.Split("/").Contains(Root) 
-                                                                                                                                                   && WizardContainer.CurrentOutputUrl.Split("/").Length > Root.Split("/").Length ? "passed-step" : "") ">
-            <h4>@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]</h4>
+        <div class="item-container @(WizardContainer.CurrentOutputUrl == Root ? "active-link" : "")">
+            <h4 class="@(!string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) && WizardContainer.CurrentOutputUrl != Root && string.Join("/", WizardContainer.CurrentOutputUrl.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root 
+                           ? "passed-step" : "")">@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]
+            </h4>
         </div>
+        @if (WizardContainer.CurrentOutputUrl == Root)
+        {
+            foreach(var elem in Settings.Elem)
+            {
+                foreach(var (key,value) in elem)
+                {
+                    <ElementsKeysTree Key="@key" ElemInfo="@value"></ElementsKeysTree>
+                }
+            }
+        }
+        
     </li>
-    <div class="collapse show" id="@($"r{Root.GetHashCode()}")">
-        @foreach (var item in Settings.Child)
+    <div id="@($"r{Root.GetHashCode()}")">
+        @foreach (var item in Settings.Child.Where(item=>item.Type == "form"))
         {
             var href = Root + "/" + item.Name;
             var displayName = DisplayNamePath + "/" + item.DisplayName;
@@ -35,4 +46,5 @@
         var count = OutputUrlList.Length;
         link_margin = $"margin-left:{(count - 1) * 20}px";
     }
+
 }

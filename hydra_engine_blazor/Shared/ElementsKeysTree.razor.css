@@ -1,0 +1,48 @@
+﻿.tree{
+    height: fit-content;
+    width: 100%;
+    margin:0;
+    padding: 5px 0 0 10px;
+}
+.tree>li>div{
+    height: 28px;
+    min-width: 162px;
+    border-radius: 4px;
+}
+.tree ::deep a{
+    color:white;
+    text-decoration: none;
+    cursor: default;
+    display:block;
+}
+.active-link{
+    background: var(--hydra-gray-30) !important;
+    border:1px solid var(--hydra-gray-30) !important;
+}
+.active-parent-link{
+    background: var(--hydra-gray-30) !important;
+    border:1px solid var(--hydra-gray-30) !important;
+}
+.hidden-children{
+    visibility: collapse;
+}
+.item-container{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    user-select: none;
+    padding: 0 5px;
+}
+.hidden{
+    visibility: hidden;
+    width: 15px;
+}
+.collapse-expand-el{
+    content:url("icons/arrow_up.svg");
+}
+.collapse-expand-el[aria-expanded="false"]{
+    transform: rotate(90deg);
+}
+.collapse-expand-el[aria-expanded="true"]{
+    transform: rotate(180deg);
+}

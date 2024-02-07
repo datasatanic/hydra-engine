@@ -10,8 +10,8 @@
 .active-link{
     background: var(--hydra-gray-30);
 }
-.item-container h4{
-    color: var(--hydra-gray-800);
+.item-container>h4{
+    font-weight: 600;
 }
 .hidden{
     display: none;
