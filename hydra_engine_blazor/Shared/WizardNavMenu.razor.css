@@ -1,11 +1,18 @@
 ﻿.tree{
     margin:0 !important;
     padding:0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 .item-container{
-    width: 190px;
+    min-width: 190px;
     border-radius: 4px;
     padding: 5px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap:5px;
 }
 .active-link{
     background: var(--hydra-gray-30);
@@ -18,4 +25,13 @@
 }
 .passed-step{
     color: var(--hydra-success-600) !important;
+}
+.item-container>img{
+    width: 18px;
+    height: 18px;
+    display: none;
+}
+.success{
+    content: url("icons/success_icon.svg");
+    display: block !important;
 }

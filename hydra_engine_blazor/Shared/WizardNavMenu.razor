@@ -4,13 +4,16 @@
     <li
         @ondblclick:stopPropagation="true">
         <div class="item-container @(WizardContainer.CurrentOutputUrl == Root ? "active-link" : "")">
-            <h4 class="@(!string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) && WizardContainer.CurrentOutputUrl != Root && string.Join("/", WizardContainer.CurrentOutputUrl.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root 
-                           ? "passed-step" : "")">@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]
+            <img class="@(!string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) && 
+                          WizardContainer.CurrentOutputUrl != Root 
+                          && string.Join("/", WizardContainer.CurrentOutputUrl.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root
+                           && Settings.SubType == "config" ? "success" : "")"/>
+            <h4 class="@(!string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) && WizardContainer.CurrentOutputUrl != Root && string.Join("/", WizardContainer.CurrentOutputUrl.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root ? "passed-step" : "")">@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]
             </h4>
         </div>
         @if (WizardContainer.CurrentOutputUrl == Root)
         {
-            foreach(var elem in Settings.Elem)
+            foreach(var elem in WizardContainer.FormElements)
             {
                 foreach(var (key,value) in elem)
                 {

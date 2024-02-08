@@ -11,6 +11,17 @@ public class WizardContainer
 {  
     public event Action? OnChange;
     private void NotifyStateChanged() => OnChange?.Invoke();
+    private bool initializing;
+
+    public bool Initializing
+    {
+        get => initializing;
+        set
+        {
+            initializing = value;
+            NotifyStateChanged();
+        }
+    }
     private string _currentOutputUrl;
 
     public string CurrentOutputUrl
@@ -35,6 +46,17 @@ public class WizardContainer
         }
     }
 
+    private List<Dictionary<string,ElemInfo>> formElements = new();
+
+    public List<Dictionary<string,ElemInfo>> FormElements
+    {
+        get => formElements;
+        set
+        {
+            formElements = value;
+            NotifyStateChanged();
+        }
+    }
     private string currentElemKey;
 
     public string CurrentElemKey

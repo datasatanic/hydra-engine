@@ -108,8 +108,8 @@ def read_wizard_file(directory):
                             add_additional_fields(path, "description", data_loaded[obj]["description"], is_wizard=True)
                         if "action" in data_loaded[obj]:
                             add_additional_fields(path, "action", data_loaded[obj]["action"], is_wizard=True)
-                        if "site_name" in data_loaded[obj]:
-                            add_additional_fields(path, "site_name", data_loaded[obj]["site_name"], is_wizard=True)
+                        if "sub_type" in data_loaded[obj]:
+                            add_additional_fields(path, "sub_type", data_loaded[obj]["sub_type"], is_wizard=True)
 
 
 def generate_wizard_meta(directory):

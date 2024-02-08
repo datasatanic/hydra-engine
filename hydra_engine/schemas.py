@@ -742,7 +742,7 @@ def update_wizard_meta(directory: str, arch_name):
                     last_path = f"root/{name.replace('.yml.meta', '')}"
                     wizard_form = {
                         last_path: {"display_name": name.replace('.yml.meta', '').title(),
-                                    "description": "", "type": "form",
+                                    "description": "", "type": "form", "sub_type": "config",
                                     "id": last_id + 1}}
                     if last_path not in wizard_data:
                         file.write('\n')
@@ -753,7 +753,7 @@ def update_wizard_meta(directory: str, arch_name):
                         last_path += "/" + _dir
                         wizard_form = {
                             last_path: {"display_name": _dir.title(),
-                                        "description": "", "type": "form",
+                                        "description": "", "type": "form", "sub_type": "site",
                                         "id": last_id + 1}}
                         if last_path not in wizard_data:
                             file.write('\n')
@@ -762,7 +762,7 @@ def update_wizard_meta(directory: str, arch_name):
                     path = last_path + "/" + name.replace('.yml.meta', '')
                     wizard_group = {
                         path: {"display_name": name.replace('.yml.meta', '').title(),
-                               "description": "", "type": "form",
+                               "description": "", "type": "form", "sub_type": "config",
                                "id": last_id + 1, "action": "deploy" if name == files_in_directory[
                                 -1] and name != "global.yml.meta" else None}}
                     if last_path not in wizard_data:

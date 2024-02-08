@@ -25,7 +25,7 @@
                 }
             </div>
             <div class="wizard-content">
-                @if (_initProcessing)
+                @if (WizardContainer.Initializing)
                 {
                     <div>Initialize @archName architecture...</div>
                 }
@@ -139,13 +139,13 @@
         HttpResponseMessage? saveResponse = null;
         if (WizardModel.ControlsMeta.Action == "init")
         {
-            _initProcessing = true;
+            WizardContainer.Initializing = true;
             var response = await WizardContainer.InitArch(archName);
             if (response.IsSuccessStatusCode)
             {
                 await UpdateWizardData(new List<Condition>()); // обновляем wizard после init.sh
                 WizardContainer.WizardTree = await WizardContainer.UpdateLayoutTree();
-                _initProcessing = false;
+                WizardContainer.Initializing = false;
             }
             else
             {
@@ -184,6 +184,7 @@
         {
             changeElements.Add(elem);
         }
+        WizardContainer.FormElements = WizardModel.ControlsMeta.Elem;
         
     }
 
@@ -223,7 +224,8 @@
         {
             _toastService.ShowError("An error occured when updating wizard data");
         }
-        
+        WizardContainer.FormElements = WizardModel.ControlsMeta.Elem;
+
     }
 
     private void SelectGroup(ControlsMeta group)

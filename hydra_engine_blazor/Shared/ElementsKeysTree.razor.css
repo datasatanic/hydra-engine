@@ -46,3 +46,18 @@
 .collapse-expand-el[aria-expanded="true"]{
     transform: rotate(180deg);
 }
+.dot:after{
+    content: "";
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    position: absolute;
+    right: -20px;
+    top: 7px;
+    background: var(--hydra-error-500);
+}
+.param-name{
+    width: fit-content;
+    position: relative;
+    font-size: 14px;
+}

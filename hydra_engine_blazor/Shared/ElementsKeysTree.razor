@@ -1,14 +1,16 @@
 ﻿@using hydra_engine_blazor.Models
 @inject WizardContainer WizardContainer
+@inject SettingsContainer SettingsContainer
+@inject IJSRuntime JSRuntime
 <ul class="tree">
-    <li @onclick="()=>WizardContainer.CurrentElemKey = Key"
+    <li @onclick="SelectElement"
         @ondblclick:stopPropagation="true">
         <div class="item-container @(WizardContainer.CurrentElemKey == Key ? "active-link" : "")
                     @(!string.IsNullOrEmpty(WizardContainer.CurrentElemKey) && WizardContainer.CurrentElemKey != Key && string.Join("/", WizardContainer.CurrentElemKey.Split("/").Skip(0).Take(Key.Split("/").Length)) == Key ? "active-parent-link" : "")">
             <img class="collapse-expand-el @(ElemInfo.type != ElemType.Dict ? "hidden" : "")" data-bs-toggle="collapse"
                  data-bs-target="@($"#p{Key.GetHashCode()}")" aria-controls="@($"p{Key.GetHashCode()}")" type="button" aria-expanded="false"
                  @ondblclick:stopPropagation="true" @onclick:stopPropagation="true"/>
-            <h4>@ElemInfo.display_name</h4>
+            <div class="@(!ElemInfo.isValid ? "dot" : "") param-name">@ElemInfo.display_name</div>
         </div>
     </li>
     <div class="collapse" id="@($"p{Key.GetHashCode()}")">
@@ -28,4 +30,22 @@
     public ElemInfo ElemInfo { get; set; }
     [Parameter]
     public string Key { get; set; }
+
+    IJSObjectReference? _module;
+
+    private async Task SelectElement()
+    {
+        WizardContainer.CurrentElemKey = Key;
+        var scrollableId = SettingsContainer.GetHash(Key);
+        if (_module != null) await _module.InvokeVoidAsync("Scroll", scrollableId);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/ElemComponent.razor.js");
+        }
+    }
+
 }

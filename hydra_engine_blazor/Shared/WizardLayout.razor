@@ -8,12 +8,22 @@
     <div @ref="menuContainer" class="menu-container">
         <h1>Hydra</h1>
         <div class="sidebar">
-            <div style="width: 190px;border-radius: 4px;padding: 5px" class="@(string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) ? "active-link": "")">
+            <div style="min-width: 190px;border-radius: 4px;padding: 5px" class="@(string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) ? "active-link": "")">
                 <h4 class="@(!string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) ? "green-color" : "")">Welcome page</h4>
             </div>
             @foreach (var node in WizardContainer.WizardTree.Child)
             {
                 <WizardNavMenu Settings="@node" Root="@node.Name" DisplayNamePath="@node.DisplayName"/>
+            }
+            @if (WizardContainer.Initializing)
+            {
+                <div class="placeholder-glow skeleton-container">
+                    @for (var i = 0; i < 6; i++)
+                    {
+                        <div class="nav-menu-style placeholder"></div>
+                    }
+                </div>
+                
             }
         </div>
         <div class="slider-container" @ref="resizeContainer">

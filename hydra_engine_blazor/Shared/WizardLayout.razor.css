@@ -4,7 +4,8 @@
     flex-direction: row;
     height: 100vh;
     overflow-x: hidden;
-    background: var(--hydra-secondary-3);
+    background: white;
+    border: 1px solid var(--hydra-gray-50);
 }
 article{
     background: var(--hydra-background-white);
@@ -108,6 +109,28 @@ main {
 .sidebar h1,.sidebar h2,.sidebar h3,.sidebar h4{
     color: var(--hydra-gray-800);
     font-weight: 600;
+}
+.nav-menu-style{
+    min-width: 140px;
+    border-radius: 4px;
+    padding: 5px;
+    background: var(--hydra-gray-30);
+    height: 20px;
+    opacity: 1;
+}
+.skeleton-container{
+    display: flex;
+    flex-direction: column;
+    gap:10px;
+}
+.skeleton-container>div:nth-child(1n){
+    width: 100%;
+}
+.skeleton-container>div:nth-child(2n){
+    width: 85%;
+}
+.skeleton-container>div:nth-child(3n){
+    width: 70%;
 }
 .top-row {
     background-color: #f7f7f7;

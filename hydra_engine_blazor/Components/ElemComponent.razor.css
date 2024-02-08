@@ -165,11 +165,17 @@ li>div>img[data-bs-toggle="collapse"]{
     cursor: pointer;
     margin-top: -2px;
 }
+li>div>img[aria-expanded="false"]{
+    transform: rotate(90deg);
+}
 li>div>img[aria-expanded="true"]{
     transform: rotate(180deg);
 }
 .nested-element{
-    padding-left: 20px;
+    margin: 0 35px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 .elements-container{
     display: flex;
@@ -180,15 +186,13 @@ li>div>img[aria-expanded="true"]{
 .dict-param{
     display: flex;
     flex-direction: column;
-    gap:5px;
-}
-.dict-param>li{
-    display: flex;
-    flex-direction: column;
-    gap:10px;
+    gap: 10px;
     background: var(--hydra-gray-30);
     border-radius: 8px;
     padding: 20px;
+    border:2px solid white;
+    width: fit-content;
+    min-width: 950px;
 }
 .dict-param>li>div{
     display: flex;
@@ -201,6 +205,7 @@ li>div>img[aria-expanded="true"]{
     flex-direction: column;
     gap:10px;
     padding: 2px 0;
+    width: 100%;
 }
 .dot:after{
     content: "";

@@ -15,7 +15,7 @@
 {
     @if (elemInfo.type != ElemType.Array)
     {
-        <div class="position-relative">
+        <div class="position-relative" id="@(SettingsContainer.GetHash(Key))">
             @switch (elemInfo.control)
             {
                 case Control.Label:
@@ -28,18 +28,16 @@
                                 <div class="dict-param-data">
                                     <div class="@(!elemInfo.isValid ? "dot" : "") param-name">@elemInfo.display_name</div>
                                     <div class="@(string.IsNullOrEmpty(elemInfo.description) ? "collapse" : "")">@elemInfo.description</div>
-                                    @foreach (var (key,value) in elemInfo.sub_type_schema.Where(item=>item.Value.type != ElemType.Dict))
-                                    {
-                                        <ElemComponent Key="@key" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth = "@(Depth + 1)"></ElemComponent>
-                                    }
                                 </div>
                             </div>
                         </li>
-                        <div class="collapse @(Depth <= 2 ? "show" : "") nested-element" id="@($"el{id}")">
-                            @foreach (var (key,value) in elemInfo.sub_type_schema.Where(item=>item.Value.type == ElemType.Dict))
-                            {
-                                <ElemComponent Key="@key" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth = "@(Depth + 1)"></ElemComponent>
-                            }
+                        <div class="collapse @(Depth <= 2 ? "show" : "")" id="@($"el{id}")">
+                            <div class="nested-element">
+                                @foreach (var (key,value) in elemInfo.sub_type_schema)
+                                {
+                                    <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)"></ElemComponent>
+                                }
+                            </div>
                         </div>
                     </ul>
                 }
@@ -58,7 +56,7 @@
                     break;
 
             }
-            @if (elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString()))
+            @if ((elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString())) && Depth == 1)
             {
                 <div class="validation-message">Enter field</div>
                 
@@ -81,7 +79,7 @@
     {
         <div class="array-container">
             <fieldset>
-                <legend>@elemInfo.display_name
+                <legend id="@(SettingsContainer.GetHash(Key))">@elemInfo.display_name
                     @if (!elemInfo.readOnly)
                     {
                         <img @onclick="AddItem"/>
@@ -99,7 +97,7 @@
                                 @foreach (var (key, value) in subTypeSchema)
                                 {
                                     <div class="position-relative">
-                                        <ElemComponent Key="@key" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key, j))" Depth="@(Depth + 1)"></ElemComponent>
+                                        <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key, j))" Depth="@(Depth + 1)"></ElemComponent>
                                     </div>
                                 }
                                 @if (!elemInfo.readOnly)
