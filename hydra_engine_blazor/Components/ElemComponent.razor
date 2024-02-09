@@ -24,7 +24,7 @@
                     <ul class="dict-param">
                         <li>
                             <div>
-                                <img data-bs-toggle="collapse" data-bs-target="@($"#el{id}")" aria-controls="@($"el{id}")" aria-expanded="@(Depth <= 2 ? "true" : "false")"/>
+                                <img @onclick="ExpandCallback" data-bs-toggle="collapse" data-bs-target="@($"#el{id}")" aria-controls="@($"el{id}")" aria-expanded="@(Depth <= 2 || elemInfo.Expand ? "true" : "false")"/>
                                 <div class="dict-param-data">
                                     <div class="@(!elemInfo.isValid ? "dot" : "") param-name">@elemInfo.display_name</div>
                                     <div class="@(string.IsNullOrEmpty(elemInfo.description) ? "collapse" : "")">@elemInfo.description</div>
@@ -538,6 +538,15 @@
     public async ValueTask DisposeAsync()
     {
         if (_module != null) await _module.DisposeAsync();
+    }
+
+    private async Task ExpandCallback()
+    {
+        if (elemInfo != null)
+        {
+            elemInfo.Expand = !elemInfo.Expand;
+            await SendValue.InvokeAsync(elemInfo);
+        }
     }
 
 }

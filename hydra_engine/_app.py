@@ -33,6 +33,7 @@ async def startup_event(app: FastAPI):
     logger.debug("Directory has been parsed successfully")
     await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
     filewatcher.start_monitoring_files()
+    logger.info("Start filewatcher...")
     yield
 
 
@@ -119,6 +120,10 @@ def generate_wizard_meta(directory):
     for root, dirs, files in os.walk(os.path.join(config.filespath, "_framework/arch")):
         for name in files:
             if name.endswith("meta"):
+                meta_file = open(os.path.join(root,name),'r')
+                meta_file_data = yaml.load(meta_file)
+                description = meta_file_data.get("FILE").get("description", "")
+                meta_file.close()
                 last_key, last_value = list(wizard_data.items())[-1]
                 if last_id is None:
                     last_id = last_value["id"]
@@ -126,7 +131,7 @@ def generate_wizard_meta(directory):
                     last_id += 1
                 wizard_form = {
                     f"root/{name.replace('.yml.meta', '')}": {"display_name": name.replace('.yml.meta', '').title(),
-                                                              "description": "", "type": "group",
+                                                              "description": description, "type": "group",
                                                               "id": last_id + 1}}
                 if f"root/{name.replace('.yml.meta', '')}" not in wizard_data:
                     file.write("\n")

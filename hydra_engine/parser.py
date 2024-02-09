@@ -212,7 +212,6 @@ def read_hydra_ignore():
         if current_line.endswith("/"):
             ignore_dirs.append(current_line[:-1])
         elif current_line.startswith("*."):
-            print(current_line[2:])
             ignore_extension.append(current_line[2:])
     file.close()
     return ignore_dirs, ignore_extension

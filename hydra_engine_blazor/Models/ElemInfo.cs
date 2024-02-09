@@ -64,6 +64,9 @@ public class ElemInfo
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public bool isValid { get; set; } = true;
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public bool Expand { get; set; }
+
     public ElemInfo DeepCopy()
     {
         var clonedElemInfo = new ElemInfo
