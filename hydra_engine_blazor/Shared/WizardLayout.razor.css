@@ -19,6 +19,7 @@ article{
     position: sticky;
     top:0;
     min-width: 250px;
+    width: 250px;
     max-width: 70%;
 }
 input[type="search"]{

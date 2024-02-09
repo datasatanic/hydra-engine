@@ -34,6 +34,17 @@ html, body {
 .ghost-button:disabled{
     color: var(--hydra-gray-200);
 }
+.arch-info{
+    content: url("../icons/Documentation.svg");
+    width: 24px;
+    height: 24px;
+}
+.arch-info:hover{
+    content: url("../icons/Documentation_hover.svg");
+}
+.arch-info:active{
+    content: url("../icons/Documentation_active.svg");
+}
 li{
     list-style-type: none;
 }

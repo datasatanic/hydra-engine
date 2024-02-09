@@ -1,5 +1,7 @@
 ﻿@using hydra_engine_blazor.Models
+@using DefaultNamespace
 @inject WizardContainer WizardContainer
+@inject WizardModel WizardModel
 <ul class="tree">
     <li
         @ondblclick:stopPropagation="true">
@@ -13,11 +15,11 @@
         </div>
         @if (WizardContainer.CurrentOutputUrl == Root)
         {
-            foreach(var elem in WizardContainer.FormElements)
+            foreach(var elem in WizardModel.ControlsMeta.Elem)
             {
-                foreach(var (key,value) in elem)
+                foreach(var kvp in elem)
                 {
-                    <ElementsKeysTree Key="@key" ElemInfo="@value"></ElementsKeysTree>
+                    <ElementsKeysTree Key="@kvp.Key" ElemInfo="@kvp.Value" Depth="1" SendValue="() => WizardModel.NotifyStateChanged()"></ElementsKeysTree>
                 }
             }
         }
@@ -44,10 +46,12 @@
     private string[] OutputUrlList=>Root.Split("/");
     private bool collapseNavMenu = true;
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
     protected override void OnParametersSet()
     {
         var count = OutputUrlList.Length;
         link_margin = $"margin-left:{(count - 1) * 20}px";
     }
+    
 
 }

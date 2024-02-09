@@ -24,14 +24,14 @@
                     <ul class="dict-param">
                         <li>
                             <div>
-                                <img @onclick="ExpandCallback" data-bs-toggle="collapse" data-bs-target="@($"#el{id}")" aria-controls="@($"el{id}")" aria-expanded="@(Depth <= 2 || elemInfo.Expand ? "true" : "false")"/>
+                                <img @onclick="ExpandCallback" data-bs-toggle="collapse" data-bs-target="@($"#el{id}")" aria-controls="@($"el{id}")" aria-expanded="@(elemInfo.Expand ? "true" : "false")"/>
                                 <div class="dict-param-data">
                                     <div class="@(!elemInfo.isValid ? "dot" : "") param-name">@elemInfo.display_name</div>
                                     <div class="@(string.IsNullOrEmpty(elemInfo.description) ? "collapse" : "")">@elemInfo.description</div>
                                 </div>
                             </div>
                         </li>
-                        <div class="collapse @(Depth <= 2 ? "show" : "")" id="@($"el{id}")">
+                        <div class="collapse @(elemInfo.Expand ? "show" : "")" id="@($"el{id}")">
                             <div class="nested-element">
                                 @foreach (var (key,value) in elemInfo.sub_type_schema)
                                 {
@@ -191,6 +191,12 @@
             {"title",elemInfo?.description}
         };
         AddElementAttributes(elemInfo);
+    }
+
+    protected override void OnInitialized()
+    {
+        if (Depth > 2) return;
+        if (elemInfo != null) elemInfo.Expand = true;
     }
 
     protected override async Task OnInitializedAsync()

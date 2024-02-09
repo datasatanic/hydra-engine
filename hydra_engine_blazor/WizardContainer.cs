@@ -45,18 +45,6 @@ public class WizardContainer
             NotifyStateChanged();
         }
     }
-
-    private List<Dictionary<string,ElemInfo>> formElements = new();
-
-    public List<Dictionary<string,ElemInfo>> FormElements
-    {
-        get => formElements;
-        set
-        {
-            formElements = value;
-            NotifyStateChanged();
-        }
-    }
     private string currentElemKey;
 
     public string CurrentElemKey

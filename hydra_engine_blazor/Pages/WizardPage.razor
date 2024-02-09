@@ -4,6 +4,7 @@
 @layout WizardLayout
 @inject WizardContainer WizardContainer;
 @inject IToastService _toastService
+@inject WizardModel WizardModel
 <div class="wizard-page-container">
     @if (string.IsNullOrEmpty(Output_URL))
     {
@@ -60,7 +61,18 @@
                                     @foreach (var item in formGroups)
                                     {
                                         <div class="child-group-container @(item.Name == archName ? "selected-form" : "")" @onclick="@(() => SelectArch(item.Name))">
-                                            <h3 style="font-weight: 600">@item.DisplayName</h3>
+                                            <div>
+                                                <h3 style="font-weight: 600">@item.DisplayName</h3>
+                                                <div class="dropdown">
+                                                    <img class="arch-info dropdown-toggle" id="@item.GetHashCode()" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"/>
+                                                    <div class="dropdown-menu custom-dropdown-menu" aria-labelledby="@item.GetHashCode()">
+                                                        @foreach (var kvp in item.Elem.SelectMany(dict => dict))
+                                                        {
+                                                            <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" Depth="1"></ElemComponent>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <h4>@item.Description</h4>
                                             @if (item.Name == archName)
                                             {
@@ -75,7 +87,7 @@
                 }
             </div>
             <div class="prev-next-container">
-                @if (!string.IsNullOrEmpty(Output_URL) && _deployingStatus is not "completing" && _deployingStatus is not "completed")
+                @if (!string.IsNullOrEmpty(Output_URL))
                 {
                     <button class="prev-button ghost-button" @onclick="PrevCallback">
                         <img/>
@@ -96,7 +108,6 @@
 </div>
 @code {
     private string Output_URL { get; set; }
-    private WizardModel WizardModel = new();
     private string nextFormUrl = "";
     private string nextFormName = "";
     private string formNamesPath = "";
@@ -184,8 +195,7 @@
         {
             changeElements.Add(elem);
         }
-        WizardContainer.FormElements = WizardModel.ControlsMeta.Elem;
-        
+        WizardModel.NotifyStateChanged();
     }
 
     private async Task UpdateWizardData(List<Condition> conditions)
@@ -224,7 +234,6 @@
         {
             _toastService.ShowError("An error occured when updating wizard data");
         }
-        WizardContainer.FormElements = WizardModel.ControlsMeta.Elem;
 
     }
 

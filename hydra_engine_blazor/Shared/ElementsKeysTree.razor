@@ -1,4 +1,5 @@
 ﻿@using hydra_engine_blazor.Models
+@using DefaultNamespace
 @inject WizardContainer WizardContainer
 @inject SettingsContainer SettingsContainer
 @inject IJSRuntime JSRuntime
@@ -7,18 +8,18 @@
         @ondblclick:stopPropagation="true">
         <div class="item-container @(WizardContainer.CurrentElemKey == Key ? "active-link" : "")
                     @(!string.IsNullOrEmpty(WizardContainer.CurrentElemKey) && WizardContainer.CurrentElemKey != Key && string.Join("/", WizardContainer.CurrentElemKey.Split("/").Skip(0).Take(Key.Split("/").Length)) == Key ? "active-parent-link" : "")">
-            <img class="collapse-expand-el @(ElemInfo.type != ElemType.Dict ? "hidden" : "")" data-bs-toggle="collapse"
-                 data-bs-target="@($"#p{Key.GetHashCode()}")" aria-controls="@($"p{Key.GetHashCode()}")" type="button" aria-expanded="false"
+            <img @onclick="ExpandCallback" class="collapse-expand-el @(ElemInfo.type != ElemType.Dict ? "hidden" : "")" data-bs-toggle="collapse"
+                 data-bs-target="@($"#p{Key.GetHashCode()}")" aria-controls="@($"p{Key.GetHashCode()}")" type="button" aria-expanded="@(ElemInfo.Expand ? "true" : "false")"
                  @ondblclick:stopPropagation="true" @onclick:stopPropagation="true"/>
             <div class="@(!ElemInfo.isValid ? "dot" : "") param-name">@ElemInfo.display_name</div>
         </div>
     </li>
-    <div class="collapse" id="@($"p{Key.GetHashCode()}")">
+    <div class="collapse @(ElemInfo.Expand ? "show" : "")" id="@($"p{Key.GetHashCode()}")">
         @if (ElemInfo.type == ElemType.Dict)
         {
-            @foreach (var (key,value) in ElemInfo.sub_type_schema)
+            @foreach (var kvp in ElemInfo.sub_type_schema)
             {
-                <ElementsKeysTree Key="@($"{Key}/{key}")" ElemInfo="@value"></ElementsKeysTree>
+                <ElementsKeysTree Key="@($"{Key}/{kvp.Key}")" ElemInfo="@kvp.Value" Depth="@(Depth + 1)" SendValue="(obj)=>HandleChange(obj,kvp.Key)"></ElementsKeysTree>
             }
         }
     </div>
@@ -30,7 +31,9 @@
     public ElemInfo ElemInfo { get; set; }
     [Parameter]
     public string Key { get; set; }
-
+    [Parameter]
+    public int Depth { get; set; }
+    [Parameter] public EventCallback<ElemInfo> SendValue { get; set; }
     IJSObjectReference? _module;
 
     private async Task SelectElement()
@@ -38,6 +41,14 @@
         WizardContainer.CurrentElemKey = Key;
         var scrollableId = SettingsContainer.GetHash(Key);
         if (_module != null) await _module.InvokeVoidAsync("Scroll", scrollableId);
+    }
+
+    protected override void OnInitialized()
+    {
+        if (Depth <= 2)
+        {
+            ElemInfo.Expand = true;
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -48,4 +59,18 @@
         }
     }
 
+    private async Task ExpandCallback()
+    {
+        ElemInfo.Expand = !ElemInfo.Expand;
+        await SendValue.InvokeAsync(ElemInfo);
+    }
+
+    private async Task HandleChange(ElemInfo obj, string key)
+    {
+        if (ElemInfo.sub_type_schema != null)
+        {
+            ElemInfo.sub_type_schema[key] = obj;
+            await SendValue.InvokeAsync(ElemInfo);
+        }
+    }
 }

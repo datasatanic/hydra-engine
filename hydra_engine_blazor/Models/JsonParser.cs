@@ -77,6 +77,7 @@ public class JsonParser
     public static ElemInfo DeserializeElemInfo(string? json, int index = 0)
     {
         var elemInfo = new ElemInfo();
+        if (json == null) return elemInfo;
         var jsonNode = JsonNode.Parse(json);
         var root = jsonNode.Root;
         var keyValuePairs = root.AsObject();

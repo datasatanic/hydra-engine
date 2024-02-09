@@ -639,7 +639,7 @@ def generate_elem_info(value, element, uid, path, is_log):
                 if value:
                     if isinstance(sub_type_schema, dict):
                         elem_info.sub_type_schema = {
-                            key: generate_elem_info(value[key], metadata, uid, f"{path}/{key}", is_log)
+                            key: generate_elem_info(value.get(key), metadata, uid, f"{path}/{key}", is_log)
                             for key, metadata in sub_type_schema.items()
                         }
                     else:

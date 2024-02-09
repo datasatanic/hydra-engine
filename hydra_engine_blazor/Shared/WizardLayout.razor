@@ -1,8 +1,9 @@
 ﻿@using Blazored.Toast.Configuration
-@using hydra_engine_blazor.Models
+@using DefaultNamespace
 @inherits LayoutComponentBase
 @inject IJSRuntime _jsRuntime
 @inject WizardContainer WizardContainer
+@inject WizardModel WizardModel
 @implements IAsyncDisposable
 <div class="page">
     <div @ref="menuContainer" class="menu-container">
@@ -48,6 +49,7 @@
     protected override void OnInitialized()
     {
         WizardContainer.OnChange += StateHasChanged;
+        WizardModel.OnChange += StateHasChanged;
     }
 
     protected override async Task OnInitializedAsync()
@@ -70,6 +72,7 @@
             await _module.DisposeAsync();
         }
         WizardContainer.OnChange -= StateHasChanged;
+        WizardModel.OnChange -= StateHasChanged;
     }
 
 }
