@@ -34,6 +34,7 @@ class ConstraintItem(BaseModel):
 
 class ElemInfo(BaseModel):
     value: object
+    placeholder: object
     file_id: str
     type: types
     description: str = None
@@ -601,7 +602,7 @@ def generate_elem_info(value, element, uid, path, is_log):
                         constraint_item = ConstraintItem(value=constraint[key].get('value'), type=key,
                                                          message=constraint[key].get('message'))
                         render_constraints.append(constraint_item)
-        elem_info = ElemInfo(value=value, type=element.get('type'),
+        elem_info = ElemInfo(value=value, placeholder=element.get('default_value'), type=element.get('type'),
                              description=element.get('description'),
                              sub_type=element.get('sub_type'),
                              sub_type_schema=None,

@@ -52,7 +52,7 @@
     height: 4px;
     border-radius: 50%;
     position: absolute;
-    right: -20px;
+    right: -15px;
     top: 7px;
     background: var(--hydra-error-500);
 }

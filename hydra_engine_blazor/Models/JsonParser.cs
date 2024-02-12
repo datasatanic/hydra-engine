@@ -88,6 +88,9 @@ public class JsonParser
                 case"value":
                     if (keyValue.Value != null) elemInfo.value = DeserializeJsonValue(keyValue.Value);
                     break;
+                case "placeholder":
+                    elemInfo.placeholder = keyValue.Value?.ToString();
+                    break;
                 case "file_id":
                     elemInfo.fileId = keyValue.Value.ToString();
                     break;

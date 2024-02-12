@@ -27,6 +27,17 @@ public class WizardModel
             NotifyStateChanged();
         }
     }
+    private bool isExpandAll;
+
+    public bool IsExpandAll
+    {
+        get => isExpandAll;
+        set
+        {
+            isExpandAll = value;
+            NotifyStateChanged();
+        }
+    }
     public event Action? OnChange;
     public void NotifyStateChanged() => OnChange?.Invoke();
 }

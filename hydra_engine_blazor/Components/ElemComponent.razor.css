@@ -4,14 +4,13 @@ ul{
 }
 .elem-container>h4{
     margin: 0;
+    color: var(--hydra-gray-500);
 }
 .elem-container{
     display: flex;
     flex-direction: row;
-    gap:5px;
+    gap:10px;
     align-items: center;
-    width: fit-content;
-    width: -moz-fit-content;
     max-width: 100%;
 }
 .elem-reverse{
@@ -21,17 +20,15 @@ ul{
     pointer-events: none;
 }
 fieldset{
-    border:1px solid var(--hydra-secondary-10);
-    box-shadow: 0 0 3px var(--hydra-secondary-65);
+    background: white;
     padding: 20px;
     border-radius: 8px;
+    border:1px solid var(--hydra-gray-30);
 }
 fieldset>legend{
     font-weight: 600;
     font-size: 16px;
     color: #2D334D;
-    margin-left: -15px;
-    margin-top:-15px;
     display: flex;
     align-items: center;
     gap:10px;
@@ -40,6 +37,15 @@ fieldset>legend{
 fieldset>legend>img{
     content:url("icons/add_item.svg");
     cursor: pointer;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+}
+fieldset>legend>img:hover{
+    background: var(--hydra-gray-40);
+}
+fieldset>legend>img:active{
+    background: var(--hydra-gray-100);
 }
 input[type=checkbox]{
     position: relative;
@@ -172,27 +178,34 @@ li>div>img[aria-expanded="true"]{
     transform: rotate(180deg);
 }
 .nested-element{
-    margin: 0 35px;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin-left: 30px;
 }
 .elements-container{
     display: flex;
     flex-direction: column;
-    gap:20px;
-    width: fit-content;
+    gap:10px;
+    padding: 20px;
+}
+fieldset>.elements-container:not(:last-child){
+    border-bottom: 1px solid var(--hydra-gray-100);
+}
+fieldset>.elements-container:last-child{
+    padding-bottom: 10px;
 }
 .dict-param{
     display: flex;
     flex-direction: column;
     gap: 10px;
+    width: fit-content;
+    min-width: 950px;
+}
+.param-background{
     background: var(--hydra-gray-30);
     border-radius: 8px;
     padding: 20px;
-    border:2px solid white;
-    width: fit-content;
-    min-width: 950px;
 }
 .dict-param>li>div{
     display: flex;
@@ -213,7 +226,7 @@ li>div>img[aria-expanded="true"]{
     height: 4px;
     border-radius: 50%;
     position: absolute;
-    right: -20px;
+    right: -15px;
     top: 7px;
     background: var(--hydra-error-500);
 }
@@ -224,4 +237,11 @@ li>div>img[aria-expanded="true"]{
 .param-name{
     width: fit-content;
     position: relative;
+}
+.default-fields{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 20px;
+    width: fit-content;
 }

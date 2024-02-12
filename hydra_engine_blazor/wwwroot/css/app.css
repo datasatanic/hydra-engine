@@ -34,16 +34,56 @@ html, body {
 .ghost-button:disabled{
     color: var(--hydra-gray-200);
 }
-.arch-info{
-    content: url("../icons/Documentation.svg");
+.link{
+    color: var(--hydra-gray-500)
+}
+.link:hover{
+    color: var(--hydra-blue-500-primary);
+    border-bottom: 1px solid var(--hydra-blue-150);
+}
+.link:active{
+    color:var(--hydra-blue-800);
+    border-bottom: 1px solid var(--hydra-blue-300);
+}
+.tooltip-icon{
+    content:url("../icons/Documentation.svg");
     width: 24px;
     height: 24px;
+    border-radius: 4px;
+}
+.tooltip-icon:hover{
+    background: var(--hydra-gray-50);
+}
+.tooltip-icon:active{
+    background: var(--hydra-gray-100);
+}
+.arch-info{
+    content: url("../icons/more_info_arch.svg");
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
 }
 .arch-info:hover{
-    content: url("../icons/Documentation_hover.svg");
 }
 .arch-info:active{
-    content: url("../icons/Documentation_active.svg");
+}
+.expand-all{
+    content:url("../icons/expand_all.svg")
+}
+.expand-all:hover{
+    content:url("../icons/expand_all_hover.svg")
+}
+.expand-all:active{
+    content:url("../icons/expand_all_pressed.svg")
+}
+.collapse-all{
+    content: url("../icons/collapse_all.svg");
+}
+.collapse-all:hover{
+    content: url("../icons/collapse_hover.svg");
+}
+.collapse-all:active{
+    content: url("../icons/collapse_pressed.svg");
 }
 li{
     list-style-type: none;

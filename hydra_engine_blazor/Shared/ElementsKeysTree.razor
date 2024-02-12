@@ -43,14 +43,6 @@
         if (_module != null) await _module.InvokeVoidAsync("Scroll", scrollableId);
     }
 
-    protected override void OnInitialized()
-    {
-        if (Depth <= 2)
-        {
-            ElemInfo.Expand = true;
-        }
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

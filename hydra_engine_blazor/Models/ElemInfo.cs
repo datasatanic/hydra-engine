@@ -12,6 +12,11 @@ public class ElemInfo
     [JsonPropertyName("value")]
     public object value;
     
+    [DataMember(Name = "placeholder", EmitDefaultValue = false)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [JsonPropertyName("placeholder")]
+    public object? placeholder;
+    
     [DataMember(Name = "file_id", EmitDefaultValue = false)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [JsonPropertyName("file_id")]

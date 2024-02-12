@@ -11,15 +11,22 @@
     --hydra-blue-hover:#304DDE;
     --hydra-blue-pressed:#172C91;
     
-    --hydra-gray-30: #EEF0F9;
     --hydra-gray-20: #F9FAFF;
+    --hydra-gray-30: #EEF0F9;
+    --hydra-gray-40: #E4E6F2;
+    --hydra-gray-50: #DBDEEE;
+    --hydra-gray-100:#C9CDE3;
+    --hydra-gray-200: #A6ACCD;
+    --hydra-gray-500: #53578A;
     --hydra-gray-800: #292C5C;
+    
+    --hydra-blue-50: #F0F2FF;
+    --hydra-blue-150:#D1D9FF;
+    --hydra-blue-300:#A3B3FF;
     --hydra-blue-500-primary: #4A67F4;
     --hydra-blue-700: #3349B6;
     --hydra-blue-800: #1F2D77;
-    --hydra-blue-50: #F0F2FF;
-    --hydra-gray-200: #A6ACCD;
-    --hydra-gray-50: #DBDEEE;
+    
     --hydra-success-600: #2D8852;
     
     --hydra-error-500: #DC5665;

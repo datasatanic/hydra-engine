@@ -19,7 +19,13 @@
     {
         <div class="wizard-container">
             <div class="title-info">
-                <h3 class="title">@WizardModel.Title</h3>
+                <div>
+                    <h3 class="title">@WizardModel.Title</h3>
+                    @if (ExistExpandElements(WizardModel.ControlsMeta.Elem.SelectMany(item=>item.Values).ToList()))
+                    {
+                        <img class="@(!WizardModel.IsExpandAll ? "expand-all" : "collapse-all")" @onclick="@(()=>ExpandCollapseAll(WizardModel.ControlsMeta.Elem))"/>
+                    }
+                </div>
                 @if (!string.IsNullOrEmpty(WizardModel.ControlsMeta.Description))
                 {
                     <h4>@WizardModel.ControlsMeta.Description</h4>
@@ -63,17 +69,12 @@
                                         <div class="child-group-container @(item.Name == archName ? "selected-form" : "")" @onclick="@(() => SelectArch(item.Name))">
                                             <div>
                                                 <h3 style="font-weight: 600">@item.DisplayName</h3>
-                                                <div class="dropdown">
-                                                    <img class="arch-info dropdown-toggle" id="@item.GetHashCode()" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"/>
-                                                    <div class="dropdown-menu custom-dropdown-menu" aria-labelledby="@item.GetHashCode()">
-                                                        @foreach (var kvp in item.Elem.SelectMany(dict => dict))
-                                                        {
-                                                            <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" Depth="1"></ElemComponent>
-                                                        }
-                                                    </div>
-                                                </div>
                                             </div>
                                             <h4>@item.Description</h4>
+                                            <div @onclick="async () => await ArchModalWindow.Open()">
+                                                <h4 class="link">Details</h4>
+                                                <img class="arch-info"/>
+                                            </div>
                                             @if (item.Name == archName)
                                             {
                                                 <img class="selected-icon"/>
@@ -105,6 +106,25 @@
             </div>
         </div>
     }
+    @{
+        var arch = formGroups.Find(item => item.Name == archName);
+        if (arch != null)
+        {
+            <Modal Model="arch" @ref="ArchModalWindow">
+                <Header>
+                    <h3>@arch?.DisplayName</h3>
+                    <img @onclick="async () => await ArchModalWindow.Close()" alt=""/>
+                </Header>
+                <Body>
+                @foreach (var kvp in arch.Elem.SelectMany(dict => dict))
+                {
+                    <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" Depth="1"></ElemComponent>
+                }
+                </Body>
+            </Modal>
+        }
+    }
+   
 </div>
 @code {
     private string Output_URL { get; set; }
@@ -112,6 +132,7 @@
     private string nextFormName = "";
     private string formNamesPath = "";
     private string archName = "";
+    private Modal ArchModalWindow { get; set; }
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
     private ControlsMeta? _currentGroup;
     private HttpResponseMessage? deployResponse;
@@ -322,6 +343,36 @@
         Output_URL = "root";
         WizardContainer.CurrentOutputUrl = Output_URL;
         await NextCallback();
+    }
+
+    private bool ExistExpandElements(List<ElemInfo> formElementsValues)
+    {
+        if (formElementsValues.Any(elemInfo => elemInfo.type == ElemType.Dict))
+        {
+            return true;
+        }
+        var childElements = formElementsValues.Where(item => item.type == ElemType.Array && item.sub_type == ElemType.Composite).ToList();
+        return childElements.Count > 0 && childElements.Select(element => element.sub_type_schema.Select(x => x.Value).ToList()).Any(ExistExpandElements);
+    }
+    private void ExpandCollapseAll(List<Dictionary<string,ElemInfo>> elementsList)
+    {
+        WizardModel.IsExpandAll = !WizardModel.IsExpandAll;
+        foreach (var elemInfos in elementsList)
+        {
+           ExpandCollapseChildElements(elemInfos);
+        }
+    }
+
+    private void ExpandCollapseChildElements(Dictionary<string, ElemInfo> elemInfos)
+    {
+        foreach (var keyValuePair in elemInfos)
+        {
+            keyValuePair.Value.Expand = WizardModel.IsExpandAll;
+            if (keyValuePair.Value.sub_type_schema != null)
+            {
+                ExpandCollapseChildElements(keyValuePair.Value.sub_type_schema);
+            }
+        }
     }
 
 }

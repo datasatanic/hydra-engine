@@ -8,6 +8,7 @@
 @using System.Text
 @using System.Text.Json.Nodes
 @using System.Text.RegularExpressions
+@using Microsoft.VisualBasic
 @inject IJSRuntime JSRuntime
 @inject SettingsContainer SettingsContainer
 @implements IAsyncDisposable
@@ -22,7 +23,7 @@
                 {
                     var id = elemInfo.GetHashCode();
                     <ul class="dict-param">
-                        <li>
+                        <li class="param-background">
                             <div>
                                 <img @onclick="ExpandCallback" data-bs-toggle="collapse" data-bs-target="@($"#el{id}")" aria-controls="@($"el{id}")" aria-expanded="@(elemInfo.Expand ? "true" : "false")"/>
                                 <div class="dict-param-data">
@@ -33,7 +34,19 @@
                         </li>
                         <div class="collapse @(elemInfo.Expand ? "show" : "")" id="@($"el{id}")">
                             <div class="nested-element">
-                                @foreach (var (key,value) in elemInfo.sub_type_schema)
+                                @if (elemInfo.sub_type_schema.Any(item => item.Value.type != ElemType.Dict))
+                                {
+                                    <div class="param-background">
+                                        <div class=" default-fields">
+                                            @{ var maxLength = elemInfo.sub_type_schema.Select(x => x.Value.display_name ?? string.Empty).Max(x=>x.Length);}
+                                            @foreach (var(key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type != ElemType.Dict))
+                                            {
+                                                <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" Length="@(maxLength)"></ElemComponent>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                                @foreach (var (key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type == ElemType.Dict))
                                 {
                                     <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)"></ElemComponent>
                                 }
@@ -44,14 +57,16 @@
                     break;
                 case Control.Textarea:
                     <div class="elem-container">
-                        <h4>@elemInfo.display_name</h4>
+                        <h4 style="@(Length > 0 ? $"width:{(Length + 1)/2}em" : "")">@elemInfo.display_name</h4>
                         <textarea @attributes="ElementAttributes" validation-error="@(!TryParseToType(elemInfo.value, elemInfo?.type))" @onchange="@((e)=>ChangeValue(e,elemInfo.type))">@elemInfo?.value</textarea>
+                        <img class="tooltip-icon" title="@elemInfo?.description"/>
                     </div>
                     break;
                 default:
                     <div class="elem-container @(elemInfo.control==Control.Checkbox ? "elem-reverse" : "")">
-                        <h4>@elemInfo.display_name</h4>
+                        <h4 style="@(Length > 0 ? $"width:{(Length + 1)/2}em" : "")">@elemInfo.display_name</h4>
                         <input @attributes="ElementAttributes" validation-error="@(!TryParseToType(elemInfo.value, elemInfo?.type))" size="@(elemInfo?.value != null ? elemInfo.value.ToString().Length : 0)" value="@(elemInfo.control==Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e)=>ChangeValue(e,elemInfo.type))"/>
+                        <img class="tooltip-icon" title="@elemInfo?.description"/>
                     </div>
                     break;
 
@@ -59,9 +74,8 @@
             @if ((elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString())) && Depth == 1)
             {
                 <div class="validation-message">Enter field</div>
-                
             }
-            else if (!TryParseToType(elemInfo.value,elemInfo?.type))
+            else if (!TryParseToType(elemInfo.value,elemInfo?.type) && elemInfo.value != null && !string.IsNullOrEmpty(elemInfo?.value.ToString()))
             {
                 <div class="validation-message">Not @elemInfo.type type</div>
             }
@@ -70,7 +84,6 @@
                 foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elemInfo.value, item, elemInfo.control)))
                 {
                     <div class="validation-message">@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")</div>
-                                                                                                                                
                 }
             }  
         </div>
@@ -85,76 +98,76 @@
                         <img @onclick="AddItem"/>
                     }
                 </legend>
-                <div class="d-flex flex-column gap-3 overflow-auto">
-                    @{var arrayItems = elemInfo?.value as List<object> ?? new List<object>();}
-                    @if (elemInfo.array_sub_type_schema != null)
+                @{var arrayItems = elemInfo?.value as List<object> ?? new List<object>();}
+                @if (elemInfo.array_sub_type_schema != null)
+                {
+                    for (var i = 0; i < elemInfo.array_sub_type_schema.Count; i++)
                     {
-                        for (var i = 0; i < elemInfo.array_sub_type_schema.Count; i++)
-                        {
-                            var j = i;
-                            var subTypeSchema = elemInfo.array_sub_type_schema[j];
-                            <div class="elements-container" id="@SettingsContainer.GetHash(Key + j)">
-                                @foreach (var (key, value) in subTypeSchema)
-                                {
-                                    <div class="position-relative">
-                                        <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key, j))" Depth="@(Depth + 1)"></ElemComponent>
-                                    </div>
-                                }
-                                @if (!elemInfo.readOnly)
-                                {
-                                    <img class="delete-image" @onclick="@(() => RemoveArrayItem(j))"/>
-                                }
-                                <hr/>
-                            </div>
-                        }
-                    }
-                    else
-                    {
-                        for (var i = 0; i < arrayItems.Count; i++)
+                        var j = i;
+                        var subTypeSchema = elemInfo.array_sub_type_schema[j];
+                        <div class="elements-container" id="@SettingsContainer.GetHash(Key + j)">
+                            @{ var maxLength = subTypeSchema.Select(x => x.Value.display_name ?? string.Empty).Max(x=>x.Length);}
+                            @foreach (var (key, value) in subTypeSchema)
                             {
-                                var j = i;
-                                var elem = (elemInfo.value as List<object>)[j];
-                                <div id="@SettingsContainer.GetHash(Key + j)">
-                                    @switch (elemInfo?.control)
-                                    {
-                                        case Control.Textarea:
-                                            <div class="list-item-container">
-                                                <textarea @attributes="ElementAttributes" validation-error="@(!TryParseToType(elem, elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
-                                                @if (!elemInfo.readOnly)
-                                                {
-                                                    <img @onclick="@(() => RemoveArrayItem(j))"/>
-                                                }
-                                            </div>
-                                            break;
-                                        default:
-                                            <div class="list-item-container">
-                                                <input @attributes="ElementAttributes" size="@(elem != null ? elem.ToString().Length : 0)" validation-error="@(!TryParseToType(elem, elemInfo?.sub_type))" value="@elem" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))"/>
-                                                @if (!elemInfo.readOnly)
-                                                {
-                                                    <img @onclick="@(() => RemoveArrayItem(j))"/>
-                                                }
-                                            </div>
-                                            break;
-                                    }
-                                    @if (elem == null || string.IsNullOrEmpty(elem.ToString()))
-                                    {
-                                        <div class="validation-message">Enter field</div>
-                                    }
-                                    else if (!TryParseToType(elem, elemInfo?.sub_type))
-                                    {
-                                        <div class="validation-message">Not @elemInfo?.sub_type type</div>
-                                    }
-                                    else
-                                    {
-                                        foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elem, item, elemInfo.control)))
-                                        {
-                                            <div class="validation-message">@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")</div>
-                                        }
-                                    }
+                                <div class="position-relative">
+                                    <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key, j))" Depth="@(Depth + 1)" Length="@maxLength"></ElemComponent>
                                 </div>
                             }
+                            @if (!elemInfo.readOnly)
+                            {
+                                <img class="delete-image" @onclick="@(() => RemoveArrayItem(j))"/>
+                            }
+                        </div>
                     }
-                </div>
+                }
+                else
+                {
+                    <div class="elements-container">
+                       @for (var i = 0; i < arrayItems.Count; i++)
+                       {
+                           var j = i;
+                           var elem = (elemInfo.value as List<object>)[j];
+                           <div id="@SettingsContainer.GetHash(Key + j)">
+                               @switch (elemInfo?.control)
+                               {
+                                   case Control.Textarea:
+                                       <div class="list-item-container">
+                                           <textarea @attributes="ElementAttributes" validation-error="@(!TryParseToType(elem, elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
+                                           @if (!elemInfo.readOnly)
+                                           {
+                                               <img @onclick="@(() => RemoveArrayItem(j))"/>
+                                           }
+                                       </div>
+                                       break;
+                                   default:
+                                       <div class="list-item-container">
+                                           <input @attributes="ElementAttributes" size="@(elem != null ? elem.ToString().Length : 0)" validation-error="@(!TryParseToType(elem, elemInfo?.sub_type))" value="@elem" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))"/>
+                                           @if (!elemInfo.readOnly)
+                                           {
+                                               <img @onclick="@(() => RemoveArrayItem(j))"/>
+                                           }
+                                       </div>
+                                       break;
+                               }
+                               @if (elem == null || string.IsNullOrEmpty(elem.ToString()))
+                               {
+                                   <div class="validation-message">Enter field</div>
+                               }
+                               else if (!TryParseToType(elem, elemInfo?.sub_type))
+                               {
+                                   <div class="validation-message">Not @elemInfo?.sub_type type</div>
+                               }
+                               else
+                               {
+                                   foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elem, item, elemInfo.control)))
+                                   {
+                                       <div class="validation-message">@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")</div>
+                                   }
+                               }
+                           </div>
+                       } 
+                    </div>
+                }
             </fieldset>
         </div>
     }
@@ -169,6 +182,8 @@
     public ElemInfo? elemInfo { get; set; }
     [Parameter]
     public int Depth { get; set; }
+    [Parameter]
+    public int Length { get; set; }
 
     private string filePath => elemInfo.fileId;
     private Dictionary<string, object>? ElementAttributes { get; set; } = new();
@@ -188,15 +203,9 @@
         {
             {"disabled",elemInfo?.readOnly},
             {"tabindex",1},
-            {"title",elemInfo?.description}
+            {"placeholder",elemInfo.placeholder}
         };
         AddElementAttributes(elemInfo);
-    }
-
-    protected override void OnInitialized()
-    {
-        if (Depth > 2) return;
-        if (elemInfo != null) elemInfo.Expand = true;
     }
 
     protected override async Task OnInitializedAsync()
