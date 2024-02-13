@@ -19,12 +19,6 @@ ul{
 .read-only{
     pointer-events: none;
 }
-fieldset{
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    border:1px solid var(--hydra-gray-30);
-}
 fieldset>legend{
     font-weight: 600;
     font-size: 16px;
@@ -33,25 +27,20 @@ fieldset>legend{
     align-items: center;
     gap:10px;
     text-wrap: nowrap;
+    margin:0;
 }
-fieldset>legend>img{
+.add-item{
     content:url("icons/add_item.svg");
     cursor: pointer;
     width: 24px;
     height: 24px;
     border-radius: 4px;
 }
-fieldset>legend>img:hover{
-    background: var(--hydra-gray-40);
-}
-fieldset>legend>img:active{
-    background: var(--hydra-gray-100);
-}
 input[type=checkbox]{
     position: relative;
     display: inline-block;
-    width: 28px;
-    height: 16px;
+    width: 18px;
+    height: 10px;
     margin: 0;
     vertical-align: top;
     background: #ffffff;
@@ -65,18 +54,16 @@ input[type=checkbox]{
 }
 input[type=checkbox]::after{
     content: "";
-
     display: inline-block;
     position: absolute;
-    left: 1px;
+    left: 4px;
     right: 1px;
     top: 1px;
     bottom: 1px;
-    width: 12px;
-    height: 12px;
+    width: 6px;
+    height: 6px;
     background-color: #B7BDD0;
     border-radius: 50%;
-
     transform: translateX(0);
     transition: all 0.3s cubic-bezier(0.2, 0.85, 0.32, 1.2);
 }
@@ -89,8 +76,8 @@ input[type=checkbox]:checked {
     border:1px solid #3961FF;
 }
 input[type=checkbox][disabled]{
-    background: #EEF1F9;
-    border:1px solid #EEF1F9;
+    background: var(--hydra-gray-50);
+    border:1px solid var(--hydra-gray-50);
 }
 input[type="text"],input[type="number"],input[type="datetime-local"],input[type="date"],input[type="time"],textarea{
     background: var(--hydra-background-white);
@@ -181,7 +168,7 @@ li>div>img[aria-expanded="true"]{
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-left: 30px;
+    padding-left: 20px;
 }
 .elements-container{
     display: flex;
@@ -189,7 +176,7 @@ li>div>img[aria-expanded="true"]{
     gap:10px;
     padding: 20px;
 }
-fieldset>.elements-container:not(:last-child){
+fieldset>div>.elements-container:not(:last-child){
     border-bottom: 1px solid var(--hydra-gray-100);
 }
 fieldset>.elements-container:last-child{
@@ -211,14 +198,16 @@ fieldset>.elements-container:last-child{
     display: flex;
     flex-direction: row;
     gap:10px;
-    align-items: flex-start;
+    align-items: center;
 }
 .dict-param-data{
     display: flex;
     flex-direction: column;
     gap:10px;
-    padding: 2px 0;
-    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    width: calc(100% + 10px);
+    margin-left: -10px;
 }
 .dot:after{
     content: "";
@@ -230,18 +219,74 @@ fieldset>.elements-container:last-child{
     top: 7px;
     background: var(--hydra-error-500);
 }
-.array-container{
-    background: white;
-    width: fit-content;
-}
 .param-name{
     width: fit-content;
     position: relative;
+    font-weight: 600;
 }
 .default-fields{
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding-left: 20px;
+}
+.array-container .param-background{
+    background: transparent !important;
+    padding: 0;
+}
+.dict-param-data>div:first-child{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap:10px;
+}
+.small{
+    width: 18px;
+    height: 18px;
+}
+.gray{
+    background: var(--hydra-gray-30) !important;
+}
+img.gray:hover{
+    background: var(--hydra-gray-40) !important;
+}
+img.gray:active{
+    background: var(--hydra-gray-100) !important;
+}
+.blue{
+    background: var(--hydra-blue-50) !important;
+}
+img.blue:hover{
+    background: var(--hydra-blue-100) !important;
+}
+img.blue:active{
+    background: var(--hydra-blue-150) !important;
+}
+.purple{
+    background: var(--hydra-purple-50) !important;
+}
+img.purple:hover{
+    background: var(--hydra-purple-100) !important;
+}
+img.purple:active{
+    background: var(--hydra-purple-150) !important;
+}
+.flex-1{
+    flex: 1;
+}
+.fit-content{
     width: fit-content;
+}
+.array-element{
+    display: flex;
+    flex-direction: row;
+    gap:10px;
+    padding: 10px;
+    background: white;
+    border-radius: 8px;
+}
+.array-element.left-justify{
+    margin-left: -10px;
+}
+.array-element>input[type="checkbox"]{
+    margin: 5px 0;
 }

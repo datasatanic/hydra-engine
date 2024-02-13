@@ -68,22 +68,24 @@ html, body {
 .arch-info:active{
 }
 .expand-all{
-    content:url("../icons/expand_all.svg")
+    content:url("../icons/expand_all.svg");
+    border-radius: 4px;
 }
 .expand-all:hover{
-    content:url("../icons/expand_all_hover.svg")
+    background: var(--hydra-gray-40);
 }
 .expand-all:active{
-    content:url("../icons/expand_all_pressed.svg")
+    background: var(--hydra-gray-100);
 }
 .collapse-all{
+    border-radius: 4px;
     content: url("../icons/collapse_all.svg");
 }
 .collapse-all:hover{
-    content: url("../icons/collapse_hover.svg");
+    background: var(--hydra-gray-40);
 }
 .collapse-all:active{
-    content: url("../icons/collapse_pressed.svg");
+    background: var(--hydra-gray-100);
 }
 li{
     list-style-type: none;

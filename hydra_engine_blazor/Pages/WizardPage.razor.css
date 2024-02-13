@@ -193,6 +193,7 @@ div:active>.link{
 ::deep .modal-body{
     height: 75vh;
     max-width: 75vw;
+    min-width: 50vw;
     padding:10px 30px 30px 30px !important;
 }
 ::deep .modal-header{

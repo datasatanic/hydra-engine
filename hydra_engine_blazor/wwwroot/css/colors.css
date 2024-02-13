@@ -21,11 +21,16 @@
     --hydra-gray-800: #292C5C;
     
     --hydra-blue-50: #F0F2FF;
+    --hydra-blue-100: #E1E6FC;
     --hydra-blue-150:#D1D9FF;
     --hydra-blue-300:#A3B3FF;
     --hydra-blue-500-primary: #4A67F4;
     --hydra-blue-700: #3349B6;
     --hydra-blue-800: #1F2D77;
+    
+    --hydra-purple-50: #EBE6F2;
+    --hydra-purple-100:#E4DAF2;
+    --hydra-purple-150:#DDCEF2;
     
     --hydra-success-600: #2D8852;
     
