@@ -34,7 +34,7 @@
                                     <div>
                                         @if (IsArrayElement)
                                         {
-                                            <input type="checkbox" disabled="disabled" checked="checked"/>
+                                            <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@IsActive" @onclick="() => IsActive = !IsActive"/>
                                         }
                                         <div class="@(!elemInfo.isValid ? "dot" : "") param-name">@elemInfo.display_name</div>
                                         @if (IsArrayElement)
@@ -66,14 +66,14 @@
                                             @{ var maxLength = elemInfo.sub_type_schema.Select(x => x.Value.display_name ?? string.Empty).Max(x=>x.Length);}
                                             @foreach (var(key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type != ElemType.Dict))
                                             {
-                                                <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" Length="@(maxLength)" IsArrayElement="@IsArrayElement"></ElemComponent>
+                                                <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" Length="@(maxLength)" IsArrayElement="@IsArrayElement" IsActive = "@IsActive"></ElemComponent>
                                             }
                                         </div>
                                     </div>
                                 }
                                 @foreach (var (key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type == ElemType.Dict))
                                 {
-                                    <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" IsArrayElement="@IsArrayElement"></ElemComponent>
+                                    <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" IsArrayElement="@IsArrayElement" IsActive = "@IsActive"></ElemComponent>
                                 }
                             </div>
                         </div>
@@ -84,7 +84,7 @@
                     <div class="elem-container">
                         @if (IsArrayElement)
                         {
-                            <input type="checkbox" disabled="disabled" checked="checked"/>
+                            <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly))" checked="@IsActive" @onclick="() => IsActive = !IsActive"/>
                         }
                         <h4 title="@elemInfo.description" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
                         <textarea class="@(IsArrayElement ? "flex-1":"")" @attributes="ElementAttributes" validation-error="@(!TryParseToType(elemInfo.value, elemInfo?.type))" @onchange="@((e) => ChangeValue(e, elemInfo.type))">@elemInfo?.value</textarea>
@@ -94,7 +94,7 @@
                     <div class="elem-container">
                         @if (IsArrayElement)
                         {
-                            <input type="checkbox" disabled="disabled" checked="checked"/>
+                            <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@IsActive" @onclick="() => IsActive = !IsActive"/>
                         }
                         <h4 title="@elemInfo.description" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
                         <input class="@(IsArrayElement ? "flex-1":"")" @attributes="ElementAttributes" validation-error="@(!TryParseToType(elemInfo.value, elemInfo?.type))" size="@(elemInfo?.value != null ? elemInfo.value.ToString().Length - 3: 0)" value="@(elemInfo.control == Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e) => ChangeValue(e, elemInfo.type))"/>
@@ -124,7 +124,7 @@
         <div class="array-element @(Depth == 1 ? "fit-content" : "") @(Depth > 1 ? "left-justify" : "") @(Depth % 3 == 1 && !elemInfo.Expand && IsArrayElement ? "gray" : "") @(Depth % 3 == 2 && !elemInfo.Expand && IsArrayElement ? "blue" : "") @(Depth % 3  == 0 && !elemInfo.Expand && IsArrayElement ? "purple" : "")">
             @if (IsArrayElement)
             {
-                <input type="checkbox" disabled="disabled" checked="checked"/>
+                <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@IsActive" @onclick="() => IsActive = !IsActive"/>
             }
             <div class="array-container">
                 <fieldset>
@@ -250,6 +250,8 @@
     public int Length { get; set; }
     [Parameter]
     public bool IsArrayElement { get; set; }
+    [Parameter]
+    public bool IsActive { get; set; } = true;
 
     private string filePath => elemInfo.fileId;
     private Dictionary<string, object>? ElementAttributes { get; set; } = new();

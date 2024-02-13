@@ -42,6 +42,7 @@ class ElemInfo(BaseModel):
     sub_type_schema: Dict[str, 'ElemInfo'] = None
     array_sub_type_schema: List['ElemInfo'] = None
     readOnly: bool | Dict[int, bool]
+    additional: bool = False
     display_name: str
     control: controls
     constraints: List[ConstraintItem] = None
@@ -607,6 +608,7 @@ def generate_elem_info(value, element, uid, path, is_log):
                              sub_type=element.get('sub_type'),
                              sub_type_schema=None,
                              readOnly=element["readonly"] if "readonly" in element else False,
+                             additional = element.get('additional',False),
                              display_name=render_dict.get('display_name') if render_dict else None,
                              control=render_dict.get('control') if render_dict else None,
                              constraints=render_constraints,
@@ -803,6 +805,7 @@ def check_sub_type_schema_validate(parameter, value, uid, input_url):
                          sub_type=parameter.sub_type,
                          sub_type_schema=None,
                          readOnly=parameter.readOnly,
+                         additional = parameter.additional,
                          display_name=parameter.display_name,
                          control=parameter.control,
                          constraints=parameter.constraints,

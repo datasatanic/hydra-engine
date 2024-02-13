@@ -42,9 +42,14 @@ public class ElemInfo
     [JsonPropertyName("readOnly")] 
     public bool readOnly { get; set; }
     
-    [DataMember(Name = "readOnly", EmitDefaultValue = false)]
+    [DataMember(Name = "additional", EmitDefaultValue = false)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [JsonPropertyName("readOnly")]
+    [JsonPropertyName("additional")] 
+    public bool additional { get; set; }
+    
+    [DataMember(Name = "display_name", EmitDefaultValue = false)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [JsonPropertyName("display_name")]
     
     public string? display_name { get; set; }
     [DataMember(Name = "control", EmitDefaultValue = false)]
@@ -86,6 +91,7 @@ public class ElemInfo
                 { value = item.value, message = item.message, type = item.type }).ToList(),
             control = control,
             readOnly = readOnly,
+            additional = additional,
             isValid = isValid,
             sub_type_schema = sub_type_schema?.ToDictionary(
                 kvp => kvp.Key,

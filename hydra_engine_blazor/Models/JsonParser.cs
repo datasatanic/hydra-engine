@@ -133,6 +133,9 @@ public class JsonParser
                         if (readonlyDict != null) elemInfo.readOnly = readonlyDict.GetValueOrDefault(index + 1, false);
                     }
                     break;
+                case "additional":
+                    if (keyValue.Value != null) elemInfo.additional = bool.Parse(keyValue.Value.ToString());
+                    break;
                 case "display_name":
                     elemInfo.display_name = keyValue.Value?.ToString();
                     break;
