@@ -10,8 +10,8 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.encoders import jsonable_encoder
 import hydra_engine.filewatcher
 from hydra_engine.configs import config
-from hydra_engine.schemas import HydraParametersInfo, find_form, Condition, update_wizard_meta, ParameterSaveInfo, \
-    set_value, check_validate_parameter
+from hydra_engine.schemas import find_form, Condition, update_wizard_meta, ParameterSaveInfo, \
+    set_value, check_validate_parameter,WizardInfo,HydraParametersInfo,WizardState,Arch,Site
 
 logger = logging.getLogger("common_logger")
 router = APIRouter(prefix="/wizard", tags=["wizard"])
@@ -32,18 +32,26 @@ def get_wizard_tree():
         return JSONResponse(content=jsonable_encoder(forms), status_code=200)
     except FileNotFoundError:
         return JSONResponse(content={"detail": "File or directory not found"}, status_code=400)
+
+@router.get("/current-step")
+def get_current_step():
+    if WizardInfo().wizard_state is None:
+        WizardInfo().wizard_state = WizardState(current_step="",arch = Arch(arch_name = "",status = "not initialized"),sites=[])
+    return PlainTextResponse(WizardInfo().wizard_state.current_step)
 @router.post("/tree/{name:path}")
 def get_wizard_form(name: str, conditions: list[Condition]):
     if name is None or name == "":
         root = copy.deepcopy(HydraParametersInfo().get_wizard_tree_structure())
         [root[key].child.clear() for key in root]
         [root[key].elem.clear() for key in root]
+        WizardInfo().update_current_step("root")
         return JSONResponse(content=jsonable_encoder(root),
                             status_code=200)
     form = find_form(name.split("/"), copy.deepcopy(HydraParametersInfo().get_wizard_tree_structure()), is_wizard=True)
     if form:
         form_condition = form[name.split("/")[-1]].condition
         if form_condition == conditions:
+            WizardInfo().update_current_step(name)
             return JSONResponse(content=jsonable_encoder(form), status_code=200)
         else:
             return JSONResponse(content={"message": "Not valid conditions to show form"}, status_code=400)
@@ -71,6 +79,7 @@ async def set_values(name: str, content: list[ParameterSaveInfo]):
 @router.post("/init_arch")
 async def init_arch(name: str):
     try:
+        WizardInfo().update_arch_status("initializing")
         command = f"GIT_SERVER_ADDRESS=10.74.106.14:/srv/git CCFA_VERSION=0.1.0-pc ENVIRONMENT_DIR=. ./_framework/scripts/env/init.sh {name}"
         init_process = subprocess.run(command, cwd=config.filespath, shell=True, check=True)
         hydra_engine.filewatcher.file_event.wait()
@@ -78,11 +87,16 @@ async def init_arch(name: str):
             logger.info(f"init arch with name: {name}")
             update_wizard_meta(config.filespath, name)
             hydra_engine.filewatcher.file_event.wait()
+            WizardInfo().update_arch_name(name)
+            WizardInfo().update_arch_status("initialized")
             return JSONResponse(content={"message": "OK"}, status_code=200)
         else:
+            WizardInfo().update_arch_status("not initialized")
+            WizardInfo().update_arch_name("")
             return JSONResponse(content={"message": "Bad request"}, status_code=400)
     except Exception as e:
-        print(e)
+        WizardInfo().update_arch_status("not initialized")
+        WizardInfo().update_arch_name("")
         return JSONResponse(content={"message": "Bad request"}, status_code=400)
 
 

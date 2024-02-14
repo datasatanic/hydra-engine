@@ -5,7 +5,7 @@ from typing import List, Literal, Dict
 from pydantic import BaseModel, validator, Extra, root_validator, ValidationError
 
 import hydra_engine.filewatcher
-from hydra_engine.parser import write_file, HydraParametersInfo, read_hydra_ignore
+from hydra_engine.parser import write_file, HydraParametersInfo,WizardInfo, read_hydra_ignore
 from hydra_engine.configs import config
 import logging
 import re
@@ -22,7 +22,16 @@ controls = Literal[
     "input_control", "textarea_control", "checkbox_control", "number_control", "datetime_control",
     "date_control", "time_control", "label_control"]
 
-
+class Arch(BaseModel):
+    arch_name:str
+    status: str
+class Site(BaseModel):
+    site_name: str
+    status: str
+class WizardState(BaseModel):
+    current_step: str
+    arch: Arch
+    sites: List[Site]
 class ConstraintItem(BaseModel):
     value: str
     type: constraints

@@ -114,4 +114,9 @@ public class WizardContainer
 
         return tree;
     }
+
+    public async Task<string> GetCurrentStep()
+    {
+        return await _client.GetStringAsync("api/wizard/current-step");
+    }
 }

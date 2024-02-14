@@ -20,7 +20,15 @@ class SingletonMeta(type):
             cls._instances[cls] = super(SingletonMeta, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
-
+class WizardInfo(metaclass=SingletonMeta):
+    def __init__(self):
+        self.wizard_state:WizardState = None
+    def update_current_step(self,url:str):
+        self.wizard_state.current_step = url
+    def update_arch_name(self,name:str):
+        self.wizard_state.arch.arch_name = name
+    def update_arch_status(self,status:str):
+        self.wizard_state.arch.status = status
 class HydraParametersInfo(metaclass=SingletonMeta):
     def __init__(self):
         self.tree = {}

@@ -13,7 +13,7 @@
             <h4 class="@(!string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) && WizardContainer.CurrentOutputUrl != Root && string.Join("/", WizardContainer.CurrentOutputUrl.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root ? "passed-step" : "")">@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]
             </h4>
         </div>
-        @if (WizardContainer.CurrentOutputUrl == Root)
+        @if (WizardContainer.CurrentOutputUrl == Root && WizardModel.ControlsMeta != null)
         {
             foreach(var elem in WizardModel.ControlsMeta.Elem)
             {

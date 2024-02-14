@@ -6,7 +6,11 @@
 @inject IToastService _toastService
 @inject WizardModel WizardModel
 <div class="wizard-page-container">
-    @if (string.IsNullOrEmpty(Output_URL))
+    @if (!_load)
+    {
+        <p>Loading...</p>
+    }
+    else if (string.IsNullOrEmpty(Output_URL))
     {
         <div class="welcome-container">
             <h1 class="welcome-title">Welcome to the CCFA Product Installation Wizard</h1>
@@ -21,9 +25,9 @@
             <div class="title-info">
                 <div>
                     <h3 class="title">@WizardModel.Title</h3>
-                    @if (ExistExpandElements(WizardModel.ControlsMeta.Elem.SelectMany(item=>item.Values).ToList()))
+                    @if (ExistExpandElements(WizardModel.ControlsMeta.Elem.SelectMany(item => item.Values).ToList()))
                     {
-                        <img class="@(!WizardModel.IsExpandAll ? "expand-all" : "collapse-all")" @onclick="@(()=>ExpandCollapseAll(WizardModel.ControlsMeta.Elem))"/>
+                        <img class="@(!WizardModel.IsExpandAll ? "expand-all" : "collapse-all")" @onclick="@(() => ExpandCollapseAll(WizardModel.ControlsMeta.Elem))"/>
                     }
                 </div>
                 @if (!string.IsNullOrEmpty(WizardModel.ControlsMeta.Description))
@@ -124,7 +128,7 @@
             </Modal>
         }
     }
-   
+
 </div>
 @code {
     private string Output_URL { get; set; }
@@ -141,10 +145,14 @@
     private string _deployingStatus = "stop";
     private string _deployingSiteName = "";
     private bool _initProcessing;
+    private bool _load;
     protected override async Task OnInitializedAsync()
     {
+        Output_URL = WizardContainer.CurrentOutputUrl = await WizardContainer.GetCurrentStep();
+        Console.WriteLine(WizardContainer.CurrentOutputUrl);
         await UpdateWizardData(new List<Condition>());
         WizardModel.OnChange += StateHasChanged;
+        _load = true;
     }
 
     private async Task PrevCallback()
