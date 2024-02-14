@@ -35,9 +35,9 @@
                                     <div>
                                         @if (IsArrayElement)
                                         {
-                                            <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive"/>
+                                            <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
                                         }
-                                        <div class="@(!elemInfo.isValid ? "dot" : "") param-name">@elemInfo.display_name</div>
+                                        <div class="@(!elemInfo.isValid ? "dot" : "") @(IsArrayElement ? "justify-dot" : "") param-name">@elemInfo.display_name</div>
                                         @if (IsArrayElement)
                                         {
                                             @switch (Depth % 3)
@@ -58,7 +58,7 @@
                                 </div>
                             </div>
                         </li>
-                        <div class="collapse @(elemInfo.Expand ? "show" : "")" id="@($"el{id}")">
+                        <div class="collapse @(elemInfo.Expand && elemInfo.IsActive ? "show" : "")" id="@($"el{id}")">
                             <div class="nested-element">
                                 @if (elemInfo.sub_type_schema.Any(item => item.Value.type != ElemType.Dict))
                                 {
@@ -166,21 +166,39 @@
                             {
                                 var j = i;
                                 var subTypeSchema = elemInfo.array_sub_type_schema[j];
-                                <div class="elements-container" id="@SettingsContainer.GetHash(Key + j)">
-                                    @{ var maxLength = subTypeSchema.Select(x => x.Value.display_name ?? string.Empty).Max(x=>x.Length);}
-                                    @foreach (var (key, value) in subTypeSchema)
-                                    {
-                                        <div class="position-relative">
-                                            <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key, j))" Depth="@(Depth + 1)" Length="@maxLength" IsArrayElement="@true"></ElemComponent>
-                                        </div>
-                                    }
+                                <div class="array-trash-container">
+                                    <div class="elements-container" id="@SettingsContainer.GetHash(Key + j)">
+                                        @{ var maxLength = subTypeSchema.Select(x => x.Value.display_name ?? string.Empty).Max(x=>x.Length);}
+                                        @foreach (var (key, value) in subTypeSchema)
+                                        {
+                                            <div class="position-relative">
+                                                <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key, j))" Depth="@(Depth + 1)" Length="@maxLength" IsArrayElement="@true"></ElemComponent>
+                                            </div>
+                                        }
+                                    </div>
                                     @if (!elemInfo.readOnly)
                                     {
-                                        <img class="delete-image" @onclick="@(() => RemoveArrayItem(j))"/>
+                                        <div class="dropend">
+                                            <img class="trash-image dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"/>
+                                            <div class="dropdown-menu trash-menu">
+                                                <div class="trash-menu-element">
+                                                    <img class="copy-image"/>
+                                                    <h4>Duplicate</h4>
+                                                </div>
+                                                <div class="trash-menu-element">
+                                                    <img class="disable-image"/>
+                                                    <h4>Disable</h4>
+                                                </div>
+                                                <div class="trash-menu-element" @onclick="@(() => RemoveArrayItem(j))">
+                                                    <img class="delete-image"/>
+                                                    <h4>Delete</h4>
+                                                </div>
+                                            </div>
+                                        </div>
                                     }
                                 </div>
                             }
-                               
+                            
                         }
                         else
                         {
@@ -206,7 +224,7 @@
                                                     <input class="flex-1" @attributes="ElementAttributes" size="@(elem != null ? elem.ToString().Length : 0)" validation-error="@(!TryParseToType(elem, elemInfo?.sub_type))" value="@elem" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))"/>
                                                     @if (!elemInfo.readOnly)
                                                     {
-                                                        <img @onclick="@(() => RemoveArrayItem(j))"/>
+                                                        <img class="delete-image" @onclick="@(() => RemoveArrayItem(j))"/>
                                                     }
                                                 </div>
                                                 break;

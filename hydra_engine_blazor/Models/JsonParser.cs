@@ -135,6 +135,7 @@ public class JsonParser
                     break;
                 case "additional":
                     if (keyValue.Value != null) elemInfo.additional = bool.Parse(keyValue.Value.ToString());
+                    if (elemInfo.additional && elemInfo.value == null) elemInfo.IsActive = false;
                     break;
                 case "display_name":
                     elemInfo.display_name = keyValue.Value?.ToString();

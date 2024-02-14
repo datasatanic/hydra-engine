@@ -622,13 +622,12 @@ def generate_elem_info(value, element, uid, path, is_log):
                     is_element_none = el is None
                     d = {}
                     for key, metadata in element["sub_type_schema"].items():
-                        if key in el:
-                            d.update({
-                                key: generate_elem_info(
-                                    el[key] if not is_element_none else None,
-                                    metadata, uid, f"{path}/{key}", False
-                                )
-                            })
+                        d.update({
+                            key: generate_elem_info(
+                                el.get(key,None),
+                                metadata, uid, f"{path}/{key}", False
+                            )
+                        })
                     if is_element_none:
                         value[index] = {key: None for key, metadata in
                                         element["sub_type_schema"].items()}
@@ -639,22 +638,13 @@ def generate_elem_info(value, element, uid, path, is_log):
                         key: generate_elem_info(None, metadata, uid, f"{path}/{key}", is_log)
                     })
             else:
-                if value:
-                    if isinstance(sub_type_schema, dict):
-                        elem_info.sub_type_schema = {
-                            key: generate_elem_info(value.get(key), metadata, uid, f"{path}/{key}", is_log)
-                            for key, metadata in sub_type_schema.items()
-                        }
-                    else:
-                        raise TypeError("Type of field sub_type_schema must be dict")
+                if isinstance(sub_type_schema, dict):
+                    elem_info.sub_type_schema = {
+                        key: generate_elem_info(value.get(key) if value is not None else None, metadata, uid, f"{path}/{key}", is_log)
+                        for key, metadata in sub_type_schema.items()
+                    }
                 else:
-                    elem_info.value = {}
-                    elem_info.sub_type_schema = {}
-                    for key, metadata in element["sub_type_schema"].items():
-                        elem_info.sub_type_schema.update({
-                            key: generate_elem_info(None, metadata, uid, f"{path}/{key}", True)
-                        })
-                        elem_info.value.update({key: metadata["default_value"]})
+                    raise TypeError("Type of field sub_type_schema must be dict")
         return elem_info
     except ValidationError as e:
         if is_log:
