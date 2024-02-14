@@ -9,6 +9,7 @@
 @using System.Text
 @using System.Text.Json.Nodes
 @using System.Text.RegularExpressions
+@using Microsoft.JSInterop.Implementation
 @using Microsoft.VisualBasic
 @inject IJSRuntime JSRuntime
 @inject SettingsContainer SettingsContainer
@@ -34,7 +35,7 @@
                                     <div>
                                         @if (IsArrayElement)
                                         {
-                                            <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@IsActive" @onclick="() => IsActive = !IsActive"/>
+                                            <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive"/>
                                         }
                                         <div class="@(!elemInfo.isValid ? "dot" : "") param-name">@elemInfo.display_name</div>
                                         @if (IsArrayElement)
@@ -66,14 +67,14 @@
                                             @{ var maxLength = elemInfo.sub_type_schema.Select(x => x.Value.display_name ?? string.Empty).Max(x=>x.Length);}
                                             @foreach (var(key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type != ElemType.Dict))
                                             {
-                                                <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" Length="@(maxLength)" IsArrayElement="@IsArrayElement" IsActive = "@IsActive"></ElemComponent>
+                                                <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" Length="@(maxLength)" IsArrayElement="@IsArrayElement"></ElemComponent>
                                             }
                                         </div>
                                     </div>
                                 }
                                 @foreach (var (key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type == ElemType.Dict))
                                 {
-                                    <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" IsArrayElement="@IsArrayElement" IsActive = "@IsActive"></ElemComponent>
+                                    <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" IsArrayElement="@IsArrayElement"></ElemComponent>
                                 }
                             </div>
                         </div>
@@ -84,7 +85,7 @@
                     <div class="elem-container">
                         @if (IsArrayElement)
                         {
-                            <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly))" checked="@IsActive" @onclick="() => IsActive = !IsActive"/>
+                            <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly))" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
                         }
                         <h4 title="@elemInfo.description" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
                         <textarea class="@(IsArrayElement ? "flex-1":"")" @attributes="ElementAttributes" validation-error="@(!TryParseToType(elemInfo.value, elemInfo?.type))" @onchange="@((e) => ChangeValue(e, elemInfo.type))">@elemInfo?.value</textarea>
@@ -94,7 +95,7 @@
                     <div class="elem-container">
                         @if (IsArrayElement)
                         {
-                            <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@IsActive" @onclick="() => IsActive = !IsActive"/>
+                            <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
                         }
                         <h4 title="@elemInfo.description" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
                         <input class="@(IsArrayElement ? "flex-1":"")" @attributes="ElementAttributes" validation-error="@(!TryParseToType(elemInfo.value, elemInfo?.type))" size="@(elemInfo?.value != null ? elemInfo.value.ToString().Length - 3: 0)" value="@(elemInfo.control == Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e) => ChangeValue(e, elemInfo.type))"/>
@@ -124,7 +125,7 @@
         <div class="array-element @(Depth == 1 ? "fit-content" : "") @(Depth > 1 ? "left-justify" : "") @(Depth % 3 == 1 && !elemInfo.Expand && IsArrayElement ? "gray" : "") @(Depth % 3 == 2 && !elemInfo.Expand && IsArrayElement ? "blue" : "") @(Depth % 3  == 0 && !elemInfo.Expand && IsArrayElement ? "purple" : "")">
             @if (IsArrayElement)
             {
-                <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@IsActive" @onclick="() => IsActive = !IsActive"/>
+                <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive"/>
             }
             <div class="array-container">
                 <fieldset>
@@ -250,8 +251,6 @@
     public int Length { get; set; }
     [Parameter]
     public bool IsArrayElement { get; set; }
-    [Parameter]
-    public bool IsActive { get; set; } = true;
 
     private string filePath => elemInfo.fileId;
     private Dictionary<string, object>? ElementAttributes { get; set; } = new();
@@ -269,9 +268,9 @@
     {
         ElementAttributes = new Dictionary<string, object>
         {
-            {"disabled",elemInfo?.readOnly},
             {"tabindex",1},
-            {"placeholder",elemInfo.placeholder}
+            {"placeholder",elemInfo.placeholder},
+            {"disabled",!elemInfo.IsActive || elemInfo.readOnly}
         };
         AddElementAttributes(elemInfo);
     }
@@ -323,6 +322,10 @@
     private bool TryParseToType(object? value,ElemType? type)
     {
         var valueString = value != null ? value.ToString() : string.Empty;
+        if (elemInfo.additional && !elemInfo.IsActive)
+        {
+            return true;
+        }
         if (string.IsNullOrEmpty(valueString))
         {
             return false;
@@ -352,10 +355,10 @@
         }
         var value = obj.Value;
         elemInfo.value = value;
-        if (TryParseToType(value.ToString(),elemInfo?.type) && !string.IsNullOrEmpty(value.ToString()) && !elemInfo.constraints.Exists(item=>!CheckConstraints(value.ToString(),item,elemInfo.control)))
+        ElementAttributes["validation-error"] = false;
+        elemInfo.isValid = true;
+        if (TryParseToType(value,elemInfo?.type) && !elemInfo.constraints.Exists(item=>!CheckConstraints(value,item,elemInfo.control)))
         {
-            ElementAttributes["validation-error"] = false;
-            elemInfo.isValid = true;
             switch (type)
             {
                 case ElemType.String:
@@ -383,6 +386,7 @@
         else
         {
             elemInfo.isValid = false;
+            ElementAttributes["validation-error"] = true;
         }
         await SendValue.InvokeAsync(elemInfo);
     }
@@ -502,6 +506,7 @@
         foreach (var kvp in schema)
         {
             var subElemInfo = kvp.Value.DeepCopy();
+            if (subElemInfo.additional) continue;
             dict.Add(kvp.Key,subElemInfo.value);
             if (subElemInfo.sub_type_schema == null) continue;
             var subDict = GetSchema(subElemInfo.sub_type_schema);
@@ -522,7 +527,15 @@
                 subElemInfo.sub_type_schema = subDict;
             }
             subElemInfo.readOnly = false;
-            subElemInfo.isValid = TryParseToType(subElemInfo.value.ToString(), subElemInfo.type) && !string.IsNullOrEmpty(subElemInfo.value.ToString()) && !subElemInfo.constraints.Exists(item => !CheckConstraints(subElemInfo.value.ToString(), item, subElemInfo.control));
+            if (subElemInfo.additional)
+            {
+                subElemInfo.IsActive = false;
+                subElemInfo.isValid = true;
+            }
+            else
+            {
+                subElemInfo.isValid = TryParseToType(subElemInfo.value, subElemInfo.type) && !subElemInfo.constraints.Exists(item => !CheckConstraints(subElemInfo.value, item, subElemInfo.control));
+            }
             dict.Add(kvp.Key, subElemInfo);
             
         }
@@ -550,6 +563,10 @@
 
     private bool CheckConstraints(object? value, ConstraintItem constraintItem,Control control)
     {
+        if (elemInfo.additional && !elemInfo.IsActive)
+        {
+            return true;
+        }
         var stringValue = value != null ? value.ToString() : string.Empty;
         return stringValue != null && constraintItem.type switch
         {
@@ -583,7 +600,24 @@
                 elemInfo.sub_type_schema[key] = obj;
                 if (dict != null)
                 {
-                    dict[key] = obj.value;
+                    switch (obj.additional)
+                    {
+                        case true when !dict.ContainsKey(key):
+                        {
+                            if (obj.IsActive) dict.Add(key,obj.value);
+                            break;
+                        }
+                        case true when dict.ContainsKey(key):
+                        {
+                            if (!obj.IsActive) dict.Remove(key);
+                            else dict[key] = obj.value;
+                            break;
+                        }
+                    }
+                    if (!obj.additional)
+                    {
+                        dict[key] = obj.value;
+                    }
                     CheckValidation(elemInfo.sub_type_schema);
                 }
             }
@@ -597,7 +631,25 @@
         {
             if (arr[index] is Dictionary<string, object> dict)
             {
-                dict[key] = obj.value;
+                switch (obj.additional)
+                {
+                    case true when !dict.ContainsKey(key):
+                    {
+                        if (obj.IsActive) dict.Add(key,obj.value);
+                        break;
+                    }
+                    case true when dict.ContainsKey(key):
+                    {
+                        if (!obj.IsActive) dict.Remove(key);
+                        else dict[key] = obj.value;
+                        break;
+                    }
+                }
+                if (!obj.additional)
+                {
+                    dict[key] = obj.value;
+                }
+                Console.WriteLine(JsonSerializer.Serialize(dict));
             }
             elemInfo.array_sub_type_schema[index][key] = obj;
             foreach (var item in elemInfo.array_sub_type_schema)
@@ -651,6 +703,39 @@
             if (keyValuePair.Value.sub_type_schema != null)
             {
                 ExpandCollapseChildElements(keyValuePair.Value.sub_type_schema);
+            }
+        }
+    }
+
+    private async Task ExcludeField()
+    {
+        ChangeActiveStatus(elemInfo);
+        await SendValue.InvokeAsync(elemInfo);
+    }
+
+    private void ChangeActiveStatus(ElemInfo el)
+    {
+        el.IsActive = !el.IsActive;
+        if (!el.IsActive)
+        {
+            el.isValid = true;
+        }
+        else
+        {
+            el.isValid = TryParseToType(elemInfo.value,elemInfo.type) && !elemInfo.constraints.Exists(item => !CheckConstraints(elemInfo.value, item, elemInfo.control));
+        }
+        if (el.array_sub_type_schema != null)
+        {
+            foreach (var keyValuePair in el.array_sub_type_schema.SelectMany(elemInfos => elemInfos))
+            {
+                ChangeActiveStatus(keyValuePair.Value);
+            }
+        }
+        else if (el.sub_type_schema != null)
+        {
+            foreach (var keyValuePair in el.sub_type_schema)
+            {
+                ChangeActiveStatus(keyValuePair.Value);
             }
         }
     }

@@ -77,11 +77,15 @@ public class ElemInfo
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public bool Expand { get; set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public bool IsActive { get; set; } = true;
+
     public ElemInfo DeepCopy()
     {
         var clonedElemInfo = new ElemInfo
         {
             value = DeepCopyValue(value),
+            placeholder = placeholder,
             fileId = fileId,
             type = type,
             sub_type = sub_type,
@@ -93,6 +97,7 @@ public class ElemInfo
             readOnly = readOnly,
             additional = additional,
             isValid = isValid,
+            IsActive = IsActive,
             sub_type_schema = sub_type_schema?.ToDictionary(
                 kvp => kvp.Key,
                 kvp => kvp.Value.DeepCopy()

@@ -625,18 +625,18 @@ def generate_elem_info(value, element, uid, path, is_log):
                         if key in el:
                             d.update({
                                 key: generate_elem_info(
-                                    el[key] if not is_element_none else metadata["default_value"],
+                                    el[key] if not is_element_none else None,
                                     metadata, uid, f"{path}/{key}", False
                                 )
                             })
                     if is_element_none:
-                        value[index] = {key: metadata["default_value"] for key, metadata in
+                        value[index] = {key: None for key, metadata in
                                         element["sub_type_schema"].items()}
                     elem_info.array_sub_type_schema.append(d)
                 elem_info.sub_type_schema = {}
                 for key, metadata in element["sub_type_schema"].items():
                     elem_info.sub_type_schema.update({
-                        key: generate_elem_info(metadata["default_value"], metadata, uid, f"{path}/{key}", is_log)
+                        key: generate_elem_info(None, metadata, uid, f"{path}/{key}", is_log)
                     })
             else:
                 if value:
@@ -652,7 +652,7 @@ def generate_elem_info(value, element, uid, path, is_log):
                     elem_info.sub_type_schema = {}
                     for key, metadata in element["sub_type_schema"].items():
                         elem_info.sub_type_schema.update({
-                            key: generate_elem_info(metadata["default_value"], metadata, uid, f"{path}/{key}", True)
+                            key: generate_elem_info(None, metadata, uid, f"{path}/{key}", True)
                         })
                         elem_info.value.update({key: metadata["default_value"]})
         return elem_info
@@ -813,8 +813,10 @@ def check_sub_type_schema_validate(parameter, value, uid, input_url):
     if parameter.sub_type_schema is not None:
         for key, metadata in parameter.sub_type_schema.items():
             if isinstance(value, dict):
-                check_sub_type_schema_validate(metadata, value[key], uid, f"{input_url}/{key}")
+                if key in value:
+                    check_sub_type_schema_validate(metadata, value[key], uid, f"{input_url}/{key}")
             elif isinstance(value, list):
                 for el in value:
-                    check_sub_type_schema_validate(metadata, el[key], uid, f"{input_url}/{key}")
+                    if key in el:
+                        check_sub_type_schema_validate(metadata, el[key], uid, f"{input_url}/{key}")
     return elem_info

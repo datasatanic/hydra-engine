@@ -262,7 +262,7 @@ public class JsonParser
 
         return node.ToJsonString();
     }
-    private static object DeserializeJsonValue(JsonNode jsonNode)
+    private static object? DeserializeJsonValue(JsonNode? jsonNode)
     {
         switch (jsonNode)
         {
@@ -270,7 +270,7 @@ public class JsonParser
                 var list = new List<object?>();
                 foreach (var item in jsonArray)
                 {
-                    if (item != null) list.Add(DeserializeJsonValue(item));
+                    list.Add(DeserializeJsonValue(item));
                 }
                 return list;
 
@@ -278,12 +278,12 @@ public class JsonParser
                 var result = new Dictionary<string, object?>();
                 foreach (var kvp in jsonObject)
                 {
-                    if (kvp.Value != null) result[kvp.Key] = DeserializeJsonValue(kvp.Value);
+                    result[kvp.Key] = DeserializeJsonValue(kvp.Value);
                 }
                 return result;
 
             default:
-                var value = jsonNode.ToString();
+                var value = jsonNode?.ToString();
                 if (int.TryParse(value, out _))
                 {
                     return int.Parse(value);
