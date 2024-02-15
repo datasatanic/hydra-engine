@@ -196,19 +196,19 @@
                     WizardContainer.WizardState.AddSite(site);
                     _timer = new Timer(async _ =>
                     {
-                        WizardContainer.WizardState.Sites = await WizardContainer.CheckDeploy();
-                        switch (site.StatusEnum)
+                        try
                         {
-                            case ArchStatus.Completed:
-                                _timer?.DisposeAsync();
-                                _toastService.ShowSuccess($"Site {site.SiteName} has been deployed successfully");
-                                StateHasChanged();
-                                break;
-                            case ArchStatus.NotCompleted:
-                                _timer?.DisposeAsync();
-                                _toastService.ShowError($"An error occured when deploying site {site.SiteName}");
-                                StateHasChanged();
-                                break;
+                            WizardContainer.WizardState.Sites = await WizardContainer.CheckDeploy();
+                            if (WizardContainer.WizardState.Sites[^1].StatusEnum != ArchStatus.Completed) return;
+                            _timer?.DisposeAsync();
+                            _toastService.ShowSuccess($"Site {site.SiteName} has been deployed successfully");
+                            StateHasChanged();
+                        }
+                        catch (Exception)
+                        {
+                            _timer?.DisposeAsync();
+                            _toastService.ShowError($"An error occured when deploying site {site.SiteName}");
+                            StateHasChanged();
                         }
                     }, null, 10000, 10000);
                 }

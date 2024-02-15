@@ -764,7 +764,7 @@ def update_wizard_meta(directory: str, arch_name):
                         path: {"display_name": name.replace('.yml.meta', '').title(),
                                "description": "", "type": "form", "sub_type": "config",
                                "id": last_id + 1, "action": "deploy" if name == files_in_directory[
-                                -1] and name != "global.yml.meta" else None}}
+                                -1] and name != "global.yml.meta" else None,"site_name":last_dir}}
                     if last_path not in wizard_data:
                         file.write('\n')
                         yaml.dump(wizard_group, file)

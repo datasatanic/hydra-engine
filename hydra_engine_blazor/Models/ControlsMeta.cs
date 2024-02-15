@@ -34,7 +34,8 @@ public class ControlsMeta
     [JsonPropertyName("sub_type")]
     public string? SubType { get; set; }
 
-    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    [JsonPropertyName("site_name")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public string? SiteName;
 
     public ControlsMeta(string name,List<ControlsMeta> child, List<Dictionary<string,ElemInfo>> elem, string description,string displayName,List<Condition> condition)

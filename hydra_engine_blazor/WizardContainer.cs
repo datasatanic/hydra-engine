@@ -89,7 +89,17 @@ public class WizardContainer
 
     public async Task<List<Site>> CheckDeploy()
     {
-        return await _client.GetFromJsonAsync<List<Site>>("/api/wizard/check-deploy");
+        var sites = await _client.GetFromJsonAsync<List<Site>>("/api/wizard/check-deploy");
+        foreach (var site in sites)
+        {
+            site.StatusEnum = site.Status switch
+            {
+                "not completed"=>ArchStatus.NotCompleted,
+                "in progress"=>ArchStatus.InProgress,
+                "completed"=>ArchStatus.Completed,
+            };
+        }
+        return sites;
     }
 
     public async Task<ControlsMeta> UpdateLayoutTree()

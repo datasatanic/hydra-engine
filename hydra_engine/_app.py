@@ -9,11 +9,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette_prometheus import metrics, PrometheusMiddleware
 
-from schemas import Condition
+
 from hydra_engine import router, wizard_router, filewatcher
 from hydra_engine.configs import config
 from hydra_engine.parser import parse_config_files
-from hydra_engine.schemas import add_node, HydraParametersInfo, add_additional_fields
+from hydra_engine.schemas import add_node, HydraParametersInfo, add_additional_fields,Condition
 from hydra_engine.search.index_schema import HydraIndexScheme
 from hydra_engine.search.searcher import HydraSearcher
 
@@ -111,6 +111,8 @@ def read_wizard_file(directory):
                             add_additional_fields(path, "action", data_loaded[obj]["action"], is_wizard=True)
                         if "sub_type" in data_loaded[obj]:
                             add_additional_fields(path, "sub_type", data_loaded[obj]["sub_type"], is_wizard=True)
+                        if "site_name" in data_loaded[obj]:
+                            add_additional_fields(path,"site_name",data_loaded[obj]["site_name"],is_wizard=True)
 
 
 def generate_wizard_meta(directory):

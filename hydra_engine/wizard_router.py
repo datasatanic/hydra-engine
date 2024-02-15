@@ -96,6 +96,7 @@ async def init_arch(name: str):
 
 @router.post("/deploy")
 def deploy_site(name: str):
+    global deploy_process
     try:
         logger.info(f"deploy site with name: {name}")
         command = f'python -c "from hydra_engine.wizard_router import use_deploy_script; use_deploy_script(\'{name}\')"'
@@ -110,6 +111,7 @@ def deploy_site(name: str):
 
 @router.get("/check-deploy")
 def check_deploy():
+    global deploy_process
     if deploy_process is None:
         WizardInfo().get_sites_info()[-1].status = "not completed"
         return JSONResponse(jsonable_encoder(WizardInfo().get_sites_info()),status_code=200)
@@ -130,4 +132,3 @@ def check_deploy():
 def use_deploy_script(site_name):
     time.sleep(10)
     print(f"Deploy ending for {site_name}")
-    sys.exit(1)
