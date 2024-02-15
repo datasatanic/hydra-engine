@@ -34,6 +34,9 @@ public class ControlsMeta
     [JsonPropertyName("sub_type")]
     public string? SubType { get; set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    public string? SiteName;
+
     public ControlsMeta(string name,List<ControlsMeta> child, List<Dictionary<string,ElemInfo>> elem, string description,string displayName,List<Condition> condition)
     {
         Name = name;
@@ -49,4 +52,139 @@ public class ControlsMeta
         Child = new List<ControlsMeta>();
         Elem = new List<Dictionary<string,ElemInfo>>();
     }
+}
+
+public class WizardState
+{
+    public event Action? OnChange;
+    private void NotifyStateChanged() => OnChange?.Invoke();
+    private string currentStep;
+    private Arch arch;
+    private List<Site> _sites;
+
+    [JsonPropertyName("current_step")]
+    public string CurrentStep
+    {
+        get => currentStep;
+        set
+        {
+            currentStep = value;
+            NotifyStateChanged();
+        }
+    }
+
+    [JsonPropertyName("arch")]
+    public Arch Arch
+    {
+        get => arch;
+        set
+        {
+            arch = value;
+            arch.OnChange += NotifyStateChanged;
+            NotifyStateChanged();
+        }
+    }
+
+    [JsonPropertyName("sites")]
+    public List<Site> Sites
+    {
+        get => _sites;
+        set
+        {
+            _sites = value;
+            NotifyStateChanged();
+        }
+    }
+
+    public void AddSite(Site site)
+    {
+        site.OnChange += NotifyStateChanged;
+        _sites.Add(site);
+        NotifyStateChanged();
+    }
+}
+public class Arch
+{
+    public event Action? OnChange;
+    private void NotifyStateChanged() => OnChange?.Invoke();
+    private string archName;
+    private string status = "not completed";
+    private ArchStatus statusEnum = ArchStatus.NotCompleted;
+
+    [JsonPropertyName("arch_name")]
+    public string ArchName
+    {
+        get => archName;
+        set
+        {
+            archName = value;
+            NotifyStateChanged();
+        }
+    }
+
+    [JsonPropertyName("status")]
+    public string Status
+    {
+        get => status;
+        set
+        {
+            status = value;
+            NotifyStateChanged();
+        }
+    }
+    // Дополнительное свойство, хранящее значение перечисления для статуса
+    [JsonIgnore]
+    public ArchStatus StatusEnum
+    {
+        get => statusEnum;
+        set
+        {
+            statusEnum = value;
+            NotifyStateChanged();
+        }
+    }
+}
+
+public class Site
+{
+    public event Action? OnChange;
+    private void NotifyStateChanged() => OnChange?.Invoke();
+    private string siteName;
+    private string status = "not completed";
+    private ArchStatus statusEnum = ArchStatus.NotCompleted;
+    public string SiteName
+    {
+        get => siteName;
+        set
+        {
+            siteName = value;
+            NotifyStateChanged();
+        }
+    }
+
+    public string Status
+    {
+        get => status;
+        set
+        {
+            status = value;
+            NotifyStateChanged();
+        }
+    }
+    [JsonIgnore]
+    public ArchStatus StatusEnum
+    {
+        get => statusEnum;
+        set
+        {
+            statusEnum = value;
+            NotifyStateChanged();
+        }
+    }
+}
+public enum ArchStatus
+{
+    Completed,
+    NotCompleted,
+    InProgress,
 }

@@ -51,6 +51,13 @@ public class JsonParser
                     break;
                 case "sub_type":
                     tree.SubType = keyValue.Value?.ToString();
+                    if (tree.SubType == "site")
+                    {
+                        foreach (var controlsMeta in tree.Child.Where(item=>item.Type == "form"))
+                        {
+                            controlsMeta.SiteName = tree.Name;
+                        }
+                    }
                     break;
                 case "condition":
                     tree.Condition = JsonSerializer.Deserialize<List<Condition>>(keyValue.Value.ToString());

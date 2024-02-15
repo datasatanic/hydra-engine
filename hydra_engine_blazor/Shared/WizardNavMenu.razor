@@ -5,15 +5,31 @@
 <ul class="tree">
     <li
         @ondblclick:stopPropagation="true">
-        <div class="item-container @(WizardContainer.CurrentOutputUrl == Root ? "active-link" : "")">
-            <img class="@(!string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) && 
-                          WizardContainer.CurrentOutputUrl != Root 
-                          && string.Join("/", WizardContainer.CurrentOutputUrl.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root
+        <div class="item-container @(WizardContainer.WizardState.CurrentStep == Root ? "active-link" : "")">
+            <img class="@(!string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) && 
+                          WizardContainer.WizardState.CurrentStep != Root 
+                          && string.Join("/", WizardContainer.WizardState.CurrentStep.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root
                            && Settings.SubType == "config" ? "success" : "")"/>
-            <h4 class="@(!string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) && WizardContainer.CurrentOutputUrl != Root && string.Join("/", WizardContainer.CurrentOutputUrl.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root ? "passed-step" : "")">@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]
+            <h4 class="@(!string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) && WizardContainer.WizardState.CurrentStep != Root && string.Join("/", WizardContainer.WizardState.CurrentStep.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root ? "passed-step" : "")">@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]
             </h4>
+            @if (Settings.SubType == "site")
+            {
+                var findSite = WizardContainer.WizardState.Sites.Find(item => item.SiteName == Settings.Name);
+                if (findSite != null)
+                {
+                    switch (findSite.StatusEnum)
+                    {
+                        case ArchStatus.InProgress:
+                            <div class="in-progress">Deploying</div>
+                            break;
+                        case ArchStatus.Completed:
+                            <div class="deployed">Deployed</div>
+                            break;
+                    }
+                }
+            }
         </div>
-        @if (WizardContainer.CurrentOutputUrl == Root && WizardModel.ControlsMeta != null)
+        @if (WizardContainer.WizardState.CurrentStep == Root && WizardModel.ControlsMeta != null)
         {
             foreach(var elem in WizardModel.ControlsMeta.Elem)
             {

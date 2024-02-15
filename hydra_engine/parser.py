@@ -29,6 +29,10 @@ class WizardInfo(metaclass=SingletonMeta):
         self.wizard_state.arch.arch_name = name
     def update_arch_status(self,status:str):
         self.wizard_state.arch.status = status
+    def get_sites_info(self):
+        return self.wizard_state.sites
+    def add_site(self,site):
+        self.wizard_state.sites.append(site)
 class HydraParametersInfo(metaclass=SingletonMeta):
     def __init__(self):
         self.tree = {}

@@ -27,7 +27,6 @@
     align-items: center;
     width: 100vw;
     height: 100vh;
-    backdrop-filter: blur(1px);
 }
 /* Safari */
 @-webkit-keyframes rotation {

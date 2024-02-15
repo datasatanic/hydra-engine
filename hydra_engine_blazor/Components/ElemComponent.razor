@@ -103,21 +103,21 @@
                     break;
 
             }
-            @if ((elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString())) && Depth == 1)
-            {
-                <div class="validation-message">Enter field</div>
-            }
-            else if (!TryParseToType(elemInfo.value,elemInfo?.type) && elemInfo.value != null && !string.IsNullOrEmpty(elemInfo?.value.ToString()))
-            {
-                <div class="validation-message">Not @elemInfo.type type</div>
-            }
-            else
-            {
-                foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elemInfo.value, item, elemInfo.control)))
-                {
-                    <div class="validation-message">@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")</div>
-                }
-            }  
+            @* @if ((elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString())) && Depth == 1) *@
+            @* { *@
+            @*     <div class="validation-message">Enter field</div> *@
+            @* } *@
+            @* else if (!TryParseToType(elemInfo.value,elemInfo?.type) && elemInfo.value != null && !string.IsNullOrEmpty(elemInfo?.value.ToString())) *@
+            @* { *@
+            @*     <div class="validation-message">Not @elemInfo.type type</div> *@
+            @* } *@
+            @* else *@
+            @* { *@
+            @*     foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elemInfo.value, item, elemInfo.control))) *@
+            @*     { *@
+            @*         <div class="validation-message">@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")</div> *@
+            @*     } *@
+            @* }   *@
         </div>
     }
     else
@@ -125,12 +125,12 @@
         <div class="array-element @(Depth == 1 ? "fit-content" : "") @(Depth > 1 ? "left-justify" : "") @(Depth % 3 == 1 && !elemInfo.Expand && IsArrayElement ? "gray" : "") @(Depth % 3 == 2 && !elemInfo.Expand && IsArrayElement ? "blue" : "") @(Depth % 3  == 0 && !elemInfo.Expand && IsArrayElement ? "purple" : "")">
             @if (IsArrayElement)
             {
-                <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive"/>
+                <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
             }
             <div class="array-container">
                 <fieldset>
                     <legend id="@(SettingsContainer.GetHash(Key))">@elemInfo.display_name
-                        @if (!elemInfo.readOnly)
+                        @if (!elemInfo.readOnly && elemInfo.IsActive)
                         {
                             switch (Depth % 3)
                             {
@@ -181,7 +181,7 @@
                                         <div class="dropend">
                                             <img class="trash-image dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"/>
                                             <div class="dropdown-menu trash-menu">
-                                                <div class="trash-menu-element">
+                                                <div class="trash-menu-element" @onclick="@(()=>CopyElement(j))">
                                                     <img class="copy-image"/>
                                                     <h4>Duplicate</h4>
                                                 </div>
@@ -480,7 +480,10 @@
                 break;
             case Control.Checkbox:
                 ElementAttributes?.Add("type","checkbox");
-                ElementAttributes?.Add("checked", bool.Parse(elemInfo.value.ToString()));
+                if (elemInfo.value != null && bool.TryParse(elemInfo.value.ToString(),out _))
+                {
+                    ElementAttributes?.Add("checked", bool.Parse(elemInfo.value.ToString()));
+                }
                 break;
         }
         if (elemInfo.constraints is null)
@@ -561,6 +564,7 @@
     }
     private async Task AddItem()
     {
+        if (elemInfo.value is null) elemInfo.value = new List<object>();
         var arrayItems = elemInfo?.value as List<object>;
         if (elemInfo?.sub_type_schema != null)
         {
@@ -572,7 +576,7 @@
         }
         else
         {
-            arrayItems?.Add(string.Empty);
+            arrayItems.Add(string.Empty);
             elemInfo.isValid = false;
         }
         _canScroll = true;
@@ -733,6 +737,7 @@
     private void ChangeActiveStatus(ElemInfo el)
     {
         el.IsActive = !el.IsActive;
+        Console.WriteLine(Key);
         if (!el.IsActive)
         {
             el.isValid = true;
@@ -755,6 +760,16 @@
                 ChangeActiveStatus(keyValuePair.Value);
             }
         }
+    }
+
+    private async Task CopyElement(int index)
+    {
+        var arrayItems = elemInfo?.value as List<object>;
+        var subTypeSchema = elemInfo.array_sub_type_schema[index].ToDictionary(x => x.Key, y => y.Value.DeepCopy());
+        elemInfo.array_sub_type_schema.Insert(index,subTypeSchema);
+        var copyValue = subTypeSchema.ToDictionary(x => x.Key,y=>y.Value.value);
+        arrayItems?.Insert(index,copyValue);
+        await SendValue.InvokeAsync(elemInfo);
     }
 
 }

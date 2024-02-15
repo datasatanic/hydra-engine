@@ -84,22 +84,23 @@ input[type="text"],input[type="number"],input[type="datetime-local"],input[type=
     background: var(--hydra-background-white);
     min-width: 240px;
     height: 32px;
-    border: 1px solid var(--hydra-secondary-10);
+    border: 1px solid var(--hydra-gray-100);
     padding: 5px 10px;
     border-radius: 8px;
 }
 input[type="text"]:hover,input[type="number"]:hover,input[type="datetime-local"]:hover,input[type="date"]:hover,input[type="time"]:hover,textarea:hover{
-    border:1px solid var(--hydra-secondary-65);
+    border:1px solid var(--hydra-gray-500);
 }
 input[type="text"]:focus,input[type="number"]:focus,input[type="datetime-local"]:focus,input[type="date"]:focus,input[type="time"]:focus,textarea:focus{
-    border: 1px solid var(--hydra-blue-pressed)
+    border: 1px solid var(--hydra-blue-700)
 }
 input[type="text"]:disabled,input[type="number"]:disabled,input[type="datetime-local"]:disabled,input[type="date"]:disabled,input[type="time"]:disabled,textarea:disabled{
-    border: 1px solid var(--hydra-secondary-10);
-    background: var(--hydra-secondary-3);
+    border: 1px solid var(--hydra-gray-100);
+    background: linear-gradient(0deg, var(--hydra-gray-20), var(--hydra-gray-20));
+
 }
 input[type="text"][validation-error],input[type="number"][validation-error],input[type="datetime-local"][validation-error],input[type="date"][validation-error],input[type="time"][validation-error],textarea[validation-error]{
-    border:1px solid var(--hydra-error);
+    border:1px solid var(--hydra-error-500);
 }
 textarea{
     background: var(--hydra-background-white);
@@ -226,6 +227,8 @@ fieldset>.elements-container:last-child{
     display: flex;
     flex-direction: column;
     gap: 10px;
+    padding: 0 20px;
+    width: fit-content;
 }
 .array-container .param-background{
     background: transparent !important;

@@ -1,5 +1,6 @@
 ﻿@using Blazored.Toast.Configuration
 @using DefaultNamespace
+@using hydra_engine_blazor.Models
 @inherits LayoutComponentBase
 @inject IJSRuntime _jsRuntime
 @inject WizardContainer WizardContainer
@@ -9,14 +10,14 @@
     <div @ref="menuContainer" class="menu-container">
         <h1>Hydra</h1>
         <div class="sidebar">
-            <div style="min-width: 190px;border-radius: 4px;padding: 5px" class="@(string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) ? "active-link": "")">
-                <h4 class="@(!string.IsNullOrEmpty(WizardContainer.CurrentOutputUrl) ? "green-color" : "")">Welcome page</h4>
+            <div style="min-width: 190px;border-radius: 4px;padding: 5px" class="@(string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) ? "active-link": "")">
+                <h4 class="@(!string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) ? "green-color" : "")">Welcome page</h4>
             </div>
             @foreach (var node in WizardContainer.WizardTree.Child)
             {
                 <WizardNavMenu Settings="@node" Root="@node.Name" DisplayNamePath="@node.DisplayName"/>
             }
-            @if (WizardContainer.Initializing)
+            @if (WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress)
             {
                 <div class="placeholder-glow skeleton-container">
                     @for (var i = 0; i < 6; i++)
@@ -25,6 +26,15 @@
                     }
                 </div>
                 
+            }
+            else if (WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.NotCompleted)
+            {
+                <div class="skeleton-container">
+                    @for (var i = 0; i < 6; i++)
+                    {
+                        <div class="nav-menu-style placeholder"></div>
+                    }
+                </div>
             }
         </div>
         <div class="slider-container" @ref="resizeContainer">

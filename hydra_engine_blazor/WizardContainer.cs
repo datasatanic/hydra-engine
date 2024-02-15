@@ -11,25 +11,15 @@ public class WizardContainer
 {  
     public event Action? OnChange;
     private void NotifyStateChanged() => OnChange?.Invoke();
-    private bool initializing;
+    private WizardState _wizardState = new(){CurrentStep = string.Empty,Arch = new Arch(){ArchName = string.Empty,Status = "not completed",StatusEnum = ArchStatus.NotCompleted},Sites = new List<Site>()};
 
-    public bool Initializing
+    public WizardState WizardState
     {
-        get => initializing;
+        get => _wizardState;
         set
         {
-            initializing = value;
-            NotifyStateChanged();
-        }
-    }
-    private string _currentOutputUrl;
-
-    public string CurrentOutputUrl
-    {
-        get => _currentOutputUrl;
-        set
-        {
-            _currentOutputUrl = value;
+            _wizardState = value;
+            _wizardState.OnChange += NotifyStateChanged;
             NotifyStateChanged();
         }
     }
@@ -97,9 +87,9 @@ public class WizardContainer
         return await _client.PostAsync($"api/wizard/deploy?name={siteName}",content);
     }
 
-    public async Task<string> CheckDeploy()
+    public async Task<List<Site>> CheckDeploy()
     {
-        return await _client.GetStringAsync("/api/wizard/check-deploy");
+        return await _client.GetFromJsonAsync<List<Site>>("/api/wizard/check-deploy");
     }
 
     public async Task<ControlsMeta> UpdateLayoutTree()
@@ -115,8 +105,28 @@ public class WizardContainer
         return tree;
     }
 
-    public async Task<string> GetCurrentStep()
+    public async Task<WizardState> GetWizardState()
     {
-        return await _client.GetStringAsync("api/wizard/current-step");
+        var wizardState = await _client.GetFromJsonAsync<WizardState>("api/wizard/wizard-state");
+        if (wizardState != null)
+        {
+            wizardState.Arch.StatusEnum = wizardState.Arch.Status switch
+            {
+                "not completed" => ArchStatus.NotCompleted,
+                "in progress" => ArchStatus.InProgress,
+                "completed" => ArchStatus.Completed,
+                _ => wizardState.Arch.StatusEnum
+            };
+            foreach (var wizardStateSite in wizardState.Sites)
+            {
+                wizardStateSite.StatusEnum = wizardStateSite.Status switch
+                {
+                    "not completed"=>ArchStatus.NotCompleted,
+                    "in progress"=>ArchStatus.InProgress,
+                    "completed"=>ArchStatus.Completed,
+                };
+            }
+        }
+        return wizardState;
     }
 }

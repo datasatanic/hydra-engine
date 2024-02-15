@@ -4,6 +4,9 @@
 html, body {
     font-family: 'Inter', serif
 }
+::placeholder{
+    color:var(--hydra-gray-200);
+}
 .primary-button{
     background: var(--hydra-blue-500-primary);
     color:white;

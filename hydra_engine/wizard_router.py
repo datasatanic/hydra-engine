@@ -17,13 +17,7 @@ logger = logging.getLogger("common_logger")
 router = APIRouter(prefix="/wizard", tags=["wizard"])
 
 
-class DeployProcess:
-    def __init__(self):
-        self.deploy_process: Optional[subprocess.Popen] = None
-        self.site_name: str = ""
-
-
-deploy_site = DeployProcess()
+deploy_process = None
 
 @router.get("/tree")
 def get_wizard_tree():
@@ -33,11 +27,11 @@ def get_wizard_tree():
     except FileNotFoundError:
         return JSONResponse(content={"detail": "File or directory not found"}, status_code=400)
 
-@router.get("/current-step")
+@router.get("/wizard-state")
 def get_current_step():
     if WizardInfo().wizard_state is None:
-        WizardInfo().wizard_state = WizardState(current_step="",arch = Arch(arch_name = "",status = "not initialized"),sites=[])
-    return PlainTextResponse(WizardInfo().wizard_state.current_step)
+        WizardInfo().wizard_state = WizardState(current_step="",arch = Arch(arch_name = "",status = "not completed"),sites=[])
+    return JSONResponse(content=jsonable_encoder(WizardInfo().wizard_state),status_code=200)
 @router.post("/tree/{name:path}")
 def get_wizard_form(name: str, conditions: list[Condition]):
     if name is None or name == "":
@@ -79,7 +73,7 @@ async def set_values(name: str, content: list[ParameterSaveInfo]):
 @router.post("/init_arch")
 async def init_arch(name: str):
     try:
-        WizardInfo().update_arch_status("initializing")
+        WizardInfo().update_arch_status("in progress")
         command = f"GIT_SERVER_ADDRESS=10.74.106.14:/srv/git CCFA_VERSION=0.1.0-pc ENVIRONMENT_DIR=. ./_framework/scripts/env/init.sh {name}"
         init_process = subprocess.run(command, cwd=config.filespath, shell=True, check=True)
         hydra_engine.filewatcher.file_event.wait()
@@ -88,14 +82,14 @@ async def init_arch(name: str):
             update_wizard_meta(config.filespath, name)
             hydra_engine.filewatcher.file_event.wait()
             WizardInfo().update_arch_name(name)
-            WizardInfo().update_arch_status("initialized")
+            WizardInfo().update_arch_status("completed")
             return JSONResponse(content={"message": "OK"}, status_code=200)
         else:
-            WizardInfo().update_arch_status("not initialized")
+            WizardInfo().update_arch_status("not completed")
             WizardInfo().update_arch_name("")
             return JSONResponse(content={"message": "Bad request"}, status_code=400)
     except Exception as e:
-        WizardInfo().update_arch_status("not initialized")
+        WizardInfo().update_arch_status("not completed")
         WizardInfo().update_arch_name("")
         return JSONResponse(content={"message": "Bad request"}, status_code=400)
 
@@ -105,8 +99,9 @@ def deploy_site(name: str):
     try:
         logger.info(f"deploy site with name: {name}")
         command = f'python -c "from hydra_engine.wizard_router import use_deploy_script; use_deploy_script(\'{name}\')"'
-        deploy_site.deploy_process = subprocess.Popen(command, shell=True)
-        deploy_site.site_name = name
+        deploy_process = subprocess.Popen(command, shell=True)
+        site = Site(site_name=name,status = "in progress")
+        WizardInfo().add_site(site)
         return JSONResponse(content={"message": f"Starting deploy {name}"}, status_code=200)
     except Exception as e:
         logger.error(e)
@@ -115,17 +110,21 @@ def deploy_site(name: str):
 
 @router.get("/check-deploy")
 def check_deploy():
-    if deploy_site.deploy_process is None:
-        return PlainTextResponse("stop")
-    elif deploy_site.deploy_process.poll() is None:
-        return PlainTextResponse("completing")
-    elif deploy_site.deploy_process.poll() is not None:
-        if deploy_site.deploy_process.returncode == 0:
-            deploy_site.deploy_process = None
-            return PlainTextResponse("completed")
+    if deploy_process is None:
+        WizardInfo().get_sites_info()[-1].status = "not completed"
+        return JSONResponse(jsonable_encoder(WizardInfo().get_sites_info()),status_code=200)
+    elif deploy_process.poll() is None:
+        WizardInfo().get_sites_info()[-1].status = "in progress"
+        return JSONResponse(jsonable_encoder(WizardInfo().get_sites_info()),status_code=200)
+    elif deploy_process.poll() is not None:
+        if deploy_process.returncode == 0:
+            deploy_process = None
+            WizardInfo().get_sites_info()[-1].status = "completed"
+            return JSONResponse(jsonable_encoder(WizardInfo().get_sites_info()),status_code=200)
         else:
-            deploy_site.deploy_process = None
-            return PlainTextResponse("failed")
+            deploy_process = None
+            WizardInfo().get_sites_info()[-1].status = "not completed"
+            return JSONResponse(jsonable_encoder(WizardInfo().get_sites_info()),status_code=400)
 
 
 def use_deploy_script(site_name):

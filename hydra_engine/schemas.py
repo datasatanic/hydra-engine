@@ -580,9 +580,7 @@ def set_value(input_url: str, uid: str, value: object):
         if key in elements.values and elements.uid == uid:
             set_value_in_dict(elements.values, value, input_url_list)
             write_file(elements.values, elements.path, elements.type, input_url, value)
-            print(hydra_engine.filewatcher.file_event.is_set())
-            if hydra_engine.filewatcher.file_event.is_set():
-                hydra_engine.filewatcher.file_event.wait()
+            hydra_engine.filewatcher.file_event.wait()
             return
 
 

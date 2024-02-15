@@ -127,7 +127,7 @@
 .wizard-elements{
     display: flex;
     flex-direction: column;
-    gap:10px;
+    gap:20px;
 }
 .child-group-container>div{
     display: flex;

@@ -1,6 +1,7 @@
 ﻿@page "/wizard"
 @using DefaultNamespace
 @using hydra_engine_blazor.Models
+@using System.Text.Json
 @layout WizardLayout
 @inject WizardContainer WizardContainer;
 @inject IToastService _toastService
@@ -8,7 +9,7 @@
 <div class="wizard-page-container">
     @if (!_load)
     {
-        <p>Loading...</p>
+        <Loader Color="#4A67F4" Title="Loading"></Loader>
     }
     else if (string.IsNullOrEmpty(Output_URL))
     {
@@ -36,82 +37,59 @@
                 }
             </div>
             <div class="wizard-content">
-                @if (WizardContainer.Initializing)
-                {
-                    <div>Initialize @archName architecture...</div>
-                }
-                else
-                {
-                    <div class="wizard-container">
-                        @if (_deployingStatus == "completing" && _deployingSiteName == WizardModel.ControlsMeta.Name)
+                <div class="wizard-container">
+                    <div class="wizard-elements form-elements-container">
+                        @foreach (var elem in WizardModel.ControlsMeta.Elem)
                         {
-                            <h2>Deploying site with name @(WizardModel.ControlsMeta.Name)...</h2>
-                        }
-                        else if (_deployingStatus == "completed" && _deployingSiteName == WizardModel.ControlsMeta.Name)
-                        {
-                            <h2>Site with name @(WizardModel.ControlsMeta.Name) has been deployed succesfully.
-                                @(WizardModel.ControlsMeta.Child.Any(item => item.Type.Equals("form")) ? "Go to next step" : "Installation complete")</h2>
-                        }
-                        else
-                        {
-                            <div class="wizard-elements form-elements-container">
-                                @foreach (var elem in WizardModel.ControlsMeta.Elem)
-                                {
-                                    <div class="elements-container">
-                                        <div>
-                                            @foreach (var kvp in elem)
-                                            {
-                                                <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))" Depth="1">
-                                                </ElemComponent>
-                                            }
-                                        </div>
-                                    </div>
-                                }
-                                <div class="wizard-child-groups @(formGroups.Count == 0 ? "hide" : "")">
-                                    @foreach (var item in formGroups)
+                            <div class="elements-container">
+                                <div>
+                                    @foreach (var kvp in elem)
                                     {
-                                        <div class="child-group-container @(item.Name == archName ? "selected-form" : "")" @onclick="@(() => SelectArch(item.Name))">
-                                            <div>
-                                                <h3 style="font-weight: 600">@item.DisplayName</h3>
-                                            </div>
-                                            <h4>@item.Description</h4>
-                                            <div @onclick="async () => await ArchModalWindow.Open()">
-                                                <h4 class="link">Details</h4>
-                                                <img class="arch-info"/>
-                                            </div>
-                                            @if (item.Name == archName)
-                                            {
-                                                <img class="selected-icon"/>
-                                            }
-                                        </div>
+                                        <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))" Depth="1">
+                                        </ElemComponent>
                                     }
                                 </div>
                             </div>
                         }
+                        <div class="wizard-child-groups @(formGroups.Count == 0 ? "hide" : "")">
+                            @foreach (var item in formGroups)
+                            {
+                                <div class="child-group-container @(item.Name == WizardContainer.WizardState.Arch.ArchName ? "selected-form" : "")" @onclick="@(() => SelectArch(item.Name))">
+                                    <div>
+                                        <h3 style="font-weight: 600">@item.DisplayName</h3>
+                                    </div>
+                                    <h4>@item.Description</h4>
+                                    <div @onclick="async () => await ArchModalWindow.Open()">
+                                        <h4 class="link">Details</h4>
+                                        <img class="arch-info"/>
+                                    </div>
+                                    @if (item.Name == WizardContainer.WizardState.Arch.ArchName)
+                                    {
+                                        <img class="selected-icon"/>
+                                    }
+                                </div>
+                            }
+                        </div>
                     </div>
-                }
+                </div>
             </div>
             <div class="prev-next-container">
-                @if (!string.IsNullOrEmpty(Output_URL))
-                {
-                    <button class="prev-button ghost-button" @onclick="PrevCallback">
-                        <img/>
-                        Back
-                    </button>
-                }
-                @if (WizardModel.ControlsMeta.Child.Any(item => item.Type == "form") || WizardModel.ControlsMeta.Action == "init")
-                {
-                    <button class="next-button primary-button" @onclick="NextCallback"
-                            disabled="@(changeElements.Exists(item => !item.Value.isValid))">
-                        Next
-                        <img/>
-                    </button>
-                }
+                <button class="prev-button ghost-button" @onclick="PrevCallback" disabled="@(WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.Completed && WizardContainer.WizardState.CurrentStep.Split("/").Length == 2
+                                                                                             || WizardContainer.WizardState.Sites.Count > 0 && WizardContainer.WizardState.Sites[^1].StatusEnum is ArchStatus.InProgress or ArchStatus.Completed && WizardModel.ControlsMeta.SubType == "site")">
+                    <img/>
+                    Back
+                </button>
+                <button class="next-button primary-button" @onclick="NextCallback"
+                        disabled="@(changeElements.Exists(item => !item.Value.isValid)
+                                    || WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress || WizardContainer.WizardState.Sites.Find(item => item.StatusEnum == ArchStatus.InProgress) != null && WizardModel.ControlsMeta.Action == "deploy")">
+                    Next
+                    <img/>
+                </button>
             </div>
         </div>
     }
     @{
-        var arch = formGroups.Find(item => item.Name == archName);
+        var arch = formGroups.Find(item => item.Name == WizardContainer.WizardState.Arch.ArchName);
         if (arch != null)
         {
             <Modal Model="arch" @ref="ArchModalWindow">
@@ -135,21 +113,17 @@
     private string nextFormUrl = "";
     private string nextFormName = "";
     private string formNamesPath = "";
-    private string archName = "";
     private Modal ArchModalWindow { get; set; }
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
     private ControlsMeta? _currentGroup;
-    private HttpResponseMessage? deployResponse;
     private List<ControlsMeta> formGroups = new();
     private Timer? _timer;
-    private string _deployingStatus = "stop";
-    private string _deployingSiteName = "";
-    private bool _initProcessing;
     private bool _load;
     protected override async Task OnInitializedAsync()
     {
-        Output_URL = WizardContainer.CurrentOutputUrl = await WizardContainer.GetCurrentStep();
-        Console.WriteLine(WizardContainer.CurrentOutputUrl);
+        WizardContainer.WizardState = await WizardContainer.GetWizardState();
+        Console.WriteLine(JsonSerializer.Serialize(WizardContainer.WizardState));
+        Output_URL = WizardContainer.WizardState.CurrentStep;
         await UpdateWizardData(new List<Condition>());
         WizardModel.OnChange += StateHasChanged;
         _load = true;
@@ -157,6 +131,15 @@
 
     private async Task PrevCallback()
     {
+        if (WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.Completed && WizardContainer.WizardState.CurrentStep.Split("/").Length == 2)
+        {
+            return;
+        }
+        if (WizardContainer.WizardState.Sites.Count > 0 && WizardContainer.WizardState.Sites[^1].StatusEnum is ArchStatus.InProgress or ArchStatus.Completed && WizardModel.ControlsMeta.SubType == "site")
+        {
+            return;
+        }
+        _load = false;
         var urlList = Output_URL.Split("/").ToList();
         urlList.Remove(urlList.Last());
         if (urlList.Count == 0) Output_URL = "";
@@ -165,27 +148,33 @@
         formsNameList.Remove(formsNameList.Last());
         if (formsNameList.Count == 0) formNamesPath = "";
         formNamesPath = string.Join("/", formsNameList);
-        WizardContainer.CurrentOutputUrl = Output_URL;
+        WizardContainer.WizardState.CurrentStep = Output_URL;
         await UpdateWizardData(new List<Condition>());
+        _load = true;
     }
 
     private void SelectArch(string formName)
     {
-        archName = formName;
+        WizardContainer.WizardState.Arch.ArchName = formName;
     }
 
     private async Task NextCallback()
     {
+        if (WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress || WizardContainer.WizardState.Sites.Find(item => item.StatusEnum == ArchStatus.InProgress) != null && WizardModel.ControlsMeta.Action == "deploy")
+        {
+            return;
+        }
+        _load = false;
         HttpResponseMessage? saveResponse = null;
         if (WizardModel.ControlsMeta.Action == "init")
         {
-            WizardContainer.Initializing = true;
-            var response = await WizardContainer.InitArch(archName);
+            WizardContainer.WizardState.Arch.StatusEnum = ArchStatus.InProgress;
+            var response = await WizardContainer.InitArch(WizardContainer.WizardState.Arch.ArchName);
             if (response.IsSuccessStatusCode)
             {
                 await UpdateWizardData(new List<Condition>()); // обновляем wizard после init.sh
                 WizardContainer.WizardTree = await WizardContainer.UpdateLayoutTree();
-                WizardContainer.Initializing = false;
+                WizardContainer.WizardState.Arch.StatusEnum = ArchStatus.Completed;
             }
             else
             {
@@ -198,10 +187,41 @@
         }
         if (saveResponse is null or {IsSuccessStatusCode:true})
         {
+            if (WizardModel.ControlsMeta.Action == "deploy" && WizardModel.ControlsMeta.SiteName != null)
+            {
+                var deployResponse = await WizardContainer.DeploySite(WizardModel.ControlsMeta.SiteName);
+                if (deployResponse.IsSuccessStatusCode)
+                {
+                    var site = new Site { SiteName = WizardModel.ControlsMeta.SiteName, Status = "in progress",StatusEnum = ArchStatus.InProgress};
+                    WizardContainer.WizardState.AddSite(site);
+                    _timer = new Timer(async _ =>
+                    {
+                        WizardContainer.WizardState.Sites = await WizardContainer.CheckDeploy();
+                        switch (site.StatusEnum)
+                        {
+                            case ArchStatus.Completed:
+                                _timer?.DisposeAsync();
+                                _toastService.ShowSuccess($"Site {site.SiteName} has been deployed successfully");
+                                StateHasChanged();
+                                break;
+                            case ArchStatus.NotCompleted:
+                                _timer?.DisposeAsync();
+                                _toastService.ShowError($"An error occured when deploying site {site.SiteName}");
+                                StateHasChanged();
+                                break;
+                        }
+                    }, null, 10000, 10000);
+                }
+            }
+            if (WizardModel.ControlsMeta.Action == "deploy" && WizardModel.ControlsMeta.Child.Count == 0)
+            {
+                _load = true;
+                return;
+            }
             var condition = new List<Condition>();
             //var conditions = WizardModel.ControlsMeta.Child.Find(item => item.Name == nextFormUrl.Split("/")[^1])?.Condition;
             Output_URL = nextFormUrl;
-            WizardContainer.CurrentOutputUrl = Output_URL;
+            WizardContainer.WizardState.CurrentStep = Output_URL;
             formNamesPath = nextFormName;
             await UpdateWizardData(condition);
         }
@@ -209,6 +229,7 @@
         {
             _toastService.ShowError("An error occured when trying to save new values of parameters");
         }
+        _load = true;
     }
     private void ChangeValue(ElemInfo obj,string key)
     {
@@ -255,9 +276,8 @@
             if (formGroups.Count > 0)
             {
                 _currentGroup = formGroups[0];
-                archName = _currentGroup.Name;
+                WizardContainer.WizardState.Arch.ArchName = _currentGroup.Name;
             }
-            deployResponse = null;
         }
         else
         {
@@ -299,57 +319,10 @@
                && _currentGroup.Elem.SelectMany(item=>item.Values).Any(item=>!item.isValid) 
                && formGroups.IndexOf(group) > formGroups.IndexOf(_currentGroup);
     }
-
-    private async Task DeploySite()
-    {
-        if (formGroups.Any(item => item.Elem.SelectMany(x => x.Values).Any(x => !x.isValid)) 
-            || _deployingStatus == "completing" ||  _deployingStatus == "failed" && _deployingSiteName != WizardModel.ControlsMeta.Name)
-        {
-            return;
-        }
-        var saveResponse = await WizardContainer.SetValues(changeElements,Output_URL);
-        if (saveResponse is null or {IsSuccessStatusCode: true})
-        {
-            deployResponse = await WizardContainer.DeploySite(WizardModel.ControlsMeta.Name.ToLower());
-            if (deployResponse.IsSuccessStatusCode)
-            {
-                _deployingStatus = "completing";
-                _deployingSiteName = WizardModel.ControlsMeta.Name;
-                StateHasChanged();
-                _timer = new Timer(async _ =>
-                {
-                    _deployingStatus = await WizardContainer.CheckDeploy();
-                    switch (_deployingStatus)
-                    {
-                        case "completed":
-                            _timer?.DisposeAsync();
-                            _toastService.ShowSuccess($"Site {_deployingSiteName} has been deployed successfully");
-                            StateHasChanged();
-                            break;
-                        case "failed":
-                            _timer?.DisposeAsync();
-                            deployResponse = null;
-                            _toastService.ShowError($"An error occured when deploying site {_deployingSiteName}");
-                            StateHasChanged();
-                            break;
-                    }
-                }, null, 10000, 10000);
-            }
-            else
-            {
-                _toastService.ShowError($"An error occured when trying to start deploy {_deployingSiteName}");
-                deployResponse = null;
-            }
-        }
-        else
-        {
-            _toastService.ShowError("An error occured when trying to save new values of parameters");
-        }
-    }
     private async Task StartCallback()
     {
         Output_URL = "root";
-        WizardContainer.CurrentOutputUrl = Output_URL;
+        WizardContainer.WizardState.CurrentStep = Output_URL;
         await NextCallback();
     }
 

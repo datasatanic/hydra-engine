@@ -35,3 +35,16 @@
     content: url("icons/success_icon.svg");
     display: block !important;
 }
+.deployed{
+    padding: 2px 5px 3px 5px;
+    color:white;
+    border-radius: 4px;
+    font-size: 10px;
+    background: var(--hydra-success-600);
+}
+.in-progress{
+    padding: 2px 5px 3px 5px;
+    border-radius: 4px;
+    font-size: 10px;
+    background: var(--hydra-gray-30)
+}
