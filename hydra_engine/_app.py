@@ -88,6 +88,7 @@ def read_wizard_file(directory):
         Reads meta file of wizard tree and creates structured tree
     """
     HydraParametersInfo().wizard_tree.clear()
+    last_id = 0
     for root, dirs, files in os.walk(directory):
         for name in files:
             if name == config.wizard_filename:
@@ -96,12 +97,16 @@ def read_wizard_file(directory):
                     for obj in data_loaded:
                         path = obj.split("/")
                         condition_list = []
-                        if "condition" in data_loaded[obj]:
-                            condition_data = data_loaded[obj]["condition"]
-                            for condition in condition_data:
-                                for key in condition:
-                                    condition_schema = Condition(key=key, allow=condition[key])
-                                    condition_list.append(condition_schema)
+                        # if "condition" in data_loaded[obj]:
+                        #     condition_data = data_loaded[obj]["condition"]
+                        #     for condition in condition_data:
+                        #         for key in condition:
+                        #             condition_schema = Condition(key=key, allow=condition[key])
+                        #             condition_list.append(condition_schema)
+                        if last_id != data_loaded[obj]["id"]:
+                            last_id == data_loaded[obj]["id"]
+                        else:
+                            raise ValueError("In file wizard.meta id must be unique")
                         add_node(path, data_loaded[obj]["id"], data_loaded[obj]["type"], condition=condition_list,
                                  is_wizard=True)
                         add_additional_fields(path, "display_name", data_loaded[obj]["display_name"], is_wizard=True)
@@ -116,7 +121,7 @@ def read_wizard_file(directory):
 
 
 def generate_wizard_meta(directory):
-    file = open(os.path.join(directory, "wizard.meta"), 'r+')
+    file = open(os.path.join(directory, "wizard.meta"), 'r')
     wizard_data = yaml.load(file)
     last_id = None
     for root, dirs, files in os.walk(os.path.join(config.filespath, "_framework/arch")):
@@ -136,6 +141,8 @@ def generate_wizard_meta(directory):
                                                               "description": description, "type": "group",
                                                               "id": last_id + 1}}
                 if f"root/{name.replace('.yml.meta', '')}" not in wizard_data:
-                    file.write("\n")
-                    yaml.dump(wizard_form, file)
+                    wizard_data.update(wizard_form)
+    file.close()
+    file = open(os.path.join(directory, "wizard.meta"), 'w')
+    yaml.dump(wizard_data,file)
     file.close()

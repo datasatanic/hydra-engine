@@ -6,10 +6,19 @@
 @inject WizardContainer WizardContainer;
 @inject IToastService _toastService
 @inject WizardModel WizardModel
+@inject NavigationManager _navigationManager
 <div class="wizard-page-container">
     @if (!_load)
     {
-        <Loader Color="#4A67F4" Title="Loading"></Loader>
+        @if (WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress)
+        {
+            <Loader Color="#4A67F4" Title="@($"Initializing {WizardContainer.WizardState.Arch.ArchName}")"></Loader>
+        }
+        else
+        {
+            <Loader Color="#4A67F4" Title="Loading"></Loader>
+        }
+        
     }
     else if (string.IsNullOrEmpty(Output_URL))
     {
@@ -34,6 +43,10 @@
                 @if (!string.IsNullOrEmpty(WizardModel.ControlsMeta.Description))
                 {
                     <h4>@WizardModel.ControlsMeta.Description</h4>
+                }
+                @if (WizardModel.ControlsMeta.Child.Count == 0)
+                {
+                    <h4>@(WizardContainer.WizardState.Sites.All(item=>item.StatusEnum == ArchStatus.Completed) ? "Hydra installation completed successfully" : "Waiting for deployment last site")</h4>
                 }
             </div>
             <div class="wizard-content">
@@ -81,9 +94,10 @@
                 </button>
                 <button class="next-button primary-button" @onclick="NextCallback"
                         disabled="@(changeElements.Exists(item => !item.Value.isValid)
-                                    || WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress || WizardContainer.WizardState.Sites.Find(item => item.StatusEnum == ArchStatus.InProgress) != null && WizardModel.ControlsMeta.Action == "deploy")">
-                    Next
-                    <img/>
+                                    || WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress || WizardContainer.WizardState.Sites.Find(item => item.StatusEnum == ArchStatus.InProgress) != null && WizardModel.ControlsMeta.Action == "deploy"
+                                    || WizardModel.ControlsMeta.Child.Count == 0 && WizardContainer.WizardState.Sites.Exists(item=>item.StatusEnum is ArchStatus.InProgress or ArchStatus.NotCompleted))">
+                    @(WizardModel.ControlsMeta.Child.Count > 0 ? "Next" : "Finish")
+                    <img style="@(WizardModel.ControlsMeta.Child.Count == 0 ? "display:none" : "")"/>
                 </button>
             </div>
         </div>
@@ -94,7 +108,7 @@
         {
             <Modal Model="arch" @ref="ArchModalWindow">
                 <Header>
-                    <h3>@arch?.DisplayName</h3>
+                    <h3>@arch.DisplayName</h3>
                     <img @onclick="async () => await ArchModalWindow.Close()" alt=""/>
                 </Header>
                 <Body>
@@ -135,7 +149,8 @@
         {
             return;
         }
-        if (WizardContainer.WizardState.Sites.Count > 0 && WizardContainer.WizardState.Sites[^1].StatusEnum is ArchStatus.InProgress or ArchStatus.Completed && WizardModel.ControlsMeta.SubType == "site")
+        if (WizardContainer.WizardState.Sites.Count > 0 && WizardContainer.WizardState.Sites[^1].StatusEnum is ArchStatus.InProgress or ArchStatus.Completed 
+            && WizardModel.ControlsMeta.SiteName != WizardContainer.WizardState.Sites[^1].SiteName)
         {
             return;
         }
@@ -160,8 +175,17 @@
 
     private async Task NextCallback()
     {
-        if (WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress || WizardContainer.WizardState.Sites.Find(item => item.StatusEnum == ArchStatus.InProgress) != null && WizardModel.ControlsMeta.Action == "deploy")
+        if (WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress || WizardContainer.WizardState.Sites.Exists(item => item.StatusEnum is ArchStatus.InProgress or ArchStatus.NotCompleted) && WizardModel.ControlsMeta.Action == "deploy")
         {
+            return;
+        }
+        if (WizardModel.ControlsMeta.Child.Count == 0 && WizardContainer.WizardState.Sites.Exists(item => item.StatusEnum is ArchStatus.InProgress or ArchStatus.NotCompleted))
+        {
+            return;
+        }
+        if (WizardModel.ControlsMeta.Child.Count == 0 && WizardContainer.WizardState.Sites.All(item => item.StatusEnum == ArchStatus.Completed))
+        {
+            _navigationManager.NavigateTo("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
             return;
         }
         _load = false;
@@ -212,11 +236,6 @@
                         }
                     }, null, 10000, 10000);
                 }
-            }
-            if (WizardModel.ControlsMeta.Action == "deploy" && WizardModel.ControlsMeta.Child.Count == 0)
-            {
-                _load = true;
-                return;
             }
             var condition = new List<Condition>();
             //var conditions = WizardModel.ControlsMeta.Child.Find(item => item.Name == nextFormUrl.Split("/")[^1])?.Condition;

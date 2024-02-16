@@ -713,7 +713,7 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 def update_wizard_meta(directory: str, arch_name):
-    file = open(os.path.join(config.filespath, "wizard.meta"), 'r+')
+    file = open(os.path.join(config.filespath, "wizard.meta"), 'r')
     ignore_dirs, ignore_extension = read_hydra_ignore()
     wizard_data = yaml.load(file)
     last_id = None
@@ -745,8 +745,7 @@ def update_wizard_meta(directory: str, arch_name):
                                     "description": "", "type": "form", "sub_type": "config",
                                     "id": last_id + 1}}
                     if last_path not in wizard_data:
-                        file.write('\n')
-                        yaml.dump(wizard_form, file)
+                        wizard_data.update(wizard_form)
                 else:
                     if _dir != last_dir:
                         last_dir = _dir
@@ -756,8 +755,7 @@ def update_wizard_meta(directory: str, arch_name):
                                         "description": "", "type": "form", "sub_type": "site",
                                         "id": last_id + 1}}
                         if last_path not in wizard_data:
-                            file.write('\n')
-                            yaml.dump(wizard_form, file)
+                            wizard_data.update(wizard_form)
                         last_id += 1
                     path = last_path + "/" + name.replace('.yml.meta', '')
                     wizard_group = {
@@ -765,9 +763,20 @@ def update_wizard_meta(directory: str, arch_name):
                                "description": "", "type": "form", "sub_type": "config",
                                "id": last_id + 1, "action": "deploy" if name == files_in_directory[
                                 -1] and name != "global.yml.meta" else None,"site_name":last_dir}}
-                    if last_path not in wizard_data:
-                        file.write('\n')
-                        yaml.dump(wizard_group, file)
+                    if path not in wizard_data:
+                        wizard_data.update(wizard_group)
+    last_key, last_value = list(wizard_data.items())[-1]
+    last_path = last_key + "/last_step"
+    last_id+=1
+    last_form = {
+        last_path: {"display_name": "Final stage",
+                    "description": "", "type": "form",
+                    "id": last_id + 1}}
+    if last_path not in wizard_data:
+        wizard_data.update(last_form)
+    file.close()
+    file = open(os.path.join(config.filespath, "wizard.meta"), 'w')
+    yaml.dump(wizard_data,file)
     file.close()
 
 

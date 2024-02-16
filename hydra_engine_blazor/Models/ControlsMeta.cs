@@ -153,6 +153,7 @@ public class Site
     private string siteName;
     private string status = "not completed";
     private ArchStatus statusEnum = ArchStatus.NotCompleted;
+    [JsonPropertyName("site_name")]
     public string SiteName
     {
         get => siteName;
@@ -162,7 +163,7 @@ public class Site
             NotifyStateChanged();
         }
     }
-
+    [JsonPropertyName("status")]
     public string Status
     {
         get => status;
