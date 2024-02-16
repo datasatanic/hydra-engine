@@ -81,10 +81,10 @@ public class WizardContainer
         return await _client.PostAsync($"api/wizard/init_arch?name={archName}",content);
     }
 
-    public async Task<HttpResponseMessage> DeploySite(string siteName)
+    public async Task<HttpResponseMessage> DeploySite(string siteName, int stepNumber)
     {
         HttpContent content = new StringContent("", Encoding.UTF8, "application/json");
-        return await _client.PostAsync($"api/wizard/deploy?name={siteName}",content);
+        return await _client.PostAsync($"api/wizard/deploy?name={siteName}&step_number={stepNumber}",content);
     }
 
     public async Task<List<Site>> CheckDeploy()

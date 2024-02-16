@@ -3,9 +3,9 @@
     display: flex;
     flex-direction: row;
     height: 100vh;
-    overflow-x: hidden;
     background: white;
     border: 1px solid var(--hydra-gray-50);
+    overflow: hidden;
 }
 article{
     background: var(--hydra-background-white);
@@ -14,9 +14,9 @@ article{
     display: flex;
     flex-direction: column;
     gap:20px;
-    padding: 30px;
     border-right: 1px solid var(--hydra-secondary-10);
     position: sticky;
+    padding: 10px;
     top:0;
     min-width: 250px;
     width: 250px;
@@ -100,12 +100,17 @@ main {
     color: var(--hydra-success-600) !important;
 }
 .sidebar{
-    height: 100%;
+    height: 85%;
     display: flex;
     flex-direction: column;
     gap:10px;
     overflow-y: auto;
     overflow-x: hidden;
+    padding: 0 20px;
+    direction: rtl;
+}
+.sidebar > ::deep * {
+    direction: ltr;
 }
 .sidebar h1,.sidebar h2,.sidebar h3,.sidebar h4{
     color: var(--hydra-gray-800);
@@ -156,7 +161,9 @@ main {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
+.title{
+    margin: 20px 20px 0 20px;
+}
 @media (max-width: 640.98px) {
     .top-row:not(.auth) {
         display: none;
@@ -177,7 +184,7 @@ main {
     }
 
     .sidebar {
-        height: 100%;
+        height: 85%;
         position: sticky;
         top: 0;
     }

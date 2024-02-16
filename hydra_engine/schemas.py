@@ -27,6 +27,7 @@ class Arch(BaseModel):
     status: str
 class Site(BaseModel):
     site_name: str
+    step_number: str
     status: str
 class WizardState(BaseModel):
     current_step: str
@@ -757,13 +758,13 @@ def update_wizard_meta(directory: str, arch_name):
                         if last_path not in wizard_data:
                             wizard_data.update(wizard_form)
                         last_id += 1
-                    path = last_path + "/" + name.replace('.yml.meta', '')
+                    last_path+= "/" + name.replace('.yml.meta', '')
                     wizard_group = {
-                        path: {"display_name": name.replace('.yml.meta', '').title(),
+                        last_path: {"display_name": name.replace('.yml.meta', '').title(),
                                "description": "", "type": "form", "sub_type": "config",
                                "id": last_id + 1, "action": "deploy" if name == files_in_directory[
                                 -1] and name != "global.yml.meta" else None,"site_name":last_dir}}
-                    if path not in wizard_data:
+                    if last_path not in wizard_data:
                         wizard_data.update(wizard_group)
     last_key, last_value = list(wizard_data.items())[-1]
     last_path = last_key + "/last_step"

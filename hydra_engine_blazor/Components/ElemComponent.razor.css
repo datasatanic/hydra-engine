@@ -20,14 +20,14 @@ ul{
     pointer-events: none;
 }
 fieldset>legend{
-    font-weight: 600;
-    font-size: 16px;
-    color: #2D334D;
     display: flex;
     align-items: center;
     gap:10px;
     text-wrap: nowrap;
     margin:0;
+}
+fieldset>legend>h3{
+    font-weight: 600;
 }
 .add-item{
     content:url("icons/add_item.svg");
@@ -333,4 +333,10 @@ img.purple:active{
 }
 .justify-dot:after{
     right: -40px !important;
+}
+.error-icon{
+    content: url("icons/Error.svg");
+    position: absolute;
+    right: 10px;
+    top: 4px;
 }

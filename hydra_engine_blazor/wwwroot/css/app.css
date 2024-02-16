@@ -7,6 +7,14 @@ html, body {
 ::placeholder{
     color:var(--hydra-gray-200);
 }
+.hydra-tooltip{
+    --bs-tooltip-bg: var(--hydra-gray-800);
+    --bs-tooltip-padding-x: 8px;
+    --bs-tooltip-padding-y: 4px;
+    --bs-tooltip-border-radius: 4px;
+    --bs-tooltip-max-width:600px;
+    --bs-tooltip-font-size:14px;
+}
 .primary-button{
     background: var(--hydra-blue-500-primary);
     color:white;
@@ -201,19 +209,12 @@ input[type="search"]{
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--hydra-secondary-20); /* color of the tracking area */
+    background: var(--hydra-gray-50); /* color of the tracking area */
     margin-right: -10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #B7BDD0; /* color of the scroll thumb */
+    background-color: var(--hydra-gray-200); /* color of the scroll thumb */
     border-radius: 20px; /* roundness of the scroll thumb */
     /*border: 3px solid orange; !* creates padding around scroll thumb *!*/
 }
-
-::-webkit-scrollbar-thumb:hover {
-    background-color: var(--hydra-secondary-65);
-    width: 8px;
-    height: 12px;
-}
-

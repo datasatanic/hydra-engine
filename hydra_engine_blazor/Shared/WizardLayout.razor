@@ -8,7 +8,7 @@
 @implements IAsyncDisposable
 <div class="page">
     <div @ref="menuContainer" class="menu-container">
-        <h1>Hydra</h1>
+        <h1 class="title">Hydra</h1>
         <div class="sidebar">
             <div style="min-width: 190px;border-radius: 4px;padding: 5px" class="@(string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) ? "active-link": "")">
                 <h4 class="@(!string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) ? "green-color" : "")">Welcome page</h4>

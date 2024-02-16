@@ -87,8 +87,32 @@
                         {
                             <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly))" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
                         }
-                        <h4 title="@elemInfo.description" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
-                        <textarea class="@(IsArrayElement ? "flex-1":"")" @attributes="ElementAttributes" validation-error="@(!TryParseToType(elemInfo.value, elemInfo?.type))" @onchange="@((e) => ChangeValue(e, elemInfo.type))">@elemInfo?.value</textarea>
+                        <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                                                                 data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
+                        <div class="position-relative @(IsArrayElement ? "flex-1":"")">
+                          <textarea class="w-100" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" @onchange="@((e) => ChangeValue(e, elemInfo.type))">@elemInfo?.value</textarea>
+                            @if ((elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString())) && Depth == 1)
+                            {
+                                <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                                     data-bs-placement="top" data-bs-title="Enter field"/>
+                                                  
+                            }
+                            else if (!TryParseToType(elemInfo.value,elemInfo?.type) && elemInfo.value != null && !string.IsNullOrEmpty(elemInfo?.value.ToString()))
+                            {
+                                <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                                     data-bs-placement="top" data-bs-title="@($"Please input {elemInfo.type} type")"/>                                      
+                            }
+                            else
+                            {
+                                var constraintItem = elemInfo.constraints.Find(item => !CheckConstraints(elemInfo.value, item, elemInfo.control));
+                                if (constraintItem != null)
+                                {
+                                    <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                                         data-bs-placement="top" data-bs-title="@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")"/>
+                                }
+                            }
+                        </div>
+                        
                     </div>
                     break;
                 default:
@@ -97,27 +121,35 @@
                         {
                             <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
                         }
-                        <h4 title="@elemInfo.description" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
-                        <input class="@(IsArrayElement ? "flex-1":"")" @attributes="ElementAttributes" validation-error="@(!TryParseToType(elemInfo.value, elemInfo?.type))" size="@(elemInfo?.value != null ? elemInfo.value.ToString().Length - 3: 0)" value="@(elemInfo.control == Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e) => ChangeValue(e, elemInfo.type))"/>
+                        <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                            data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
+                        <div class="position-relative @(IsArrayElement ? "flex-1":"")">
+                           <input class="w-100" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" size="@(elemInfo?.value != null ? elemInfo.value.ToString().Length - 3: 0)" value="@(elemInfo.control == Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e) => ChangeValue(e, elemInfo.type))"/>
+                            @if ((elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString())) && Depth == 1)
+                            {
+                                <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                                     data-bs-placement="top" data-bs-title="Enter field"/>
+                           
+                            }
+                            else if (!TryParseToType(elemInfo.value,elemInfo?.type) && elemInfo.value != null && !string.IsNullOrEmpty(elemInfo?.value.ToString()))
+                            {
+                                <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                                                                                        data-bs-placement="top" data-bs-title="@($"Please input {elemInfo.type} type")"/>                                      
+                            }
+                            else
+                            {
+                                var constraintItem = elemInfo.constraints.Find(item => !CheckConstraints(elemInfo.value, item, elemInfo.control));
+                                if (constraintItem != null)
+                                {
+                                    <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                                                                data-bs-placement="top" data-bs-title="@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")"/>   
+                                }
+                            } 
+                        </div>
                     </div>
                     break;
 
             }
-            @* @if ((elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString())) && Depth == 1) *@
-            @* { *@
-            @*     <div class="validation-message">Enter field</div> *@
-            @* } *@
-            @* else if (!TryParseToType(elemInfo.value,elemInfo?.type) && elemInfo.value != null && !string.IsNullOrEmpty(elemInfo?.value.ToString())) *@
-            @* { *@
-            @*     <div class="validation-message">Not @elemInfo.type type</div> *@
-            @* } *@
-            @* else *@
-            @* { *@
-            @*     foreach (var constraintItem in elemInfo.constraints.Where(item => !CheckConstraints(elemInfo.value, item, elemInfo.control))) *@
-            @*     { *@
-            @*         <div class="validation-message">@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")</div> *@
-            @*     } *@
-            @* }   *@
         </div>
     }
     else
@@ -129,7 +161,9 @@
             }
             <div class="array-container">
                 <fieldset>
-                    <legend id="@(SettingsContainer.GetHash(Key))">@elemInfo.display_name
+                    <legend id="@(SettingsContainer.GetHash(Key))">
+                        <h3 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                                                        data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")">@elemInfo.display_name</h3>
                         @if (!elemInfo.readOnly && elemInfo.IsActive)
                         {
                             switch (Depth % 3)

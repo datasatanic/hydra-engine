@@ -20,6 +20,9 @@
 .item-container>h4{
     font-weight: 600;
 }
+.font-weight-400{
+    font-weight: 400 !important;
+}
 .hidden{
     display: none;
 }
@@ -29,11 +32,11 @@
 .item-container>img{
     width: 18px;
     height: 18px;
-    display: none;
+    visibility: hidden;
 }
 .success{
     content: url("icons/success_icon.svg");
-    display: block !important;
+    visibility: visible !important; 
 }
 .deployed{
     padding: 2px 5px 3px 5px;
@@ -62,3 +65,6 @@
         transform: rotate(360deg);
     }
 } 
+.tree.config-gap{
+    gap:5px;
+}

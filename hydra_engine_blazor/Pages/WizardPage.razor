@@ -7,6 +7,7 @@
 @inject IToastService _toastService
 @inject WizardModel WizardModel
 @inject NavigationManager _navigationManager
+@inject IJSRuntime JsRuntime
 <div class="wizard-page-container">
     @if (!_load)
     {
@@ -88,7 +89,8 @@
             </div>
             <div class="prev-next-container">
                 <button class="prev-button ghost-button" @onclick="PrevCallback" disabled="@(WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.Completed && WizardContainer.WizardState.CurrentStep.Split("/").Length == 2
-                                                                                             || WizardContainer.WizardState.Sites.Count > 0 && WizardContainer.WizardState.Sites[^1].StatusEnum is ArchStatus.InProgress or ArchStatus.Completed && WizardModel.ControlsMeta.SubType == "site")">
+                                                                                             || WizardContainer.WizardState.Sites.Count > 0 && WizardContainer.WizardState.Sites[^1].StatusEnum is ArchStatus.InProgress or ArchStatus.Completed 
+                                                                                             && Output_URL.Split("/").Length - 1 == WizardContainer.WizardState.Sites[^1].StepNumber)">
                     <img/>
                     Back
                 </button>
@@ -143,6 +145,11 @@
         _load = true;
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JsRuntime.InvokeVoidAsync("utils.initTooltip");
+    }
+
     private async Task PrevCallback()
     {
         if (WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.Completed && WizardContainer.WizardState.CurrentStep.Split("/").Length == 2)
@@ -150,7 +157,7 @@
             return;
         }
         if (WizardContainer.WizardState.Sites.Count > 0 && WizardContainer.WizardState.Sites[^1].StatusEnum is ArchStatus.InProgress or ArchStatus.Completed 
-            && WizardModel.ControlsMeta.SiteName != WizardContainer.WizardState.Sites[^1].SiteName)
+            && Output_URL.Split("/").Length - 1 == WizardContainer.WizardState.Sites[^1].StepNumber)
         {
             return;
         }
@@ -213,28 +220,33 @@
         {
             if (WizardModel.ControlsMeta.Action == "deploy" && WizardModel.ControlsMeta.SiteName != null)
             {
-                var deployResponse = await WizardContainer.DeploySite(WizardModel.ControlsMeta.SiteName);
+                var stepNumber = Output_URL.Split("/").Length;
+                var deployResponse = await WizardContainer.DeploySite(WizardModel.ControlsMeta.SiteName,stepNumber);
                 if (deployResponse.IsSuccessStatusCode)
                 {
-                    var site = new Site { SiteName = WizardModel.ControlsMeta.SiteName, Status = "in progress",StatusEnum = ArchStatus.InProgress};
-                    WizardContainer.WizardState.AddSite(site);
-                    _timer = new Timer(async _ =>
+                    var site = await deployResponse.Content.ReadFromJsonAsync<Site>();
+                    if (site != null)
                     {
-                        try
+                        site.StatusEnum = ArchStatus.InProgress;
+                        WizardContainer.WizardState.AddSite(site);
+                        _timer = new Timer(async _ =>
                         {
-                            WizardContainer.WizardState.Sites = await WizardContainer.CheckDeploy();
-                            if (WizardContainer.WizardState.Sites[^1].StatusEnum != ArchStatus.Completed) return;
-                            _timer?.DisposeAsync();
-                            _toastService.ShowSuccess($"Site {site.SiteName} has been deployed successfully");
-                            StateHasChanged();
-                        }
-                        catch (Exception)
-                        {
-                            _timer?.DisposeAsync();
-                            _toastService.ShowError($"An error occured when deploying site {site.SiteName}");
-                            StateHasChanged();
-                        }
-                    }, null, 10000, 10000);
+                            try
+                            {
+                                WizardContainer.WizardState.Sites = await WizardContainer.CheckDeploy();
+                                if (WizardContainer.WizardState.Sites[^1].StatusEnum != ArchStatus.Completed) return;
+                                _timer?.DisposeAsync();
+                                _toastService.ShowSuccess($"Site {site.SiteName} has been deployed successfully");
+                                StateHasChanged();
+                            }
+                            catch (Exception)
+                            {
+                                _timer?.DisposeAsync();
+                                _toastService.ShowError($"An error occured when deploying site {site.SiteName}");
+                                StateHasChanged();
+                            }
+                        }, null, 10000, 10000);
+                    }
                 }
             }
             var condition = new List<Condition>();

@@ -2,15 +2,15 @@
 @using DefaultNamespace
 @inject WizardContainer WizardContainer
 @inject WizardModel WizardModel
-<ul class="tree">
+<ul class="tree @(Settings.SubType == "config" && Settings.Name != "global" || Settings.SubType == "site" ? "config-gap" : "")">
     <li
         @ondblclick:stopPropagation="true">
         <div class="item-container @(WizardContainer.WizardState.CurrentStep == Root ? "active-link" : "")">
-            <img class="@(!string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) && 
-                          WizardContainer.WizardState.CurrentStep != Root 
-                          && string.Join("/", WizardContainer.WizardState.CurrentStep.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root
-                           && Settings.SubType == "config" ? "success" : "")"/>
-            <h4 class="@(!string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) && WizardContainer.WizardState.CurrentStep != Root && string.Join("/", WizardContainer.WizardState.CurrentStep.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root ? "passed-step" : "")">@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]
+            @if (Settings.SubType == "config" && Settings.Name != "global")
+            {
+                <img class="@(!string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) && WizardContainer.WizardState.CurrentStep != Root && string.Join("/", WizardContainer.WizardState.CurrentStep.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root && Settings.SubType == "config" ? "success" : "")"/>
+            }
+            <h4 class="@(!string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) && WizardContainer.WizardState.CurrentStep != Root && string.Join("/", WizardContainer.WizardState.CurrentStep.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root || WizardContainer.WizardState.Sites.All(item => item.StatusEnum == ArchStatus.Completed) && WizardModel.ControlsMeta != null && WizardModel.ControlsMeta.Child.Count == 0 ? "passed-step" : "") @(Settings.SubType == "config" && Settings.Name != "global" ? "font-weight-400" : "")">@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]
             </h4>
             @if (Settings.SubType == "site")
             {

@@ -151,6 +151,7 @@ public class Site
     public event Action? OnChange;
     private void NotifyStateChanged() => OnChange?.Invoke();
     private string siteName;
+    private int stepNumber;
     private string status = "not completed";
     private ArchStatus statusEnum = ArchStatus.NotCompleted;
     [JsonPropertyName("site_name")]
@@ -170,6 +171,17 @@ public class Site
         set
         {
             status = value;
+            NotifyStateChanged();
+        }
+    }
+
+    [JsonPropertyName("step_number")]
+    public int StepNumber
+    {
+        get => stepNumber;
+        set
+        {
+            stepNumber = value;
             NotifyStateChanged();
         }
     }

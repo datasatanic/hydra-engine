@@ -95,15 +95,15 @@ async def init_arch(name: str):
 
 
 @router.post("/deploy")
-def deploy_site(name: str):
+def deploy_site(name: str, step_number:int):
     global deploy_process
     try:
         logger.info(f"deploy site with name: {name}")
         command = f'python -c "from hydra_engine.wizard_router import use_deploy_script; use_deploy_script(\'{name}\')"'
         deploy_process = subprocess.Popen(command, shell=True)
-        site = Site(site_name=name,status = "in progress")
+        site = Site(site_name=name,status = "in progress",step_number=step_number)
         WizardInfo().add_site(site)
-        return JSONResponse(content={"message": f"Starting deploy {name}"}, status_code=200)
+        return JSONResponse(content=jsonable_encoder(site), status_code=200)
     except Exception as e:
         logger.error(e)
         return JSONResponse(content={"message": str(e)}, status_code=400)
