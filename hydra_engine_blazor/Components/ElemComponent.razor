@@ -16,154 +16,155 @@
 @implements IAsyncDisposable
 @if (elemInfo != null)
 {
-    @if (elemInfo.type != ElemType.Array)
+    if (!(elemInfo.additional && !elemInfo.IsActive && elemInfo.readOnly))
     {
-        <div class="position-relative" id="@(SettingsContainer.GetHash(Key))">
-            @switch (elemInfo.control)
-            {
-                case Control.Label:
+        @if (elemInfo.type != ElemType.Array)
+        {
+            <div class="position-relative" id="@(SettingsContainer.GetHash(Key))">
+                @switch (elemInfo.control)
                 {
-                    var id = elemInfo.GetHashCode();
-                    <ul class="dict-param">
-                        <li class="param-background">
-                            <div>
-                                @if (!IsArrayElement)
-                                {
-                                    <img @onclick="ExpandCallback" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false"/>
-                                }
-                                <div class="dict-param-data @(Depth % 3 == 1 && !elemInfo.Expand && IsArrayElement ? "gray" : "") @(Depth % 3 == 2 && !elemInfo.Expand && IsArrayElement ? "blue" : "") @(Depth % 3  == 0 && !elemInfo.Expand && IsArrayElement ? "purple" : "")">
-                                    <div>
-                                        @if (IsArrayElement)
-                                        {
-                                            <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
-                                        }
-                                        <div class="@(!elemInfo.isValid ? "dot" : "") @(IsArrayElement ? "justify-dot" : "") param-name">@elemInfo.display_name</div>
-                                        @if (IsArrayElement)
-                                        {
-                                            @switch (Depth % 3)
+                    case Control.Label:
+                    {
+                        var id = elemInfo.GetHashCode();
+                        <ul class="dict-param">
+                            <li class="param-background @(IsArrayElement ? "in-array" : "") @(Depth % 3 == 1 && !elemInfo.Expand && IsArrayElement ? "gray" : "") @(Depth % 3 == 2 && !elemInfo.Expand && IsArrayElement ? "blue" : "") @(Depth % 3  == 0 && !elemInfo.Expand && IsArrayElement ? "purple" : "")">
+                                <div>
+                                    @if (!IsArrayElement)
+                                    {
+                                        <img @onclick="ExpandCallback" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false"/>
+                                    }
+                                    <div class="dict-param-data @(Depth % 3 == 1 && !elemInfo.Expand && IsArrayElement ? "gray" : "") @(Depth % 3 == 2 && !elemInfo.Expand && IsArrayElement ? "blue" : "") @(Depth % 3  == 0 && !elemInfo.Expand && IsArrayElement ? "purple" : "")">
+                                        <div>
+                                            @if (IsArrayElement)
                                             {
-                                                case 1:
-                                                    <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") gray small" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
-                                                    break;
-                                                case 2:
-                                                    <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") blue small" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
-                                                    break;
-                                                case 0:
-                                                    <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") purple small" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
-                                                    break;
+                                                <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
                                             }
-                                        }
-                                    </div>
-                                    <div class="@(string.IsNullOrEmpty(elemInfo.description) ? "collapse" : "")">@elemInfo.description</div>
-                                </div>
-                            </div>
-                        </li>
-                        <div class="collapse" id="@($"el{id}")">
-                            <div class="nested-element">
-                                @if (elemInfo.sub_type_schema.Any(item => item.Value.type != ElemType.Dict))
-                                {
-                                    <div class="param-background">
-                                        <div class=" default-fields">
-                                            @{ var maxLength = elemInfo.sub_type_schema.Select(x => x.Value.display_name ?? string.Empty).Max(x=>x.Length);}
-                                            @foreach (var(key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type != ElemType.Dict))
+                                            <div class="@(!elemInfo.isValid ? "dot" : "") @(IsArrayElement ? "justify-dot" : "") param-name">@elemInfo.display_name</div>
+                                            @if (IsArrayElement)
                                             {
-                                                <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" Length="@(maxLength)" IsArrayElement="@IsArrayElement"></ElemComponent>
+                                                @switch (Depth % 3)
+                                                {
+                                                    case 1:
+                                                        <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") gray small" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
+                                                        break;
+                                                    case 2:
+                                                        <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") blue small" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
+                                                        break;
+                                                    case 0:
+                                                        <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") purple small" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
+                                                        break;
+                                                }
                                             }
                                         </div>
+                                        <div class="@(string.IsNullOrEmpty(elemInfo.description) ? "collapse" : "")">@elemInfo.description</div>
                                     </div>
-                                }
-                                @foreach (var (key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type == ElemType.Dict))
+                                </div>
+                            </li>
+                            <div class="collapse" id="@($"el{id}")">
+                                <div class="nested-element">
+                                    @if (elemInfo.sub_type_schema.Any(item => item.Value.type != ElemType.Dict))
+                                    {
+                                        <div class="param-background @(IsArrayElement ? "in-array" : "")">
+                                            <div class=" default-fields @(Depth >= 1 && !IsArrayElement ? "justify" : "")">
+                                                @{ var maxLength = elemInfo.sub_type_schema.Select(x => x.Value.display_name ?? string.Empty).Max(x=>x.Length);}
+                                                @foreach (var(key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type != ElemType.Dict))
+                                                {
+                                                    <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" Length="@(maxLength)" IsArrayElement="@IsArrayElement"></ElemComponent>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                    @foreach (var (key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type == ElemType.Dict))
+                                    {
+                                        <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" IsArrayElement="@IsArrayElement"></ElemComponent>
+                                    }
+                                </div>
+                            </div>
+                        </ul>
+                    }
+                        break;
+                    case Control.Textarea:
+                        <div class="elem-container">
+                            @if (IsArrayElement)
+                            {
+                                <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly))" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
+                            }
+                            <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                                                                     data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
+                            <div class="@(IsArrayElement ? "flex-1":"")">
+                              <textarea class="w-100" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" @onchange="@((e) => ChangeValue(e, elemInfo.type))">@elemInfo?.value</textarea>
+                                @if ((elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString())) && Depth == 1)
                                 {
-                                    <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" IsArrayElement="@IsArrayElement"></ElemComponent>
+                                    <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                                         data-bs-placement="top" data-bs-title="Enter field"/>
+                                                      
+                                }
+                                else if (!TryParseToType(elemInfo.value,elemInfo?.type) && elemInfo.value != null && !string.IsNullOrEmpty(elemInfo?.value.ToString()))
+                                {
+                                    <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                                         data-bs-placement="top" data-bs-title="@($"Please input {elemInfo.type} type")"/>                                      
+                                }
+                                else
+                                {
+                                    var constraintItem = elemInfo.constraints.Find(item => !CheckConstraints(elemInfo.value, item, elemInfo.control));
+                                    if (constraintItem != null)
+                                    {
+                                        <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                                             data-bs-placement="top" data-bs-title="@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")"/>
+                                    }
                                 }
                             </div>
+                            
                         </div>
-                    </ul>
-                }
-                    break;
-                case Control.Textarea:
-                    <div class="elem-container">
-                        @if (IsArrayElement)
-                        {
-                            <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly))" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
-                        }
-                        <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
-                                                                 data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
-                        <div class="position-relative @(IsArrayElement ? "flex-1":"")">
-                          <textarea class="w-100" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" @onchange="@((e) => ChangeValue(e, elemInfo.type))">@elemInfo?.value</textarea>
-                            @if ((elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString())) && Depth == 1)
+                        break;
+                    default:
+                        <div class="elem-container">
+                            @if (IsArrayElement)
                             {
-                                <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
-                                     data-bs-placement="top" data-bs-title="Enter field"/>
-                                                  
+                                <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
                             }
-                            else if (!TryParseToType(elemInfo.value,elemInfo?.type) && elemInfo.value != null && !string.IsNullOrEmpty(elemInfo?.value.ToString()))
-                            {
-                                <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
-                                     data-bs-placement="top" data-bs-title="@($"Please input {elemInfo.type} type")"/>                                      
-                            }
-                            else
-                            {
-                                var constraintItem = elemInfo.constraints.Find(item => !CheckConstraints(elemInfo.value, item, elemInfo.control));
-                                if (constraintItem != null)
+                            <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                                data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
+                            <div class="@(IsArrayElement ? "flex-1":"")">
+                               <input class="w-100" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" size="@(elemInfo?.value != null ? elemInfo.value.ToString().Length - 3: 0)" value="@(elemInfo.control == Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e) => ChangeValue(e, elemInfo.type))"/>
+                                @if ((elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString())) && Depth == 1)
                                 {
                                     <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
-                                         data-bs-placement="top" data-bs-title="@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")"/>
+                                         data-bs-placement="top" data-bs-title="Enter field"/>
+                               
                                 }
-                            }
-                        </div>
-                        
-                    </div>
-                    break;
-                default:
-                    <div class="elem-container">
-                        @if (IsArrayElement)
-                        {
-                            <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
-                        }
-                        <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
-                            data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
-                        <div class="position-relative @(IsArrayElement ? "flex-1":"")">
-                           <input class="w-100" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" size="@(elemInfo?.value != null ? elemInfo.value.ToString().Length - 3: 0)" value="@(elemInfo.control == Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e) => ChangeValue(e, elemInfo.type))"/>
-                            @if ((elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString())) && Depth == 1)
-                            {
-                                <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
-                                     data-bs-placement="top" data-bs-title="Enter field"/>
-                           
-                            }
-                            else if (!TryParseToType(elemInfo.value,elemInfo?.type) && elemInfo.value != null && !string.IsNullOrEmpty(elemInfo?.value.ToString()))
-                            {
-                                <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
-                                                                                        data-bs-placement="top" data-bs-title="@($"Please input {elemInfo.type} type")"/>                                      
-                            }
-                            else
-                            {
-                                var constraintItem = elemInfo.constraints.Find(item => !CheckConstraints(elemInfo.value, item, elemInfo.control));
-                                if (constraintItem != null)
+                                else if (!TryParseToType(elemInfo.value,elemInfo?.type) && elemInfo.value != null && !string.IsNullOrEmpty(elemInfo?.value.ToString()))
                                 {
                                     <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
-                                                                data-bs-placement="top" data-bs-title="@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")"/>   
+                                                                                            data-bs-placement="top" data-bs-title="@($"Please input {elemInfo.type} type")"/>                                      
                                 }
-                            } 
+                                else
+                                {
+                                    var constraintItem = elemInfo.constraints.Find(item => !CheckConstraints(elemInfo.value, item, elemInfo.control));
+                                    if (constraintItem != null)
+                                    {
+                                        <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                                                                    data-bs-placement="top" data-bs-title="@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")"/>   
+                                    }
+                                } 
+                            </div>
                         </div>
-                    </div>
-                    break;
+                        break;
 
-            }
-        </div>
-    }
-    else
-    {
-        <div class="array-element @(Depth == 1 ? "fit-content" : "") @(Depth > 1 ? "left-justify" : "") @(Depth % 3 == 1 && !elemInfo.Expand && IsArrayElement ? "gray" : "") @(Depth % 3 == 2 && !elemInfo.Expand && IsArrayElement ? "blue" : "") @(Depth % 3  == 0 && !elemInfo.Expand && IsArrayElement ? "purple" : "")">
-            @if (IsArrayElement)
-            {
-                <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
-            }
-            <div class="array-container">
+                }
+            </div>
+        }
+        else
+        {
+            <div class="array-element @(!IsArrayElement ? "fit-content" : "") @(IsArrayElement ? "in-array" : "") @(Depth % 3 == 1 && !elemInfo.Expand && IsArrayElement ? "gray" : "") @(Depth % 3 == 2 && !elemInfo.Expand && IsArrayElement ? "blue" : "") @(Depth % 3  == 0 && !elemInfo.Expand && IsArrayElement ? "purple" : "")">
+                @if (IsArrayElement)
+                {
+                    <input type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
+                }
                 <fieldset>
                     <legend id="@(SettingsContainer.GetHash(Key))">
                         <h3 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
-                                                        data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")">@elemInfo.display_name</h3>
+                            data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")">@elemInfo.display_name</h3>
                         @if (!elemInfo.readOnly && elemInfo.IsActive)
                         {
                             switch (Depth % 3)
@@ -205,7 +206,7 @@
                                         @{ var maxLength = subTypeSchema.Select(x => x.Value.display_name ?? string.Empty).Max(x=>x.Length);}
                                         @foreach (var (key, value) in subTypeSchema)
                                         {
-                                            <div class="position-relative">
+                                            <div class="@(IsArrayElement ? "flex-1":"")">
                                                 <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key, j))" Depth="@(Depth + 1)" Length="@maxLength" IsArrayElement="@true"></ElemComponent>
                                             </div>
                                         }
@@ -234,11 +235,11 @@
                                     }
                                 </div>
                             }
-                            
+                                            
                         }
                         else
                         {
-                            <div class="elements-container">
+                            <div class="default-array">
                                 @for (var i = 0; i < arrayItems.Count; i++)
                                 {
                                     var j = i;
@@ -287,10 +288,9 @@
                     </div>
                 </fieldset>
             </div>
-        </div>
-       
+           
+        }
     }
-
 }
 
 @code {

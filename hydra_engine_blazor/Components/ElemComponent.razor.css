@@ -26,6 +26,9 @@ fieldset>legend{
     text-wrap: nowrap;
     margin:0;
 }
+fieldset{
+    width: 100%;
+}
 fieldset>legend>h3{
     font-weight: 600;
 }
@@ -166,13 +169,20 @@ li>div>img[aria-expanded="true"]{
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding-left: 20px;
+    margin-left: 20px;
 }
 .elements-container{
     display: flex;
     flex-direction: column;
     gap:10px;
-    padding: 20px;
+    padding: 20px 0 20px 20px;
+    flex: 1;
+}
+.default-array{
+    display: flex;
+    flex-direction: column;
+    gap:10px;
+    padding: 20px 0 0 0;
     flex: 1;
 }
 fieldset>div>.array-trash-container:not(:last-child){
@@ -185,13 +195,17 @@ fieldset>.elements-container:last-child{
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: fit-content;
-    min-width: 950px;
+    width: 100%;
 }
 .param-background{
     background: var(--hydra-gray-30);
     border-radius: 8px;
     padding: 20px;
+}
+.param-background.in-array{
+    background: white;
+    padding: 0  0 0 10px;
+    margin-left: -10px;
 }
 .dict-param>li>div{
     display: flex;
@@ -227,12 +241,13 @@ fieldset>.elements-container:last-child{
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding: 0 20px;
-    width: fit-content;
 }
-.array-container .param-background{
-    background: transparent !important;
-    padding: 0;
+.default-fields.justify{
+    margin-left: 15px;
+}
+.array-element.in-array{
+    padding: 10px;
+    margin-left: -10px;
 }
 .dict-param-data>div:first-child{
     display: flex;
@@ -281,7 +296,7 @@ img.purple:active,.trash-container.purple:active{
     display: flex;
     flex-direction: row;
     gap:10px;
-    padding: 10px;
+    padding: 20px;
     background: white;
     border-radius: 8px;
 }
@@ -340,6 +355,7 @@ img.purple:active,.trash-container.purple:active{
 .array-trash-container{
     display: flex;
     flex-direction: row;
+    gap:10px;
 }
 .justify-dot:after{
     right: -40px !important;
