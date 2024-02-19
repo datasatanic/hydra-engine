@@ -14,5 +14,17 @@
             })
         });
     },
+    collapseExpand: (id) =>{
+        let element = document.getElementById(id)
+        if(element){
+            let bsCollapse = new bootstrap.Collapse(element);
+            if(element.classList.contains("show")){
+                bsCollapse.hide();
+            }
+            else{
+                bsCollapse.show();
+            }
+        }
+    }
 
 }

@@ -55,14 +55,12 @@
                     <div class="wizard-elements form-elements-container">
                         @foreach (var elem in WizardModel.ControlsMeta.Elem)
                         {
-                            <div class="elements-container">
-                                <div>
-                                    @foreach (var kvp in elem)
-                                    {
-                                        <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))" Depth="1">
-                                        </ElemComponent>
-                                    }
-                                </div>
+                            <div>
+                                @foreach (var kvp in elem)
+                                {
+                                    <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key))" Depth="1">
+                                    </ElemComponent>
+                                }
                             </div>
                         }
                         <div class="wizard-child-groups @(formGroups.Count == 0 ? "hide" : "")">

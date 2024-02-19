@@ -78,25 +78,30 @@ html, body {
 }
 .arch-info:active{
 }
-.expand-all{
+.expand-all[aria-expanded="false"],.expand-all{
     content:url("../icons/expand_all.svg");
     border-radius: 4px;
 }
-.expand-all:hover{
+.expand-all[aria-expanded="false"]:hover,.expand-all:hover{
     background: var(--hydra-gray-40);
 }
-.expand-all:active{
+.expand-all[aria-expanded="false"]:active,.expand-all:active{
     background: var(--hydra-gray-100);
 }
-.collapse-all{
+.expand-all[aria-expanded="true"],.collapse-all{
     border-radius: 4px;
     content: url("../icons/collapse_all.svg");
 }
-.collapse-all:hover{
+.expand-all[aria-expanded="true"]:hover,.collapse-all:hover{
     background: var(--hydra-gray-40);
 }
-.collapse-all:active{
+.expand-all[aria-expanded="true"]:active,.collapse-all:active{
     background: var(--hydra-gray-100);
+}
+.animate-collapse{
+    height: 0;
+    overflow: hidden;
+    transition: height .35s ease;
 }
 li{
     list-style-type: none;

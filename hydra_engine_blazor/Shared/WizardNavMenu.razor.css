@@ -8,10 +8,10 @@
 .item-container{
     min-width: 190px;
     border-radius: 4px;
-    padding: 5px;
     display: flex;
     flex-direction: row;
     align-items: center;
+    padding: 5px;
     gap:5px;
 }
 .active-link{

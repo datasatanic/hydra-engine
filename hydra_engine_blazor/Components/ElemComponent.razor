@@ -29,7 +29,7 @@
                             <div>
                                 @if (!IsArrayElement)
                                 {
-                                    <img @onclick="ExpandCallback" data-bs-toggle="collapse" data-bs-target="@($"#el{id}")" aria-controls="@($"el{id}")" aria-expanded="@(elemInfo.Expand ? "true" : "false")"/>
+                                    <img @onclick="ExpandCallback" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false"/>
                                 }
                                 <div class="dict-param-data @(Depth % 3 == 1 && !elemInfo.Expand && IsArrayElement ? "gray" : "") @(Depth % 3 == 2 && !elemInfo.Expand && IsArrayElement ? "blue" : "") @(Depth % 3  == 0 && !elemInfo.Expand && IsArrayElement ? "purple" : "")">
                                     <div>
@@ -43,13 +43,13 @@
                                             @switch (Depth % 3)
                                             {
                                                 case 1:
-                                                    <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") gray small" @onclick="ExpandCollapseElement"/>
+                                                    <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") gray small" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
                                                     break;
                                                 case 2:
-                                                    <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") blue small" @onclick="ExpandCollapseElement"/>
+                                                    <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") blue small" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
                                                     break;
                                                 case 0:
-                                                    <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") purple small" @onclick="ExpandCollapseElement"/>
+                                                    <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") purple small" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
                                                     break;
                                             }
                                         }
@@ -58,7 +58,7 @@
                                 </div>
                             </div>
                         </li>
-                        <div class="collapse @(elemInfo.Expand && elemInfo.IsActive ? "show" : "")" id="@($"el{id}")">
+                        <div class="collapse" id="@($"el{id}")">
                             <div class="nested-element">
                                 @if (elemInfo.sub_type_schema.Any(item => item.Value.type != ElemType.Dict))
                                 {
@@ -182,17 +182,17 @@
                         @switch (Depth % 3)
                         {
                             case 1:
-                                <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") @(Depth != 1 ? "small" : "") gray" @onclick="ExpandCollapseElement"/>
+                                <img class="expand-all @(Depth != 1 ? "small" : "") gray" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
                                 break;
                             case 2:
-                                <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") blue small" @onclick="ExpandCollapseElement"/>
+                                <img class="expand-all blue small" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
                                 break;
                             case 0:
-                                <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") purple small" @onclick="ExpandCollapseElement"/>
+                                <img class="expand-all purple small" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
                                 break;
                         }
                     </legend>
-                    <div class="@(elemInfo.Expand ? "show" : "") collapse">
+                    <div class="collapse" id="@($"el{elemInfo.GetHashCode()}")">
                         @{var arrayItems = elemInfo?.value as List<object> ?? new List<object>();}
                         @if (elemInfo.array_sub_type_schema != null)
                         {
@@ -212,10 +212,12 @@
                                     </div>
                                     @if (!elemInfo.readOnly)
                                     {
-                                        <div class="dropend">
-                                            <img class="trash-image dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"/>
+                                        <div class="dropend custom-dropend">
+                                            <div class="trash-container dropdown-toggle @(Depth % 3 == 1 ? "gray" : "") @(Depth % 3 == 2 ? "blue" : "") @(Depth % 3 == 0 ? "purple" : "")" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <img class="trash-image"/>
+                                            </div>
                                             <div class="dropdown-menu trash-menu">
-                                                <div class="trash-menu-element" @onclick="@(()=>CopyElement(j))">
+                                                <div class="trash-menu-element" @onclick="@(() => CopyElement(j))">
                                                     <img class="copy-image"/>
                                                     <h4>Duplicate</h4>
                                                 </div>
@@ -306,7 +308,7 @@
 
     private string filePath => elemInfo.fileId;
     private Dictionary<string, object>? ElementAttributes { get; set; } = new();
-
+    private bool isShow;
     private JsonSerializerOptions options = new()
     {
         Converters =
@@ -327,9 +329,19 @@
         AddElementAttributes(elemInfo);
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        if (elemInfo != null && isShow != elemInfo.Expand)
+        {
+            isShow = elemInfo.Expand;
+            await JSRuntime.InvokeVoidAsync("utils.collapseExpand",$"el{elemInfo.GetHashCode()}");
+        }
+    }
+
     protected override void OnInitialized()
     {
         if (Depth == 1) elemInfo.Expand = true;
+        isShow = elemInfo.Expand;
     }
 
     protected override async Task OnInitializedAsync()
@@ -359,6 +371,10 @@
         if (firstRender)
         {
             _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/ElemComponent.razor.js");
+            if (elemInfo is {Expand: true })
+            {
+                await JSRuntime.InvokeVoidAsync("utils.collapseExpand",$"el{elemInfo.GetHashCode()}");
+            }
         }
         else
         {
@@ -739,16 +755,17 @@
     {
         if (elemInfo != null)
         {
-            elemInfo.Expand = !elemInfo.Expand;
+            isShow = elemInfo.Expand = !elemInfo.Expand;
             await SendValue.InvokeAsync(elemInfo);
         }
     }
 
-    private void ExpandCollapseElement()
+    private async Task ExpandCollapseElement()
     {
-        elemInfo.Expand = !elemInfo.Expand;
+        isShow = elemInfo.Expand = !elemInfo.Expand;
         if (elemInfo.sub_type_schema == null) return;
         ExpandCollapseChildElements(elemInfo.sub_type_schema);
+        await SendValue.InvokeAsync(elemInfo);
     }
     private void ExpandCollapseChildElements(Dictionary<string, ElemInfo> elemInfos)
     {

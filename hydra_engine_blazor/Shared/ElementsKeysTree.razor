@@ -9,20 +9,21 @@
         <div class="item-container @(WizardContainer.CurrentElemKey == Key ? "active-link" : "")
                     @(!string.IsNullOrEmpty(WizardContainer.CurrentElemKey) && WizardContainer.CurrentElemKey != Key && string.Join("/", WizardContainer.CurrentElemKey.Split("/").Skip(0).Take(Key.Split("/").Length)) == Key ? "active-parent-link" : "")">
             <img @onclick="ExpandCallback" class="collapse-expand-el @(ElemInfo.type != ElemType.Dict ? "hidden" : "")" data-bs-toggle="collapse"
-                 data-bs-target="@($"#p{Key.GetHashCode()}")" aria-controls="@($"p{Key.GetHashCode()}")" type="button" aria-expanded="@(ElemInfo.Expand ? "true" : "false")"
+                 data-bs-target="@($"#p{Key.GetHashCode()}")" aria-controls="@($"p{Key.GetHashCode()}")" type="button" aria-expanded="false"
                  @ondblclick:stopPropagation="true" @onclick:stopPropagation="true"/>
             <div class="@(!ElemInfo.isValid ? "dot" : "") param-name">@ElemInfo.display_name</div>
         </div>
     </li>
-    <div class="collapse @(ElemInfo.Expand ? "show" : "")" id="@($"p{Key.GetHashCode()}")">
-        @if (ElemInfo.type == ElemType.Dict)
-        {
+    @if (ElemInfo.type == ElemType.Dict)
+    {
+        <div class="collapse" id="@($"p{Key.GetHashCode()}")">
             @foreach (var kvp in ElemInfo.sub_type_schema)
             {
                 <ElementsKeysTree Key="@($"{Key}/{kvp.Key}")" ElemInfo="@kvp.Value" Depth="@(Depth + 1)" SendValue="(obj)=>HandleChange(obj,kvp.Key)"></ElementsKeysTree>
             }
-        }
-    </div>
+        </div>
+    }
+    
 </ul>
 
 
@@ -35,6 +36,7 @@
     public int Depth { get; set; }
     [Parameter] public EventCallback<ElemInfo> SendValue { get; set; }
     IJSObjectReference? _module;
+    private bool isShow;
 
     private async Task SelectElement()
     {
@@ -43,17 +45,38 @@
         if (_module != null) await _module.InvokeVoidAsync("Scroll", scrollableId);
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        if (isShow != ElemInfo.Expand)
+        {
+            isShow = ElemInfo.Expand;
+            await JSRuntime.InvokeVoidAsync("utils.collapseExpand",$"p{Key.GetHashCode()}");
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        if (Depth == 1)
+        {
+            ElemInfo.Expand = true;
+        }
+        isShow = ElemInfo.Expand;
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/ElemComponent.razor.js");
+            if (ElemInfo.Expand)
+            {
+                await JSRuntime.InvokeVoidAsync("utils.collapseExpand",$"p{Key.GetHashCode()}");
+            }
         }
     }
 
     private async Task ExpandCallback()
     {
-        ElemInfo.Expand = !ElemInfo.Expand;
+        isShow = ElemInfo.Expand = !ElemInfo.Expand;
         await SendValue.InvokeAsync(ElemInfo);
     }
 

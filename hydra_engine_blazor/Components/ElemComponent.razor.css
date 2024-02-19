@@ -247,28 +247,28 @@ fieldset>.elements-container:last-child{
 .gray{
     background: var(--hydra-gray-30) !important;
 }
-img.gray:hover{
+img.gray:hover,.trash-container.gray:hover{
     background: var(--hydra-gray-40) !important;
 }
-img.gray:active{
+img.gray:active,.trash-container.gray:active{
     background: var(--hydra-gray-100) !important;
 }
 .blue{
     background: var(--hydra-blue-50) !important;
 }
-img.blue:hover{
+img.blue:hover,.trash-container.blue:hover{
     background: var(--hydra-blue-100) !important;
 }
-img.blue:active{
+img.blue:active,.trash-container.blue:active{
     background: var(--hydra-blue-150) !important;
 }
 .purple{
     background: var(--hydra-purple-50) !important;
 }
-img.purple:hover{
+img.purple:hover,.trash-container.purple:hover{
     background: var(--hydra-purple-100) !important;
 }
-img.purple:active{
+img.purple:active,.trash-container.purple:active{
     background: var(--hydra-purple-150) !important;
 }
 .flex-1{
@@ -291,8 +291,20 @@ img.purple:active{
 .array-element>input[type="checkbox"]{
     margin: 5px 0;
 }
+.trash-container{
+    width: 32px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    padding: 10px 5px;
+}
+.dropdown-toggle:after{
+    display: none !important;
+}
 .trash-image{
-    content: url("icons/Trash.svg")
+    content: url("icons/More.svg")
 }
 .trash-menu{
     padding: 10px 0;
@@ -328,8 +340,6 @@ img.purple:active{
 .array-trash-container{
     display: flex;
     flex-direction: row;
-    gap:10px;
-    align-items: baseline;
 }
 .justify-dot:after{
     right: -40px !important;
@@ -339,4 +349,7 @@ img.purple:active{
     position: absolute;
     right: 10px;
     top: 4px;
+}
+.custom-dropend{
+    padding: 20px 0;
 }

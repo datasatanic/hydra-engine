@@ -2,7 +2,18 @@
     height: fit-content;
     width: 100%;
     margin:0;
-    padding: 5px 0 0 10px;
+    padding: 5px 0 0 0;
+}
+.tree>.collapse,.tree>.collapsing{
+    padding: 0 16px;
+    margin: 5px 0 0 0;
+}
+.collapse>.tree,.collapsing>.tree{
+    border-left: 1px solid var(--hydra-gray-50);
+    padding: 5px 5px 0 5px;
+}
+.tree>li{
+    height: 24px;
 }
 .tree>li>div{
     height: 28px;
@@ -35,7 +46,7 @@
 }
 .hidden{
     visibility: hidden;
-    width: 15px;
+    width: 2px;
 }
 .collapse-expand-el{
     content:url("icons/arrow_up.svg");
