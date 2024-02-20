@@ -177,6 +177,7 @@ li>div>img[aria-expanded="true"]{
     gap:10px;
     padding: 20px 0 20px 20px;
     flex: 1;
+    width: fit-content;
 }
 .default-array{
     display: flex;
@@ -241,6 +242,7 @@ fieldset>.elements-container:last-child{
     display: flex;
     flex-direction: column;
     gap: 10px;
+    width: fit-content;
 }
 .default-fields.justify{
     margin-left: 15px;

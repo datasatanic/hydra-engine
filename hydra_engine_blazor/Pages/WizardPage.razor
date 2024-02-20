@@ -161,7 +161,7 @@
         }
         _load = false;
         var urlList = Output_URL.Split("/").ToList();
-        urlList.Remove(urlList.Last());
+        urlList.RemoveAt(Output_URL.Length - 1);
         if (urlList.Count == 0) Output_URL = "";
         Output_URL = string.Join("/", urlList);
         var formsNameList = formNamesPath.Split("/").ToList();

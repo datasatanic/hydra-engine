@@ -128,7 +128,8 @@
     display: flex;
     flex-direction: column;
     gap:20px;
-    width: 950px;
+    min-width: 950px;
+    max-width: calc(100% - 100px);
 }
 .child-group-container>div{
     display: flex;
