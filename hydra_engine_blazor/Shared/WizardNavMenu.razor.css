@@ -6,7 +6,6 @@
     gap: 10px;
 }
 .item-container{
-    min-width: 190px;
     border-radius: 4px;
     display: flex;
     flex-direction: row;
@@ -19,6 +18,8 @@
 }
 .item-container>h4{
     font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .font-weight-400{
     font-weight: 400 !important;

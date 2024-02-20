@@ -138,6 +138,11 @@ main {
 .skeleton-container>div:nth-child(3n){
     width: 70%;
 }
+.welcome-step{
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-wrap: nowrap;
+}
 .top-row {
     background-color: #f7f7f7;
     border-bottom: 1px solid #d6d5d5;

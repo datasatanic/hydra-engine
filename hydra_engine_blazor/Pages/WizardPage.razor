@@ -262,20 +262,17 @@
     }
     private void ChangeValue(ElemInfo obj,string key, ElemInfo currentElem)
     {
-        if (obj.value != currentElem.value)
+        var elem = new KeyValuePair<string, ElemInfo>(key, obj);
+        if (changeElements.Exists(item=>item.Key.Equals(elem.Key)))
         {
-            var elem = new KeyValuePair<string, ElemInfo>(key, obj);
-            if (changeElements.Exists(item=>item.Key.Equals(elem.Key)))
-            {
-                var existElem = changeElements.Find(item => item.Key.Equals(elem.Key));
-                var index = changeElements.IndexOf(existElem);
-                changeElements.RemoveAt(index);
-                changeElements.Insert(index,elem);
-            }
-            else
-            {
-                changeElements.Add(elem);
-            }
+            var existElem = changeElements.Find(item => item.Key.Equals(elem.Key));
+            var index = changeElements.IndexOf(existElem);
+            changeElements.RemoveAt(index);
+            changeElements.Insert(index,elem);
+        }
+        else
+        {
+            changeElements.Add(elem);
         }
         WizardModel.NotifyStateChanged();
     }

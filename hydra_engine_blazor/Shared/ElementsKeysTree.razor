@@ -11,7 +11,11 @@
             <img @onclick="ExpandCallback" class="collapse-expand-el @(ElemInfo.type != ElemType.Dict ? "hidden" : "")" data-bs-toggle="collapse"
                  data-bs-target="@($"#p{Key.GetHashCode()}")" aria-controls="@($"p{Key.GetHashCode()}")" type="button" aria-expanded="false"
                  @ondblclick:stopPropagation="true" @onclick:stopPropagation="true"/>
-            <div class="@(!ElemInfo.isValid ? "dot" : "") param-name">@ElemInfo.display_name</div>
+            <div class="param-name">@ElemInfo.display_name</div>
+            @if (!ElemInfo.isValid)
+            {
+                <div class="dot"></div>
+            }
         </div>
     </li>
     @if (ElemInfo.type == ElemType.Dict)

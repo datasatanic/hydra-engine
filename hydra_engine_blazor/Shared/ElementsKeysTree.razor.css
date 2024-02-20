@@ -5,19 +5,18 @@
     padding: 5px 0 0 30px;
 }
 .tree>.collapse,.tree>.collapsing{
-    padding: 0 16px;
+    padding: 0 0 0 16px;
     margin: 5px 0 0 0;
 }
 .collapse>.tree,.collapsing>.tree{
     border-left: 1px solid var(--hydra-gray-50);
-    padding: 5px 5px 0 5px;
+    padding: 5px 0 0 5px;
 }
 .tree>li{
     height: 24px;
 }
 .tree>li>div{
     height: 28px;
-    min-width: 162px;
     border-radius: 4px;
 }
 .tree ::deep a{
@@ -57,18 +56,18 @@
 .collapse-expand-el[aria-expanded="true"]{
     transform: rotate(180deg);
 }
-.dot:after{
+.dot{
     content: "";
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    position: absolute;
-    right: -15px;
-    top: 7px;
     background: var(--hydra-error-500);
+    margin-left: 10px;
 }
 .param-name{
-    width: fit-content;
     position: relative;
     font-size: 14px;
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
