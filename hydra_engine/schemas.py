@@ -574,6 +574,7 @@ def update_parameter_value(element, value):
 
 
 def set_value(input_url: str, uid: str, value: object):
+    hydra_engine.filewatcher.need_update = False
     logger.debug(f"post {value} in {input_url}")
     input_url_list = input_url.split("/")
     key = input_url_list[0]
@@ -581,8 +582,8 @@ def set_value(input_url: str, uid: str, value: object):
         if key in elements.values and elements.uid == uid:
             set_value_in_dict(elements.values, value, input_url_list)
             write_file(elements.values, elements.path, elements.type, input_url, value)
-            hydra_engine.filewatcher.file_event.wait()
-            return
+            break
+    hydra_engine.filewatcher.need_update = True
 
 
 def get_element_info(input_url, uid: str):
