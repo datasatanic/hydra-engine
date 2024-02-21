@@ -99,8 +99,8 @@
                 </button>
                 <button class="next-button primary-button" @onclick="NextCallback"
                         disabled="@(changeElements.Exists(item => !item.Value.isValid)
-                                    || WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress || WizardContainer.WizardState.Sites.Find(item => item.StatusEnum == ArchStatus.InProgress) != null && WizardModel.ControlsMeta.Action == "deploy"
-                                    || WizardModel.ControlsMeta.Child.Count == 0 && WizardContainer.WizardState.Sites.Exists(item=>item.StatusEnum is ArchStatus.InProgress or ArchStatus.NotCompleted))">
+                                    || WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress || WizardContainer.WizardState.Sites.Find(item => item.StatusEnum is ArchStatus.InProgress or ArchStatus.NotCompleted or ArchStatus.Failed) != null && WizardModel.ControlsMeta.Action == "deploy"
+                                    || WizardModel.ControlsMeta.Child.Count == 0 && WizardContainer.WizardState.Sites.Exists(item=>item.StatusEnum is ArchStatus.InProgress or ArchStatus.NotCompleted or ArchStatus.Failed))">
                     @(WizardModel.ControlsMeta.Child.Count > 0 ? "Next" : "Finish")
                     <img style="@(WizardModel.ControlsMeta.Child.Count == 0 ? "display:none" : "")"/>
                 </button>
@@ -130,8 +130,6 @@
 @code {
     private string Output_URL { get; set; }
     private string nextFormUrl = "";
-    private string nextFormName = "";
-    private string formNamesPath = "";
     private Modal ArchModalWindow { get; set; }
     private List<KeyValuePair<string, ElemInfo>> changeElements = new();
     private ControlsMeta? _currentGroup;
@@ -169,10 +167,6 @@
         urlList.RemoveAt(urlList.Count - 1);
         if (urlList.Count == 0) Output_URL = "";
         Output_URL = string.Join("/", urlList);
-        var formsNameList = formNamesPath.Split("/").ToList();
-        formsNameList.Remove(formsNameList.Last());
-        if (formsNameList.Count == 0) formNamesPath = "";
-        formNamesPath = string.Join("/", formsNameList);
         WizardContainer.WizardState.CurrentStep = Output_URL;
         await UpdateWizardData(new List<Condition>());
         _load = true;
@@ -255,7 +249,6 @@
             //var conditions = WizardModel.ControlsMeta.Child.Find(item => item.Name == nextFormUrl.Split("/")[^1])?.Condition;
             Output_URL = nextFormUrl;
             WizardContainer.WizardState.CurrentStep = Output_URL;
-            formNamesPath = nextFormName;
             await UpdateWizardData(condition);
         }
         else
@@ -297,13 +290,11 @@
             var childForms = WizardModel.ControlsMeta.Child.Where(item => item.Type == "form").ToList();
             if (childForms.Count > 0)
             {
-                nextFormUrl = $"{Output_URL}/" + childForms[0].Name;
-                nextFormName = $"{formNamesPath}/" + childForms[0].DisplayName;
+                nextFormUrl = (!string.IsNullOrEmpty(Output_URL) ? $"{Output_URL}/" : "") + childForms[0].Name;
             }
             else
             {
                 nextFormUrl = "";
-                nextFormName = "";
             }
             formGroups = WizardModel.ControlsMeta.Child.Where(item => item.Type.Equals("group")).ToList();
             if (formGroups.Count > 0)
