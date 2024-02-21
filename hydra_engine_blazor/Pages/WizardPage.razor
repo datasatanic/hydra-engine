@@ -58,7 +58,7 @@
                             <div>
                                 @foreach (var kvp in elem)
                                 {
-                                    <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key,kvp.Value))" Depth="1">
+                                    <ElemComponent Key="@kvp.Key" elemInfo="@kvp.Value" SendValue="@((obj) => ChangeValue(obj, kvp.Key,kvp.Value))" ExpandChanged="() => WizardModel.NotifyStateChanged()" Depth="1">
                                     </ElemComponent>
                                 }
                             </div>

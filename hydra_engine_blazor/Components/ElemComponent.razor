@@ -69,14 +69,14 @@
                                                 @{ var maxLength = elemInfo.sub_type_schema.Select(x => x.Value.display_name ?? string.Empty).Max(x=>x.Length);}
                                                 @foreach (var(key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type != ElemType.Dict))
                                                 {
-                                                    <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" Length="@(maxLength)" IsArrayElement="@IsArrayElement"></ElemComponent>
+                                                    <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" IsArrayElement="@IsArrayElement"></ElemComponent>
                                                 }
                                             </div>
                                         </div>
                                     }
                                     @foreach (var (key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type == ElemType.Dict))
                                     {
-                                        <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" IsArrayElement="@IsArrayElement"></ElemComponent>
+                                        <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" ExpandChanged="@((ElemInfo obj) => HandleExpandChanging(obj, key))" Depth="@(Depth + 1)" IsArrayElement="@IsArrayElement"></ElemComponent>
                                     }
                                 </div>
                             </div>
@@ -297,6 +297,7 @@
     [Parameter]
     public string Key { get; set; }
     [Parameter] public EventCallback<ElemInfo> SendValue { get; set; }
+    [Parameter] public EventCallback<ElemInfo> ExpandChanged { get; set; }
     [Parameter]
     public ElemInfo? elemInfo { get; set; }
     [Parameter]
@@ -696,6 +697,12 @@
             await SendValue.InvokeAsync(elemInfo);
         }
     }
+
+    private async Task HandleExpandChanging(ElemInfo obj,string key)
+    {
+        elemInfo.sub_type_schema[key] = obj;
+        await ExpandChanged.InvokeAsync(elemInfo);
+    }
     private async Task HandleArrayChanges(ElemInfo obj, string key,int index)
     {
         elemInfo.isValid = true;
@@ -731,7 +738,6 @@
         }
         
     }
-
     private void CheckValidation(Dictionary<string, ElemInfo> item)
     {
         foreach (var (key,subElemInfo) in item)
@@ -756,7 +762,7 @@
         if (elemInfo != null)
         {
             isShow = elemInfo.Expand = !elemInfo.Expand;
-            await SendValue.InvokeAsync(elemInfo);
+            await ExpandChanged.InvokeAsync(elemInfo);
         }
     }
 
@@ -765,7 +771,7 @@
         isShow = elemInfo.Expand = !elemInfo.Expand;
         if (elemInfo.sub_type_schema == null) return;
         ExpandCollapseChildElements(elemInfo.sub_type_schema);
-        await SendValue.InvokeAsync(elemInfo);
+        await ExpandChanged.InvokeAsync(elemInfo);
     }
     private void ExpandCollapseChildElements(Dictionary<string, ElemInfo> elemInfos)
     {
