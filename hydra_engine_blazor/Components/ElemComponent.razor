@@ -69,7 +69,7 @@
                                                 @{ var maxLength = elemInfo.sub_type_schema.Select(x => x.Value.display_name ?? string.Empty).Max(x=>x.Length);}
                                                 @foreach (var(key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type != ElemType.Dict))
                                                 {
-                                                    <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" IsArrayElement="@IsArrayElement"></ElemComponent>
+                                                    <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" Length = "@maxLength" IsArrayElement="@IsArrayElement"></ElemComponent>
                                                 }
                                             </div>
                                         </div>

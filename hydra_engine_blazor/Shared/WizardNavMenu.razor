@@ -5,7 +5,7 @@
 <ul class="tree @(Settings.SubType == "config" && Settings.Name != "global" || Settings.SubType == "site" ? "config-gap" : "")">
     <li
         @ondblclick:stopPropagation="true">
-        <div class="item-container @(WizardContainer.WizardState.CurrentStep == Root ? "active-link" : "")">
+        <div class="item-container @(WizardContainer.WizardState.CurrentStep == Root ? "active-link" : "")" @onclick="MoveToForm">
             @if (Settings.SubType == "config" && Settings.Name != "global")
             {
                 <img class="@(!string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) && WizardContainer.WizardState.CurrentStep != Root && string.Join("/", WizardContainer.WizardState.CurrentStep.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root && Settings.SubType == "config" ? "success" : "")"/>
@@ -20,11 +20,14 @@
                     switch (findSite.StatusEnum)
                     {
                         case ArchStatus.InProgress:
-                            <span class="loader"></span>
+                            <div class="deploying">Deploying</div>
                             break;
                         case ArchStatus.Completed:
                             <div class="deployed">Deployed</div>
                             break;
+                        case ArchStatus.Failed:
+                            <div class="failed">Error</div>
+                            break;                  
                     }
                 }
             }
@@ -68,6 +71,14 @@
         var count = OutputUrlList.Length;
         link_margin = $"margin-left:{(count - 1) * 20}px";
     }
-    
+
+
+    private void MoveToForm()
+    {
+        if (OutputUrlList.Length >= WizardContainer.WizardState.CurrentStep.Split("/").Length)
+        {
+            return;
+        }
+    }
 
 }

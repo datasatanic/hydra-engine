@@ -97,6 +97,7 @@ public class WizardContainer
                 "not completed"=>ArchStatus.NotCompleted,
                 "in progress"=>ArchStatus.InProgress,
                 "completed"=>ArchStatus.Completed,
+                "failed"=>ArchStatus.Failed
             };
         }
         return sites;
@@ -134,6 +135,7 @@ public class WizardContainer
                     "not completed"=>ArchStatus.NotCompleted,
                     "in progress"=>ArchStatus.InProgress,
                     "completed"=>ArchStatus.Completed,
+                    "failed"=>ArchStatus.Failed
                 };
             }
         }

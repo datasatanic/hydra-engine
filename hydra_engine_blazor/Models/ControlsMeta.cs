@@ -201,4 +201,5 @@ public enum ArchStatus
     Completed,
     NotCompleted,
     InProgress,
+    Failed
 }

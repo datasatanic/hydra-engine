@@ -13,13 +13,18 @@
     {
         @if (WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress)
         {
-            <Loader Color="#4A67F4" Title="@($"Initializing {WizardContainer.WizardState.Arch.ArchName}")"></Loader>
+            <div class="skeleton-container placeholder-glow">
+                <div class="placeholder"></div>
+                <div class="placeholder-glow">
+                    @for (var i = 0; i < 10; i++)
+                    {
+                        <div class="placeholder">
+                        </div>
+                    }
+                </div>
+            </div>
         }
-        else
-        {
-            <Loader Color="#4A67F4" Title="Loading"></Loader>
-        }
-        
+
     }
     else if (string.IsNullOrEmpty(Output_URL))
     {
@@ -180,11 +185,11 @@
 
     private async Task NextCallback()
     {
-        if (WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress || WizardContainer.WizardState.Sites.Exists(item => item.StatusEnum is ArchStatus.InProgress or ArchStatus.NotCompleted) && WizardModel.ControlsMeta.Action == "deploy")
+        if (WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress || WizardContainer.WizardState.Sites.Exists(item => item.StatusEnum is ArchStatus.InProgress or ArchStatus.NotCompleted or ArchStatus.Failed) && WizardModel.ControlsMeta.Action == "deploy")
         {
             return;
         }
-        if (WizardModel.ControlsMeta.Child.Count == 0 && WizardContainer.WizardState.Sites.Exists(item => item.StatusEnum is ArchStatus.InProgress or ArchStatus.NotCompleted))
+        if (WizardModel.ControlsMeta.Child.Count == 0 && WizardContainer.WizardState.Sites.Exists(item => item.StatusEnum is ArchStatus.InProgress or ArchStatus.Failed or ArchStatus.NotCompleted))
         {
             return;
         }
@@ -229,20 +234,19 @@
                         WizardContainer.WizardState.AddSite(site);
                         _timer = new Timer(async _ =>
                         {
-                            try
+                            WizardContainer.WizardState.Sites = await WizardContainer.CheckDeploy();
+                            switch (WizardContainer.WizardState.Sites[^1].StatusEnum)
                             {
-                                WizardContainer.WizardState.Sites = await WizardContainer.CheckDeploy();
-                                if (WizardContainer.WizardState.Sites[^1].StatusEnum != ArchStatus.Completed) return;
-                                _timer?.DisposeAsync();
-                                _toastService.ShowSuccess($"Site {site.SiteName} has been deployed successfully");
-                                StateHasChanged();
+                                case ArchStatus.Completed:
+                                    _timer?.DisposeAsync();
+                                    _toastService.ShowSuccess($"Site {site.SiteName} has been deployed successfully");
+                                    break;
+                                case ArchStatus.Failed:
+                                    _timer?.DisposeAsync();
+                                    _toastService.ShowError($"An error occurred when deploying site {site.SiteName}");
+                                    break;
                             }
-                            catch (Exception)
-                            {
-                                _timer?.DisposeAsync();
-                                _toastService.ShowError($"An error occured when deploying site {site.SiteName}");
-                                StateHasChanged();
-                            }
+                            StateHasChanged();
                         }, null, 10000, 10000);
                     }
                 }
@@ -293,8 +297,8 @@
             var childForms = WizardModel.ControlsMeta.Child.Where(item => item.Type == "form").ToList();
             if (childForms.Count > 0)
             {
-                nextFormUrl = (!string.IsNullOrEmpty(Output_URL) ? $"{Output_URL}/" : "") + childForms[0].Name;
-                nextFormName = (!string.IsNullOrEmpty(formNamesPath) ? $"{formNamesPath}/" : "") + childForms[0].DisplayName;
+                nextFormUrl = $"{Output_URL}/" + childForms[0].Name;
+                nextFormName = $"{formNamesPath}/" + childForms[0].DisplayName;
             }
             else
             {

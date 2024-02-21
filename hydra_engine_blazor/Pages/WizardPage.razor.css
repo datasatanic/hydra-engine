@@ -15,6 +15,32 @@
     flex-direction: column;
     gap: 10px;
 }
+.skeleton-container{
+    width: 950px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+.skeleton-container>div:first-child{
+    height: 24px;
+    width: 200px;
+    border-radius: 4px;
+    background: var(--hydra-gray-30);
+    opacity: 1;
+}
+.skeleton-container>div:last-child{
+    display: flex;
+    flex-direction: column;
+    gap:10px;
+}
+.skeleton-container>div:last-child>div{
+    background: var(--hydra-gray-30);
+    border-radius: 8px;
+    width: 100%;
+    padding: 20px;
+    height: 109px;
+    opacity: 1;
+}
 .welcome-title{
     font-weight: 600;
 }
