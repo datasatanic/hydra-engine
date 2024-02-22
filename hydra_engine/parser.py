@@ -33,6 +33,9 @@ class WizardInfo(metaclass=SingletonMeta):
         return self.wizard_state.sites
     def add_site(self,site):
         self.wizard_state.sites.append(site)
+    def remove_site(self, site):
+        self.wizard_state.sites.remove(site)
+
 class HydraParametersInfo(metaclass=SingletonMeta):
     def __init__(self):
         self.tree = {}

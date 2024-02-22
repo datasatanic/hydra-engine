@@ -10,7 +10,7 @@
             {
                 <img class="@(!string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) && WizardContainer.WizardState.CurrentStep != Root && string.Join("/", WizardContainer.WizardState.CurrentStep.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root && Settings.SubType == "config" ? "success" : "")"/>
             }
-            <h4 class="@(!string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) && WizardContainer.WizardState.CurrentStep != Root && string.Join("/", WizardContainer.WizardState.CurrentStep.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root && WizardModel.ControlsMeta != null && WizardModel.ControlsMeta.Child.Count == 0 ? "passed-step" : "") @(Settings.SubType == "config" && Settings.Name != "global" ? "font-weight-400" : "")">@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]
+            <h4 class="@(!string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) && WizardContainer.WizardState.CurrentStep != Root && string.Join("/", WizardContainer.WizardState.CurrentStep.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root ? "passed-step" : "") @(Settings.SubType == "config" && Settings.Name != "global" ? "font-weight-400" : "")">@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]
             </h4>
             @if (Settings.SubType == "site")
             {

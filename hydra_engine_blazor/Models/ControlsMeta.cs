@@ -96,13 +96,6 @@ public class WizardState
             NotifyStateChanged();
         }
     }
-
-    public void AddSite(Site site)
-    {
-        site.OnChange += NotifyStateChanged;
-        _sites.Add(site);
-        NotifyStateChanged();
-    }
 }
 public class Arch
 {

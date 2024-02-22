@@ -40,7 +40,7 @@
         <div class="wizard-container">
             <div class="title-info">
                 <div>
-                    <h3 class="title">@WizardModel.Title</h3>
+                    <h3 class="title">@WizardModel.ControlsMeta.DisplayName</h3>
                     @if (ExistExpandElements(WizardModel.ControlsMeta.Elem.SelectMany(item => item.Values).ToList()))
                     {
                         <img class="@(!WizardModel.IsExpandAll ? "expand-all" : "collapse-all")" @onclick="@(() => ExpandCollapseAll(WizardModel.ControlsMeta.Elem))"/>
@@ -91,16 +91,12 @@
                 </div>
             </div>
             <div class="prev-next-container">
-                <button class="prev-button ghost-button" @onclick="PrevCallback" disabled="@(WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.Completed && WizardContainer.WizardState.CurrentStep.Split("/").Length == 2
-                                                                                             || WizardContainer.WizardState.Sites.Count > 0 && WizardContainer.WizardState.Sites[^1].StatusEnum is ArchStatus.InProgress or ArchStatus.Completed 
-                                                                                             && Output_URL.Split("/").Length - 1 == WizardContainer.WizardState.Sites[^1].StepNumber)">
+                <button class="prev-button ghost-button" @onclick="PrevCallback" disabled="@(!PrevAllowed())">
                     <img/>
                     Back
                 </button>
                 <button class="next-button primary-button" @onclick="NextCallback"
-                        disabled="@(changeElements.Exists(item => !item.Value.isValid)
-                                    || WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress || WizardContainer.WizardState.Sites.Find(item => item.StatusEnum is ArchStatus.InProgress or ArchStatus.NotCompleted or ArchStatus.Failed) != null && WizardModel.ControlsMeta.Action == "deploy"
-                                    || WizardModel.ControlsMeta.Child.Count == 0 && WizardContainer.WizardState.Sites.Exists(item=>item.StatusEnum is ArchStatus.InProgress or ArchStatus.NotCompleted or ArchStatus.Failed))">
+                        disabled="@(!NextAllowed())">
                     @(WizardModel.ControlsMeta.Child.Count > 0 ? "Next" : "Finish")
                     <img style="@(WizardModel.ControlsMeta.Child.Count == 0 ? "display:none" : "")"/>
                 </button>
@@ -151,17 +147,25 @@
         await JsRuntime.InvokeVoidAsync("utils.initTooltip");
     }
 
-    private async Task PrevCallback()
+    private bool PrevAllowed()
     {
         if (WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.Completed && WizardContainer.WizardState.CurrentStep.Split("/").Length == 2)
         {
-            return;
+            return false;
         }
-        if (WizardContainer.WizardState.Sites.Count > 0 && WizardContainer.WizardState.Sites[^1].StatusEnum is ArchStatus.InProgress or ArchStatus.Completed 
-            && Output_URL.Split("/").Length - 1 == WizardContainer.WizardState.Sites[^1].StepNumber)
+        if (WizardContainer.WizardState.Sites.Count > 0)
         {
-            return;
+            var lastSite = WizardContainer.WizardState.Sites[^1];
+            if (lastSite.StatusEnum is ArchStatus.InProgress or ArchStatus.Completed && lastSite.StepNumber == Output_URL.Split("/").Length - 1)
+            {
+                return false;
+            }
         }
+        return true;
+    }
+    private async Task PrevCallback()
+    {
+        if (!PrevAllowed()) return;
         _load = false;
         var urlList = Output_URL.Split("/").ToList();
         urlList.RemoveAt(urlList.Count - 1);
@@ -177,21 +181,34 @@
         WizardContainer.WizardState.Arch.ArchName = formName;
     }
 
+    private bool NextAllowed()
+    {
+        if (changeElements.Exists(item => !item.Value.isValid))
+        {
+            return false;
+        }
+        if (WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress)
+        {
+            return false;
+        }
+        if (WizardContainer.WizardState.Sites.Count > 0)
+        {
+            var lastSite = WizardContainer.WizardState.Sites[^1];
+            if (lastSite.StatusEnum == ArchStatus.InProgress && WizardModel.ControlsMeta.Action == "deploy")
+            {
+                return false;
+            }
+            if (lastSite.StatusEnum == ArchStatus.Failed && (lastSite.SiteName != WizardModel.ControlsMeta.SiteName && WizardModel.ControlsMeta.SubType == "config" || lastSite.SiteName != WizardModel.ControlsMeta.Name && WizardModel.ControlsMeta.SubType == "site")
+                && WizardModel.ControlsMeta.Name != "global")
+            {
+                return false;
+            }
+        }
+        return true;
+    }
     private async Task NextCallback()
     {
-        if (WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.InProgress || WizardContainer.WizardState.Sites.Exists(item => item.StatusEnum is ArchStatus.InProgress or ArchStatus.NotCompleted or ArchStatus.Failed) && WizardModel.ControlsMeta.Action == "deploy")
-        {
-            return;
-        }
-        if (WizardModel.ControlsMeta.Child.Count == 0 && WizardContainer.WizardState.Sites.Exists(item => item.StatusEnum is ArchStatus.InProgress or ArchStatus.Failed or ArchStatus.NotCompleted))
-        {
-            return;
-        }
-        if (WizardModel.ControlsMeta.Child.Count == 0 && WizardContainer.WizardState.Sites.All(item => item.StatusEnum == ArchStatus.Completed))
-        {
-            _navigationManager.NavigateTo("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-            return;
-        }
+        if (!NextAllowed()) return;
         _load = false;
         HttpResponseMessage? saveResponse = null;
         if (WizardModel.ControlsMeta.Action == "init")
@@ -221,28 +238,22 @@
                 var deployResponse = await WizardContainer.DeploySite(WizardModel.ControlsMeta.SiteName,stepNumber);
                 if (deployResponse.IsSuccessStatusCode)
                 {
-                    var site = await deployResponse.Content.ReadFromJsonAsync<Site>();
-                    if (site != null)
+                    _timer = new Timer(async _ =>
                     {
-                        site.StatusEnum = ArchStatus.InProgress;
-                        WizardContainer.WizardState.AddSite(site);
-                        _timer = new Timer(async _ =>
+                        WizardContainer.WizardState.Sites = await WizardContainer.CheckDeploy();
+                        switch (WizardContainer.WizardState.Sites[^1].StatusEnum)
                         {
-                            WizardContainer.WizardState.Sites = await WizardContainer.CheckDeploy();
-                            switch (WizardContainer.WizardState.Sites[^1].StatusEnum)
-                            {
-                                case ArchStatus.Completed:
-                                    _timer?.DisposeAsync();
-                                    _toastService.ShowSuccess($"Site {site.SiteName} has been deployed successfully");
-                                    break;
-                                case ArchStatus.Failed:
-                                    _timer?.DisposeAsync();
-                                    _toastService.ShowError($"An error occurred when deploying site {site.SiteName}");
-                                    break;
-                            }
-                            StateHasChanged();
-                        }, null, 10000, 10000);
-                    }
+                            case ArchStatus.Completed:
+                                _timer?.DisposeAsync();
+                                _toastService.ShowSuccess($"Site {WizardContainer.WizardState.Sites[^1].SiteName} has been deployed successfully");
+                                break;
+                            case ArchStatus.Failed:
+                                _timer?.DisposeAsync();
+                                _toastService.ShowError($"An error occurred when deploying site {WizardContainer.WizardState.Sites[^1].SiteName}");
+                                break;
+                        }
+                        WizardModel.NotifyStateChanged();
+                    }, null, 0, 10000);
                 }
             }
             var condition = new List<Condition>();
@@ -277,7 +288,6 @@
     private async Task UpdateWizardData(List<Condition> conditions)
     {
         WizardModel.ControlsMeta = new ControlsMeta();
-        WizardModel.Title = "Loading...";
         changeElements.Clear();
         if (string.IsNullOrEmpty(Output_URL)) WizardModel.ControlsMeta.Name = "tree";
         var responseMessage = await WizardContainer.GetFormInfo(Output_URL,conditions);
@@ -285,7 +295,6 @@
         {
             var query = await responseMessage.Content.ReadAsStringAsync();
             if (!string.IsNullOrEmpty(query)) JsonParser.DeserializeTree(query,WizardModel.ControlsMeta,WizardModel.ControlsMeta.Child);
-            WizardModel.Title = !string.IsNullOrEmpty(Output_URL) ? WizardModel.ControlsMeta.DisplayName : "Main window";
             if (string.IsNullOrEmpty(Output_URL)) WizardModel.ControlsMeta.Name = string.Empty;
             var childForms = WizardModel.ControlsMeta.Child.Where(item => item.Type == "form").ToList();
             if (childForms.Count > 0)

@@ -102,8 +102,12 @@ def deploy_site(name: str, step_number:int):
         command = f'python -c "from hydra_engine.wizard_router import use_deploy_script; use_deploy_script(\'{name}\')"'
         deploy_process = subprocess.Popen(command, shell=True)
         site = Site(site_name=name,status = "in progress",step_number=step_number)
+        for exist_site in WizardInfo().get_sites_info():
+            if site.site_name == exist_site.site_name:
+                WizardInfo().remove_site(exist_site)
+                break
         WizardInfo().add_site(site)
-        return JSONResponse(content=jsonable_encoder(site), status_code=200)
+        return JSONResponse(content=jsonable_encoder(WizardInfo().get_sites_info()), status_code=200)
     except Exception as e:
         logger.error(e)
         return JSONResponse(content={"message": str(e)}, status_code=400)
@@ -132,4 +136,3 @@ def check_deploy():
 def use_deploy_script(site_name):
     time.sleep(10)
     print(f"Deploy ending for {site_name}")
-    sys.exit(1)
