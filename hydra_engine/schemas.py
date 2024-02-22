@@ -535,7 +535,7 @@ def get_value_by_key(value, input_url_list,comment = None):
     input_url_list.pop(0)
     if key in value:
         if key in value.ca.items:
-            comment = value.ca.items[key][2].value
+            comment = value.ca.items[key][2].value.split("\n")[0]
         return get_value_by_key(value[key], input_url_list,comment)
     else:
         logger.error("Key not exist")
@@ -640,7 +640,7 @@ def generate_elem_info(value, element, uid, path, is_log, comment = None):
                     for key, metadata in element["sub_type_schema"].items():
                         comment = None
                         if el is not None and hasattr(el, "ca") and key in el.ca.items:
-                            comment = el.ca.items[key][2].value
+                            comment = el.ca.items[key][2].value.split("\n")[0]
                         d.update({
                             key: generate_elem_info(
                                 el.get(key,None),
@@ -662,7 +662,7 @@ def generate_elem_info(value, element, uid, path, is_log, comment = None):
                     for key, metadata in sub_type_schema.items():
                         comment = None
                         if value is not None and hasattr(value,"ca") and key in value.ca.items:
-                            comment = value.ca.items[key][2].value
+                            comment = value.ca.items[key][2].value.split("\n")[0]
                         elem_info.sub_type_schema.update(
                             {key: generate_elem_info(value.get(key) if value is not None else None, metadata, uid, f"{path}/{key}", is_log,comment)}
                         )
