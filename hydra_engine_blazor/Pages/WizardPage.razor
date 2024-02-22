@@ -95,11 +95,14 @@
                     <img/>
                     Back
                 </button>
-                <button class="next-button primary-button" @onclick="NextCallback"
-                        disabled="@(!NextAllowed())">
-                    @(WizardModel.ControlsMeta.Child.Count > 0 ? "Next" : "Finish")
-                    <img style="@(WizardModel.ControlsMeta.Child.Count == 0 ? "display:none" : "")"/>
-                </button>
+                @if (WizardModel.ControlsMeta.Child.Count > 0)
+                {
+                    <button class="next-button primary-button" @onclick="NextCallback"
+                            disabled="@(!NextAllowed())">
+                        Next
+                        <img/>
+                    </button>
+                }
             </div>
         </div>
     }
