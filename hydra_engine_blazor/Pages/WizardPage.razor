@@ -135,13 +135,16 @@
     private List<ControlsMeta> formGroups = new();
     private Timer? _timer;
     private bool _load;
+    protected override void OnInitialized()
+    {
+        WizardModel.OnChange += StateHasChanged;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         WizardContainer.WizardState = await WizardContainer.GetWizardState();
-        Console.WriteLine(JsonSerializer.Serialize(WizardContainer.WizardState));
         Output_URL = WizardContainer.WizardState.CurrentStep;
         await UpdateWizardData(new List<Condition>());
-        WizardModel.OnChange += StateHasChanged;
         _load = true;
     }
 
@@ -319,6 +322,7 @@
         {
             _toastService.ShowError("An error occured when updating wizard data");
         }
+        WizardModel.NotifyStateChanged();
 
     }
 

@@ -1,0 +1,124 @@
+﻿@inject IJSRuntime _jsRuntime
+@typeparam TContext 
+
+<dialog @attributes="AdditionalAttributes" open="@IsOpened" @ref="obj">
+    <div class="modal-content alert-container">
+        <div class="modal-header">
+            <h2>@HeaderText</h2>
+            <img @onclick="ResetCallback"/>
+        </div>
+        <div class="modal-body">
+            <h3>@BodyText</h3>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" @onclick="SubmitCallback">@PrimaryButtonText</button>
+            <button class="btn" @onclick="ResetCallback">@SecondaryButtonText</button>
+        </div>
+    </div>
+</dialog>
+
+
+@code {
+    private bool IsOpened { get; set; }
+    private IJSObjectReference? module;
+    private ElementReference obj;
+    private MarkupString _headerText = new();
+    private MarkupString _bodyText = new();
+    private MarkupString _primaryButtonText = new("Submit");
+    private MarkupString _secondaryButtonText = new("Cancel");
+
+    /// Type need to be dict or rule
+    /// typeof(Dict) or typeof(Rule)
+    // [Parameter] public Type Type { get; set; }
+    [Parameter]
+    public TContext? Context { get; set; }
+
+    [Parameter]
+    public string HeaderText
+    {
+        get => _headerText.Value;
+        set => _headerText = new MarkupString(value);
+    }
+
+    [Parameter]
+    public string BodyText
+    {
+        get => _bodyText.Value;
+        set => _bodyText = new MarkupString(value);
+    }
+
+    [Parameter]
+    public string PrimaryButtonText
+    {
+        get => _primaryButtonText.Value;
+        set => _primaryButtonText = new MarkupString(value);
+    }
+
+    [Parameter]
+    public string SecondaryButtonText
+    {
+        get => _secondaryButtonText.Value;
+        set => _secondaryButtonText = new MarkupString(value);
+    }
+
+    // [Parameter] public string Name { get; set; }
+    [Parameter] public EventCallback<bool> Result { get; set; }
+
+    [Parameter] public EventCallback<TContext?> ResultContext { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./Shared/AlertDialog.razor.js");
+        }
+    }
+
+    public async Task Open()
+    {
+        await module.InvokeVoidAsync("Open", obj);
+    }
+
+    public async Task Open(string? headerText = null, string? bodyText = null, string? primaryButtonText = null, string? secondaryButtonText = null, TContext? context = default)
+    {
+        HeaderText = headerText ?? HeaderText;
+        BodyText = bodyText ?? BodyText;
+        PrimaryButtonText = primaryButtonText ?? PrimaryButtonText;
+        SecondaryButtonText = secondaryButtonText ?? SecondaryButtonText;
+        Context = context;
+        StateHasChanged();
+        await module.InvokeVoidAsync("Open", obj);
+    }
+
+    public async Task Close()
+    {
+        await module.InvokeVoidAsync("Close", obj);
+    }
+
+    private async Task SubmitCallback()
+    {
+        if (Context is not null)
+        {
+            await ResultContext.InvokeAsync(Context);
+        }
+
+        await Result.InvokeAsync(true);
+        await Close();
+    }
+
+    private async Task ResetCallback()
+    {
+        if (Context is not null)
+        {
+            await ResultContext.InvokeAsync();
+        }
+
+        await Result.InvokeAsync(false);
+        await Close();
+    }
+
+}

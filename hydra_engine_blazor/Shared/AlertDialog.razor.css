@@ -1,0 +1,90 @@
+﻿dialog {
+    border: none;
+    border-radius: 4px;
+    padding: 0px;
+}
+.alert-container{
+    /*width: 560px;*/
+    /*height: 238px;*/
+    --header-title:var(--hydra-gray-800);
+    --button-background:var(--hydra-blue-500-primary);
+    --button-background-hover:var(--hydra-blue-700);
+    --button-background-active:var(--hydra-blue-800);
+}
+dialog::backdrop {
+    background: rgba(45, 51, 77, 0.6);
+}
+
+.modal-footer {
+    background: var(--hydra-gray-30);
+    border-top: 0;
+    gap: 20px;
+}
+
+.modal-body > input, .modal-body > textarea {
+    padding: 5px 10px;
+}
+
+
+.modal-header {
+    padding: 20px 30px;
+}
+.modal-header>img{
+    content: url(icons/X.svg);
+    height: 24px;
+    width: 24px;
+    cursor:pointer;
+    border-radius: 4px;
+}
+.modal-header>img:hover{
+    background: var(--hydra-gray-40);
+}
+.modal-header>img:active{
+    background: var(--hydra-gray-100);
+}
+.modal-header>h2{
+    color:var(--header-title);
+}
+.modal-body {
+    padding: 30px;
+    flex:0;
+}
+
+.modal-footer {
+    padding: 20px 30px;
+    height: 88px;
+}
+.modal-footer>button{
+    height: 38px;
+    padding: 10px 30px;
+    font-size: 16px;
+    font-weight: 600;
+    color:white;
+    width: auto;
+    border:1px solid var(--button-background);
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+}
+.modal-footer>button:first-child{
+    border:0;
+    background: var(--button-background);
+}
+.modal-footer>button:first-child:hover{
+    background: var(--button-background-hover);
+}
+.modal-footer>button:first-child:active{
+    background: var(--button-background-active);
+}
+.modal-footer>button:last-child{
+    color:var(--button-background);
+    border:1px solid var(--button-background);
+}
+.modal-footer>button:last-child:hover{
+    color:var(--button-background-hover);
+    border:1px solid var(--button-background-hover);
+}
+.modal-footer>button:last-child:active{
+    color:var(--button-background-active);
+    border:1px solid var(--button-background-active);
+}

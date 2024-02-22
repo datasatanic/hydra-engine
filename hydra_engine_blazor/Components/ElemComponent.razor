@@ -213,7 +213,7 @@
                                     </div>
                                     @if (!elemInfo.readOnly)
                                     {
-                                        <div class="dropend custom-dropend">
+                                        <div class="dropend">
                                             <div class="trash-container dropdown-toggle @(Depth % 3 == 1 ? "gray" : "") @(Depth % 3 == 2 ? "blue" : "") @(Depth % 3 == 0 ? "purple" : "")" data-bs-toggle="dropdown" aria-expanded="false">
                                                 <img class="trash-image"/>
                                             </div>
@@ -252,7 +252,25 @@
                                                     <textarea class="flex-1" @attributes="ElementAttributes" validation-error="@(!TryParseToType(elem, elemInfo?.sub_type))" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))">@elem</textarea>
                                                     @if (!elemInfo.readOnly)
                                                     {
-                                                        <img @onclick="@(() => RemoveArrayItem(j))"/>
+                                                        <div class="dropend">
+                                                            <div class="trash-container dropdown-toggle @(Depth % 3 == 1 ? "gray" : "") @(Depth % 3 == 2 ? "blue" : "") @(Depth % 3 == 0 ? "purple" : "")" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                <img class="trash-image"/>
+                                                            </div>
+                                                            <div class="dropdown-menu trash-menu">
+                                                                <div class="trash-menu-element" @onclick="@(() => CopyElement(j))">
+                                                                    <img class="copy-image"/>
+                                                                    <h4>Duplicate</h4>
+                                                                </div>
+                                                                <div class="trash-menu-element">
+                                                                    <img class="disable-image"/>
+                                                                    <h4>Disable</h4>
+                                                                </div>
+                                                                <div class="trash-menu-element" @onclick="@(() => RemoveArrayItem(j))">
+                                                                    <img class="delete-image"/>
+                                                                    <h4>Delete</h4>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     }
                                                 </div>
                                                 break;
@@ -261,7 +279,25 @@
                                                     <input class="flex-1" @attributes="ElementAttributes" size="@(elem != null ? elem.ToString().Length : 0)" validation-error="@(!TryParseToType(elem, elemInfo?.sub_type))" value="@elem" @onchange="@((e) => ChangeArrayValue(e, j, elemInfo.sub_type))"/>
                                                     @if (!elemInfo.readOnly)
                                                     {
-                                                        <img class="delete-image" @onclick="@(() => RemoveArrayItem(j))"/>
+                                                        <div class="dropend">
+                                                            <div class="trash-container dropdown-toggle @(Depth % 3 == 1 ? "gray" : "") @(Depth % 3 == 2 ? "blue" : "") @(Depth % 3 == 0 ? "purple" : "")" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                <img class="trash-image"/>
+                                                            </div>
+                                                            <div class="dropdown-menu trash-menu">
+                                                                <div class="trash-menu-element" @onclick="@(() => CopyElement(j))">
+                                                                    <img class="copy-image"/>
+                                                                    <h4>Duplicate</h4>
+                                                                </div>
+                                                                <div class="trash-menu-element">
+                                                                    <img class="disable-image"/>
+                                                                    <h4>Disable</h4>
+                                                                </div>
+                                                                <div class="trash-menu-element" @onclick="@(() => RemoveArrayItem(j))">
+                                                                    <img class="delete-image"/>
+                                                                    <h4>Delete</h4>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     }
                                                 </div>
                                                 break;
@@ -822,10 +858,18 @@
     private async Task CopyElement(int index)
     {
         var arrayItems = elemInfo?.value as List<object>;
-        var subTypeSchema = elemInfo.array_sub_type_schema[index].ToDictionary(x => x.Key, y => y.Value.DeepCopy());
-        elemInfo.array_sub_type_schema.Insert(index,subTypeSchema);
-        var copyValue = subTypeSchema.ToDictionary(x => x.Key,y=>y.Value.value);
-        arrayItems?.Insert(index,copyValue);
+        if (elemInfo.array_sub_type_schema != null)
+        {
+            var subTypeSchema = elemInfo.array_sub_type_schema[index].ToDictionary(x => x.Key, y => y.Value.DeepCopy());
+            elemInfo.array_sub_type_schema.Insert(index,subTypeSchema);
+            var copyValue = subTypeSchema.ToDictionary(x => x.Key,y=>y.Value.value);
+            arrayItems?.Insert(index,copyValue);
+        }
+        else
+        {
+            var copyValue = arrayItems[index];
+            arrayItems.Insert(index,copyValue);
+        }
         await SendValue.InvokeAsync(elemInfo);
     }
 

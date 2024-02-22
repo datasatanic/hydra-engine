@@ -175,7 +175,6 @@ li>div>img[aria-expanded="true"]{
     display: flex;
     flex-direction: column;
     gap:10px;
-    padding: 20px 0 20px 20px;
     flex: 1;
     width: fit-content;
 }
@@ -315,7 +314,7 @@ img.purple:active,.trash-container.purple:active{
     justify-content: center;
     align-items: center;
     border-radius: 8px;
-    padding: 10px 5px;
+    padding: 5px 10px;
 }
 .dropdown-toggle:after{
     display: none !important;
@@ -358,6 +357,7 @@ img.purple:active,.trash-container.purple:active{
     display: flex;
     flex-direction: row;
     gap:10px;
+    padding: 20px 0 20px 20px;
 }
 .justify-dot:after{
     right: -40px !important;
@@ -367,7 +367,4 @@ img.purple:active,.trash-container.purple:active{
     position: absolute;
     right: 10px;
     top: 4px;
-}
-.custom-dropend{
-    padding: 20px 0;
 }
