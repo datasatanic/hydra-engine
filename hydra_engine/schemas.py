@@ -45,6 +45,7 @@ class ConstraintItem(BaseModel):
 class ElemInfo(BaseModel):
     value: object
     placeholder: object
+    autocomplete: object = None
     file_id: str
     type: types
     description: str = None
@@ -527,13 +528,15 @@ def get_value(input_url: str, uid: str):
             return get_value_by_key(elements.values[key], input_url_list)
 
 
-def get_value_by_key(value, input_url_list):
+def get_value_by_key(value, input_url_list,comment = None):
     if len(input_url_list) == 0:
-        return value
+        return value,comment
     key = input_url_list[0]
     input_url_list.pop(0)
     if key in value:
-        return get_value_by_key(value[key], input_url_list)
+        if key in value.ca.items:
+            comment = value.ca.items[key][2].value
+        return get_value_by_key(value[key], input_url_list,comment)
     else:
         logger.error("Key not exist")
 
@@ -595,12 +598,12 @@ def get_element_info(input_url, uid: str):
                 element = item[input_url]
                 if len(element) == 0:
                     return None
-                value = get_value(input_url, uid)
-                elem_info = generate_elem_info(value, element, uid, input_url, True)
+                value,comment = get_value(input_url, uid)
+                elem_info = generate_elem_info(value, element, uid, input_url, True,comment)
                 return elem_info
 
 
-def generate_elem_info(value, element, uid, path, is_log):
+def generate_elem_info(value, element, uid, path, is_log, comment = None):
     try:
         render_constraints = []
         render_dict = element.get('render')
@@ -612,7 +615,11 @@ def generate_elem_info(value, element, uid, path, is_log):
                         constraint_item = ConstraintItem(value=constraint[key].get('value'), type=key,
                                                          message=constraint[key].get('message'))
                         render_constraints.append(constraint_item)
-        elem_info = ElemInfo(value=value, placeholder=element.get('default_value'), type=element.get('type'),
+        autocomplete = None
+        if(comment is not None and "[ ] CHANGEME" in comment and element.get("type") != "array" and element.get("type") != "dict"):
+            autocomplete = value
+            value = None
+        elem_info = ElemInfo(value=value, placeholder=element.get('default_value'),autocomplete = autocomplete, type=element.get('type'),
                              description=element.get('description'),
                              sub_type=element.get('sub_type'),
                              sub_type_schema=None,
@@ -631,10 +638,13 @@ def generate_elem_info(value, element, uid, path, is_log):
                     is_element_none = el is None
                     d = {}
                     for key, metadata in element["sub_type_schema"].items():
+                        comment = None
+                        if el is not None and hasattr(el, "ca") and key in el.ca.items:
+                            comment = el.ca.items[key][2].value
                         d.update({
                             key: generate_elem_info(
                                 el.get(key,None),
-                                metadata, uid, f"{path}/{key}", False
+                                metadata, uid, f"{path}/{key}", False,comment
                             )
                         })
                     if is_element_none:
@@ -648,10 +658,14 @@ def generate_elem_info(value, element, uid, path, is_log):
                     })
             else:
                 if isinstance(sub_type_schema, dict):
-                    elem_info.sub_type_schema = {
-                        key: generate_elem_info(value.get(key) if value is not None else None, metadata, uid, f"{path}/{key}", is_log)
-                        for key, metadata in sub_type_schema.items()
-                    }
+                    elem_info.sub_type_schema = {}
+                    for key, metadata in sub_type_schema.items():
+                        comment = None
+                        if value is not None and hasattr(value,"ca") and key in value.ca.items:
+                            comment = value.ca.items[key][2].value
+                        elem_info.sub_type_schema.update(
+                            {key: generate_elem_info(value.get(key) if value is not None else None, metadata, uid, f"{path}/{key}", is_log,comment)}
+                        )
                 else:
                     raise TypeError("Type of field sub_type_schema must be dict")
         return elem_info

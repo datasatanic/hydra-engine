@@ -368,3 +368,17 @@ img.purple:active,.trash-container.purple:active{
     right: 10px;
     top: 4px;
 }
+::deep .autocomplete{
+    width: fit-content;
+    max-width: 100%;
+    padding: 10px 20px;
+    min-height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--hydra-gray-100);
+    position: absolute;
+    z-index: 1000;
+    background: white;
+    cursor: pointer;
+    word-wrap: break-word;
+    top:calc(100% + 2px)
+}

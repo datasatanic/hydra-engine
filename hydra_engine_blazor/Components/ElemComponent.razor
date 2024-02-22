@@ -91,8 +91,12 @@
                             }
                             <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
                                                                      data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
-                            <div class="@(Depth > 1 ? "flex-1":"")">
-                              <textarea class="w-100" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" @onchange="@((e) => ChangeValue(e, elemInfo.type))">@elemInfo?.value</textarea>
+                            <div class="@(Depth > 1 ? "flex-1":"") position-relative">
+                                <textarea @onfocus="FocusCallBack" @onblur="BlurCallback" class="w-100" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" @onchange="@((e) => ChangeValue(e, elemInfo.type))">@elemInfo?.value</textarea>
+                                @if (ShowAutoComplete())
+                                {
+                                    <AutoCompleteComponent TContext="@object" Value="@elemInfo.autocomplete" AutoCompleteFilled="@((value)=>UpdateElemValue(value,elemInfo.type))"></AutoCompleteComponent>
+                                }
                                 @if ((elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString())) && Depth == 1)
                                 {
                                     <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
@@ -125,8 +129,12 @@
                             }
                             <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
                                 data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
-                            <div class="@(Depth > 1 && elemInfo.control != Control.Checkbox ? "flex-1":"")">
-                               <input class="w-100" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" size="@(elemInfo?.value != null ? elemInfo.value.ToString().Length - 3: 0)" value="@(elemInfo.control == Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e) => ChangeValue(e, elemInfo.type))"/>
+                            <div class="@(Depth > 1 && elemInfo.control != Control.Checkbox ? "flex-1":"") position-relative">
+                                <input @onfocus="FocusCallBack" @onblur="BlurCallback" class="w-100" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" size="@(elemInfo?.value != null ? elemInfo.value.ToString().Length - 3: 0)" value="@(elemInfo.control == Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e) => ChangeValue(e, elemInfo.type))"/>
+                                @if (ShowAutoComplete())
+                                {
+                                    <AutoCompleteComponent TContext="@object" Value="@elemInfo.autocomplete" AutoCompleteFilled="@((value)=>UpdateElemValue(value,elemInfo.type))"></AutoCompleteComponent>
+                                }
                                 @if ((elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString())) && Depth == 1)
                                 {
                                     <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
@@ -346,6 +354,7 @@
     private string filePath => elemInfo.fileId;
     private Dictionary<string, object>? ElementAttributes { get; set; } = new();
     private bool isShow;
+    private bool showAutoComplete;
     private JsonSerializerOptions options = new()
     {
         Converters =
@@ -459,6 +468,11 @@
             return;
         }
         var value = obj.Value;
+        await UpdateElemValue(value,type);
+    }
+
+    private async Task UpdateElemValue(object value,ElemType type)
+    {
         elemInfo.value = value;
         ElementAttributes["validation-error"] = false;
         elemInfo.isValid = true;
@@ -495,7 +509,6 @@
         }
         await SendValue.InvokeAsync(elemInfo);
     }
-
     private async Task ChangeArrayValue(ChangeEventArgs obj,int i,ElemType type)
     {
         if (elemInfo.readOnly)
@@ -871,6 +884,35 @@
             arrayItems.Insert(index,copyValue);
         }
         await SendValue.InvokeAsync(elemInfo);
+    }
+
+    private bool ShowAutoComplete()
+    {
+        if (showAutoComplete)
+        {
+            if (elemInfo.autocomplete == null)
+            {
+                return false;
+            }
+            if (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()))
+            {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private async Task BlurCallback()
+    {
+        showAutoComplete = false;
+        StateHasChanged();
+    }
+
+    private async Task FocusCallBack()
+    {
+        showAutoComplete = true;
+        StateHasChanged();
     }
 
 }

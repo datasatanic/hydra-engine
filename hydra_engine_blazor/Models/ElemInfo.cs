@@ -17,6 +17,11 @@ public class ElemInfo
     [JsonPropertyName("placeholder")]
     public object? placeholder;
     
+    [DataMember(Name = "autocomplete", EmitDefaultValue = false)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [JsonPropertyName("autocomplete")]
+    public object? autocomplete;
+    
     [DataMember(Name = "file_id", EmitDefaultValue = false)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [JsonPropertyName("file_id")]

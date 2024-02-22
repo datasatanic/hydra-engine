@@ -1,0 +1,15 @@
+﻿@typeparam TContext 
+<div class="autocomplete" @onmousedown="FilledAutoComplete">@Value</div>
+
+@code {
+    [Parameter] public EventCallback<TContext> AutoCompleteFilled { get; set; }
+    [Parameter]
+    public TContext? Context { get; set; }
+
+    [Parameter] public TContext Value { get; set; }
+    private async Task FilledAutoComplete()
+    {
+        await AutoCompleteFilled.InvokeAsync(Value);
+    }
+
+}

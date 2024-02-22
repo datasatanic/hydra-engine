@@ -94,6 +94,9 @@ public class JsonParser
                 case "placeholder":
                     elemInfo.placeholder = keyValue.Value?.ToString();
                     break;
+                case "autocomplete":
+                    elemInfo.autocomplete = keyValue.Value?.ToString();
+                    break;
                 case "file_id":
                     elemInfo.fileId = keyValue.Value.ToString();
                     break;
