@@ -522,10 +522,9 @@ def get_elements(path_id):
 def get_value(input_url: str, uid: str):
     input_url_list = input_url.split("/")
     key = input_url_list[0]
-    input_url_list.pop(0)
     for elements in HydraParametersInfo().get_elements_values():
         if key in elements.values and elements.uid == uid:
-            return get_value_by_key(elements.values[key], input_url_list)
+            return get_value_by_key(elements.values, input_url_list)
 
 
 def get_value_by_key(value, input_url_list,comment = None):
@@ -534,7 +533,7 @@ def get_value_by_key(value, input_url_list,comment = None):
     key = input_url_list[0]
     input_url_list.pop(0)
     if key in value:
-        if key in value.ca.items:
+        if hasattr(value,"ca") and key in value.ca.items and value.ca.items[key][2]:
             comment = value.ca.items[key][2].value.split("\n")[0]
         return get_value_by_key(value[key], input_url_list,comment)
     else:
@@ -545,35 +544,48 @@ def set_value_in_dict(elements, value, input_url_list):
     while len(input_url_list) > 1:
         elements = elements[input_url_list[0]]
         input_url_list.pop(0)
-    if elements[input_url_list[0]] != value:
-        elements[input_url_list[0]] = update_parameter_value(elements[input_url_list[0]], value)
-        HydraParametersInfo().was_modified = True
+    elements[input_url_list[0]] = update_parameter_value(elements[input_url_list[0]], value)
+    update_comment(elements,input_url_list[0])
+    HydraParametersInfo().was_modified = True
 
+def get_comment_with_text(data):
+    for el in data:
+        if el is not None and not isinstance(el, list):
+            return el.value.split("\n")[0]
+    return None
+def update_comment(element,key):
+    if hasattr(element, "ca"):
+        comment = element.ca.items.get(key, None)
+        if comment is not None:
+            comment_value = get_comment_with_text(comment)
+            if comment_value is not None and "[ ] CHANGEME" in comment_value:
+                start_index = comment_value.index("[ ] CHANGEME")
+                modified_comment = comment_value[:start_index + 1] + 'X' + comment_value[start_index + 2:]
+                element.ca.items[key][2].value = modified_comment
 
 def update_parameter_value(element, value):
     if isinstance(element, dict):
-        element.update(
-            {key: update_parameter_value(element[key], value[key]) for key in element if element[key] != value[key]})
+        for key in element:
+            element.update(
+                {key: update_parameter_value(element[key], value[key])})
+            update_comment(element,key)
         return element
     elif isinstance(element, list):
-        if element != value:
-            element_len = len(element)
-            value_len = len(value)
-            if value_len == 0:
-                element = None
-                return element
-            if element_len > value_len:
-                element = element[:len(value)]
-            elif element_len < value_len:
-                for val in value[element_len:]:
-                    element.append(val)
-            for index, (el, val) in enumerate(zip(element, value)):
-                if el != val:
-                    element[index] = update_parameter_value(el, val)
+        element_len = len(element)
+        value_len = len(value)
+        if value_len == 0:
+            element = None
             return element
+        if element_len > value_len:
+            element = element[:len(value)]
+        elif element_len < value_len:
+            for val in value[element_len:]:
+                element.append(val)
+        for index, (el, val) in enumerate(zip(element, value)):
+            element[index] = update_parameter_value(el, val)
+        return element
     else:
-        if element != value:
-            return value
+        return value
 
 
 def set_value(input_url: str, uid: str, value: object):
