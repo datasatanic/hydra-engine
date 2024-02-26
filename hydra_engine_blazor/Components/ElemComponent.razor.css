@@ -332,6 +332,9 @@ img.purple:active,.trash-container.purple:active{
 .fit-content{
     width: fit-content;
 }
+.resizer-border{
+    border-right: 4px solid var(--hydra-gray-50);
+}
 .array-element{
     display: flex;
     flex-direction: row;
@@ -339,7 +342,6 @@ img.purple:active,.trash-container.purple:active{
     padding: 20px;
     background: white;
     border-radius: 8px;
-    border-right: 4px solid var(--hydra-gray-50);
     position: relative;
     min-width: fit-content;
     max-width: 100%;

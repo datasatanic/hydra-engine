@@ -33,6 +33,7 @@
         resizer.removeEventListener('mousedown', mousedownHandler)
         window.removeEventListener('mousemove', mousemoveHandler)
         window.removeEventListener('mouseup',stopResize)
+        window.removeEventListener('mouseleave',stopResize)
         mousedownHandler = null;
         mousemoveHandler = null
     }
@@ -51,7 +52,6 @@ function resize(e,container) {
 }
 
 function stopResize() {
-    console.log("stop resize")
     window.removeEventListener('mousemove', mousemoveHandler)
     window.removeEventListener('mouseup',stopResize)
     window.removeEventListener('mouseleave',stopResize)
