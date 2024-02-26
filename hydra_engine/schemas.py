@@ -551,14 +551,15 @@ def set_value_in_dict(elements, value, input_url_list):
 def get_comment_with_text(data):
     for el in data:
         if el is not None and not isinstance(el, list):
-            return el.value.split("\n")[0]
+            if "[ ] CHANGEME" in el.value.split("\n")[0]:
+                return el.value.split("\n")[0]
     return None
 def update_comment(element,key):
     if hasattr(element, "ca"):
         comment = element.ca.items.get(key, None)
         if comment is not None:
             comment_value = get_comment_with_text(comment)
-            if comment_value is not None and "[ ] CHANGEME" in comment_value:
+            if comment_value is not None:
                 start_index = comment_value.index("[ ] CHANGEME")
                 modified_comment = comment_value[:start_index + 1] + 'X' + comment_value[start_index + 2:]
                 element.ca.items[key][2].value = modified_comment
@@ -628,7 +629,7 @@ def generate_elem_info(value, element, uid, path, is_log, comment = None):
                                                          message=constraint[key].get('message'))
                         render_constraints.append(constraint_item)
         autocomplete = None
-        if(comment is not None and "[ ] CHANGEME" in comment and element.get("type") != "array" and element.get("type") != "dict"):
+        if(comment is not None and "[ ] CHANGEME" in comment and element.get("type") != "array" and element.get("type") != "dict" and element.get("type") != "bool"):
             autocomplete = value
             value = None
         elem_info = ElemInfo(value=value, placeholder=element.get('default_value'),autocomplete = autocomplete, type=element.get('type'),
@@ -672,11 +673,11 @@ def generate_elem_info(value, element, uid, path, is_log, comment = None):
                 if isinstance(sub_type_schema, dict):
                     elem_info.sub_type_schema = {}
                     for key, metadata in sub_type_schema.items():
-                        comment = None
+                        sub_comment = None
                         if value is not None and hasattr(value,"ca") and key in value.ca.items:
-                            comment = value.ca.items[key][2].value.split("\n")[0]
+                            sub_comment = get_comment_with_text(value.ca.items[key])
                         elem_info.sub_type_schema.update(
-                            {key: generate_elem_info(value.get(key) if value is not None else None, metadata, uid, f"{path}/{key}", is_log,comment)}
+                            {key: generate_elem_info(value.get(key) if value is not None else None, metadata, uid, f"{path}/{key}", is_log,sub_comment if sub_comment else comment)}
                         )
                 else:
                     raise TypeError("Type of field sub_type_schema must be dict")
