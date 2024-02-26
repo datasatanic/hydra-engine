@@ -280,6 +280,7 @@ fieldset>.elements-container:last-child{
     flex-direction: column;
     gap: 10px;
     width: fit-content;
+    max-width: calc(100% - 20px);
 }
 .default-fields.justify{
     margin-left: 15px;
@@ -338,6 +339,10 @@ img.purple:active,.trash-container.purple:active{
     padding: 20px;
     background: white;
     border-radius: 8px;
+    border-right: 4px solid var(--hydra-gray-50);
+    position: relative;
+    min-width: fit-content;
+    max-width: 100%;
 }
 .array-element.left-justify{
     margin-left: -10px;
@@ -419,4 +424,18 @@ img.purple:active,.trash-container.purple:active{
     cursor: pointer;
     word-wrap: break-word;
     top:calc(100% + 2px)
+}
+::deep .autocomplete:hover{
+    background: var(--hydra-gray-20);
+}
+::deep .autocomplete:active{
+    background: var(--hydra-gray-30);
+}
+.resizer{
+    content: url("icons/Slider.svg");
+    position: absolute;
+    top: 50%;
+    right: -7px;
+    cursor: col-resize;
+    transform: translateY(-50%);
 }

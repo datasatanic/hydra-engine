@@ -1,4 +1,4 @@
-﻿window.utils={
+﻿window.utils= {
     initTooltip: (container = false) => {
         container ? document.querySelectorAll(container + ' .tooltip').forEach(value => value.remove()) : document.querySelectorAll('.tooltip').forEach(value => value.remove());
         let _container = container ? document.querySelector(container) : container;
@@ -14,17 +14,45 @@
             })
         });
     },
-    collapseExpand: (id) =>{
+    collapseExpand: (id) => {
         let element = document.getElementById(id)
-        if(element){
+        if (element) {
             let bsCollapse = new bootstrap.Collapse(element);
-            if(element.classList.contains("show")){
+            if (element.classList.contains("show")) {
                 bsCollapse.hide();
-            }
-            else{
+            } else {
                 bsCollapse.show();
             }
         }
+    },
+    addListenersResize: (resizer, container) => {
+        mousedownHandler = (event) => mousedown(event,container);
+        resizer.addEventListener('mousedown', mousedownHandler)
+    },
+    clearListenersResize: (resizer) => {
+        resizer.removeEventListener('mousedown', mousedownHandler)
+        window.removeEventListener('mousemove', mousemoveHandler)
+        window.removeEventListener('mouseup',stopResize)
+        mousedownHandler = null;
+        mousemoveHandler = null
     }
+}
+let mousedownHandler = null;
+let mousemoveHandler = null;
+function mousedown(e,container){
+    e.preventDefault()
+    mousemoveHandler = (event) => resize(event,container)
+    window.addEventListener('mousemove', mousemoveHandler)
+    window.addEventListener('mouseup', stopResize)
+    window.addEventListener('mouseleave',stopResize)
+}
+function resize(e,container) {
+    container.style.width = e.pageX - container.getBoundingClientRect().left + 'px'
+}
 
+function stopResize() {
+    console.log("stop resize")
+    window.removeEventListener('mousemove', mousemoveHandler)
+    window.removeEventListener('mouseup',stopResize)
+    window.removeEventListener('mouseleave',stopResize)
 }

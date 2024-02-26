@@ -20,7 +20,7 @@ article{
     top:0;
     min-width: 250px;
     width: 250px;
-    max-width: 70%;
+    max-width: 500px;
 }
 input[type="search"]{
     min-width: 300px;
@@ -92,6 +92,8 @@ input[type="search"]{
 }
 main {
     flex: 1;
+    overflow: auto;
+    overflow-y: hidden;
 }
 .active-link{
     background: var(--hydra-gray-30);

@@ -10,7 +10,7 @@
     <div @ref="menuContainer" class="menu-container">
         <h1 class="title">Hydra</h1>
         <div class="sidebar">
-            <div style="border-radius: 4px;padding: 5px" class="@(string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) ? "active-link": "")">
+            <div style="border-radius: 4px;padding: 5px" class="@(string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) ? "active-link" : "")">
                 <h4 class="@(!string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) ? "green-color" : "") welcome-step">Welcome page</h4>
             </div>
             @foreach (var node in WizardContainer.WizardTree.Child)
@@ -25,7 +25,7 @@
                         <div class="nav-menu-style placeholder"></div>
                     }
                 </div>
-                
+
             }
             else if (WizardContainer.WizardState.Arch.StatusEnum == ArchStatus.NotCompleted)
             {
@@ -52,7 +52,6 @@
 
 
 @code {
-    private IJSObjectReference _module;
     ElementReference menuContainer;
     ElementReference resizeContainer;
 
@@ -70,17 +69,12 @@
     {
         if (firstRender)
         {
-            _module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./Shared/WizardLayout.razor.js");
-            await _module.InvokeVoidAsync("addListenersResize", resizeContainer);
+            await _jsRuntime.InvokeVoidAsync("utils.addListenersResize", resizeContainer, menuContainer);
         }
     }
     public async ValueTask DisposeAsync()
     {
-        if (_module != null)
-        {
-            await _module.InvokeVoidAsync("clearListenersResize",resizeContainer);
-            await _module.DisposeAsync();
-        }
+        await _jsRuntime.InvokeVoidAsync("utils.clearListenersResize",resizeContainer);
         WizardContainer.OnChange -= StateHasChanged;
         WizardModel.OnChange -= StateHasChanged;
     }
