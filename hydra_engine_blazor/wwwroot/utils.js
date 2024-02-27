@@ -53,6 +53,4 @@ function resize(e,container) {
 
 function stopResize() {
     window.removeEventListener('mousemove', mousemoveHandler)
-    window.removeEventListener('mouseup',stopResize)
-    window.removeEventListener('mouseleave',stopResize)
 }

@@ -22,12 +22,6 @@ article{
     width: 250px;
     max-width: 500px;
 }
-input[type="search"]{
-    min-width: 300px;
-    width: 100%;
-    height: 32px;
-    border-radius: 8px;
-}
 .slider{
     position: absolute;
     content: url(icons/Slider.svg);
@@ -144,6 +138,21 @@ main {
     text-overflow: ellipsis;
     overflow: hidden;
     text-wrap: nowrap;
+}
+.search-container{
+    position: relative;
+}
+.search-container>img{
+    content: url("icons/Search.svg");
+    right: 25px;
+    top: 4px;
+    position: absolute;
+}
+.search-container>input[type="search"]{
+    min-width: 190px;
+    width: 100%;
+    margin: 0 20px;
+    background-image: none !important;
 }
 .top-row {
     background-color: #f7f7f7;

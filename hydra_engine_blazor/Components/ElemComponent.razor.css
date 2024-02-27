@@ -5,6 +5,7 @@ ul{
 .elem-container>h4{
     margin: 0;
     color: var(--hydra-gray-500);
+    white-space: nowrap;
 }
 .elem-container{
     display: flex;
@@ -195,7 +196,9 @@ input,textarea:invalid{
 li>div>img[data-bs-toggle="collapse"]{
     content: url("icons/arrow_up.svg");
     cursor: pointer;
-    margin-top: -2px;
+    height: 24px;
+    width: 24px;
+    margin-top: 7px;
 }
 li>div>img[aria-expanded="false"]{
     transform: rotate(90deg);
@@ -242,23 +245,22 @@ fieldset>.elements-container:last-child{
 }
 .param-background.in-array{
     background: white;
-    padding: 0  0 0 10px;
+    padding: 0;
     margin-left: -10px;
+    
 }
 .dict-param>li>div{
     display: flex;
     flex-direction: row;
     gap:10px;
-    align-items: center;
 }
 .dict-param-data{
     display: flex;
     flex-direction: column;
-    gap:10px;
+    gap:20px;
     padding: 10px;
     border-radius: 8px;
-    width: calc(100% + 10px);
-    margin-left: -10px;
+    max-width: 100%;
 }
 .dot:after{
     content: "";
@@ -440,4 +442,16 @@ img.purple:active,.trash-container.purple:active{
     right: -7px;
     cursor: col-resize;
     transform: translateY(-50%);
+}
+.not-dict-container{
+    display: flex;
+    flex-direction: column;
+    gap:10px;
+    max-width: calc(100% - 20px);
+}
+.not-dict-container.in-array{
+    margin-left: 20px;
+}
+.dict-param-data.in-array{
+    gap:10px;
 }

@@ -31,9 +31,9 @@
                                 <div>
                                     @if (!IsArrayElement)
                                     {
-                                        <img @onclick="ExpandCallback" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false"/>
+                                        <img @onclick="ExpandCallback" data-bs-toggle="collapse" data-bs-target="@($".multi-collapse{id}")" type="button" aria-controls="@($"dict{id} not-dict{id}")" aria-expanded="false"/>
                                     }
-                                    <div class="dict-param-data @(Depth % 3 == 1 && !elemInfo.Expand && IsArrayElement ? "gray" : "") @(Depth % 3 == 2 && !elemInfo.Expand && IsArrayElement ? "blue" : "") @(Depth % 3  == 0 && !elemInfo.Expand && IsArrayElement ? "purple" : "")">
+                                    <div class="dict-param-data @(IsArrayElement ? "in-array" : "") @(Depth % 3 == 1 && !elemInfo.Expand && IsArrayElement ? "gray" : "") @(Depth % 3 == 2 && !elemInfo.Expand && IsArrayElement ? "blue" : "") @(Depth % 3  == 0 && !elemInfo.Expand && IsArrayElement ? "purple" : "")">
                                         <div>
                                             @if (IsArrayElement)
                                             {
@@ -45,35 +45,35 @@
                                                 @switch (Depth % 3)
                                                 {
                                                     case 1:
-                                                        <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") gray small" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
+                                                        <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") gray small" data-bs-toggle="collapse" data-bs-target="@($".multi-collapse{id}")" type="button" aria-controls="@($"dict{id} not-dict{id}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
                                                         break;
                                                     case 2:
-                                                        <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") blue small" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
+                                                        <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") blue small" data-bs-toggle="collapse" data-bs-target="@($".multi-collapse{id}")" type="button" aria-controls="@($"dict{id} not-dict{id}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
                                                         break;
                                                     case 0:
-                                                        <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") purple small" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" type="button" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
+                                                        <img class="@(!elemInfo.Expand ? "expand-all" : "collapse-all") purple small" data-bs-toggle="collapse" data-bs-target="@($".multi-collapse{id}")" type="button" aria-controls="@($"dict{id} not-dict{id}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
                                                         break;
                                                 }
                                             }
                                         </div>
                                         <div class="@(string.IsNullOrEmpty(elemInfo.description) ? "collapse" : "")">@elemInfo.description</div>
+                                        @if (elemInfo.sub_type_schema.Any(item => item.Value.type != ElemType.Dict))
+                                        {
+                                            <div class="@($"multi-collapse{id}") collapse" id="@($"not-dict{id}")">
+                                                <div class="not-dict-container @(IsArrayElement ? "in-array" : "")">
+                                                    @{ var maxLength = elemInfo.sub_type_schema.Select(x => x.Value.display_name ?? string.Empty).Max(x => x.Length);}
+                                                    @foreach (var(key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type != ElemType.Dict))
+                                                    {
+                                                        <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" Length="@maxLength" IsArrayElement="@IsArrayElement"></ElemComponent>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
                                     </div>
                                 </div>
                             </li>
-                            <div class="collapse" id="@($"el{id}")">
+                            <div class="@($"multi-collapse{id}") collapse" id="@($"dict{id}")">
                                 <div class="nested-element">
-                                    @if (elemInfo.sub_type_schema.Any(item => item.Value.type != ElemType.Dict))
-                                    {
-                                        <div class="param-background @(IsArrayElement ? "in-array" : "")">
-                                            <div class=" default-fields @(Depth >= 1 && !IsArrayElement ? "justify" : "")">
-                                                @{ var maxLength = elemInfo.sub_type_schema.Select(x => x.Value.display_name ?? string.Empty).Max(x=>x.Length);}
-                                                @foreach (var(key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type != ElemType.Dict))
-                                                {
-                                                    <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" Depth="@(Depth + 1)" Length = "@maxLength" IsArrayElement="@IsArrayElement"></ElemComponent>
-                                                }
-                                            </div>
-                                        </div>
-                                    }
                                     @foreach (var (key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type == ElemType.Dict))
                                     {
                                         <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" ExpandChanged="@((ElemInfo obj) => HandleExpandChanging(obj, key))" Depth="@(Depth + 1)" IsArrayElement="@IsArrayElement"></ElemComponent>
@@ -90,7 +90,7 @@
                                 <input class="active-toggle" type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly))" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
                             }
                             <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
-                                                                     data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
+                                                                     data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 2}em" : "")">@elemInfo.display_name</h4>
                             <div class="@(Depth > 1 ? "flex-1":"") position-relative">
                                 <textarea @onfocus="FocusCallBack" @onblur="BlurCallback" class="w-100" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" @onchange="@((e) => ChangeValue(e, elemInfo.type))">@elemInfo?.value</textarea>
                                 @if (ShowAutoComplete())
@@ -130,8 +130,8 @@
                                 <input class="active-toggle" type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
                             }
                             <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
-                                data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 1}em" : "")">@elemInfo.display_name</h4>
-                            <div class="@(Depth > 1 && elemInfo.control != Control.Checkbox ? "flex-1":"") position-relative">
+                                data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 2}em" : "")">@elemInfo.display_name</h4>
+                            <div class="@(Depth > 1 && elemInfo.control != Control.Checkbox ? "flex-1":"") position-relative @(elemInfo.control == Control.Checkbox ? "w-100" : "")">
                                 <input @onfocus="FocusCallBack" @onblur="BlurCallback" class="w-100" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" size="@(elemInfo?.value != null ? elemInfo.value.ToString().Length - 3: 0)" value="@(elemInfo.control == Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e) => ChangeValue(e, elemInfo.type))"/>
                                 @if (ShowAutoComplete())
                                 {
@@ -219,7 +219,7 @@
                                         @{ var maxLength = subTypeSchema.Select(x => x.Value.display_name ?? string.Empty).Max(x=>x.Length);}
                                         @foreach (var (key, value) in subTypeSchema)
                                         {
-                                            <div class="@(IsArrayElement ? "flex-1":"")">
+                                            <div>
                                                 <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key, j))" Depth="@(Depth + 1)" Length="@maxLength" IsArrayElement="@true"></ElemComponent>
                                             </div>
                                         }
@@ -411,10 +411,22 @@
         if (elemInfo != null && isShow != elemInfo.Expand)
         {
             isShow = elemInfo.Expand;
-            await JSRuntime.InvokeVoidAsync("utils.collapseExpand",$"el{elemInfo.GetHashCode()}");
+            await ShowExpand();
         }
     }
 
+    private async Task ShowExpand()
+    {
+        if (elemInfo.type == ElemType.Dict)
+        {
+            await JSRuntime.InvokeVoidAsync("utils.collapseExpand",$"dict{elemInfo.GetHashCode()}");
+            await JSRuntime.InvokeVoidAsync("utils.collapseExpand",$"not-dict{elemInfo.GetHashCode()}");
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("utils.collapseExpand",$"el{elemInfo.GetHashCode()}");
+        }
+    }
     protected override void OnInitialized()
     {
         if (Depth == 1) elemInfo.Expand = true;
@@ -454,7 +466,7 @@
             _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/ElemComponent.razor.js");
             if (elemInfo is {Expand: true })
             {
-                await JSRuntime.InvokeVoidAsync("utils.collapseExpand",$"el{elemInfo.GetHashCode()}");
+                await ShowExpand();
             }
         }
         else
