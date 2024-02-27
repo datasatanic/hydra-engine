@@ -14,6 +14,9 @@ ul{
     align-items: center;
     max-width: 100%;
 }
+.elem-container>.position-relative{
+    min-width: 240px;
+}
 .elem-reverse{
     flex-direction: row-reverse !important;
 }

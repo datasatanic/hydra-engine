@@ -131,7 +131,7 @@
                             }
                             <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
                                 data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 2}em" : "")">@elemInfo.display_name</h4>
-                            <div class="@(Depth > 1 && elemInfo.control != Control.Checkbox ? "flex-1":"") position-relative @(elemInfo.control == Control.Checkbox ? "w-100" : "")">
+                            <div class="@(Depth > 1 && elemInfo.control != Control.Checkbox ? "flex-1":"") position-relative">
                                 <input @onfocus="FocusCallBack" @onblur="BlurCallback" class="w-100" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" size="@(elemInfo?.value != null ? elemInfo.value.ToString().Length - 3: 0)" value="@(elemInfo.control == Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e) => ChangeValue(e, elemInfo.type))"/>
                                 @if (ShowAutoComplete())
                                 {
