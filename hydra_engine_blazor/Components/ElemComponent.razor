@@ -178,7 +178,7 @@
         }
         else
         {
-            <div @ref="menuContainer" class="array-element @(!IsArrayElement ? "fit-content resizer-border" : "") @(IsArrayElement ? "in-array" : "") @(Depth % 3 == 1 && !elemInfo.Expand && IsArrayElement ? "gray" : "") @(Depth % 3 == 2 && !elemInfo.Expand && IsArrayElement ? "blue" : "") @(Depth % 3  == 0 && !elemInfo.Expand && IsArrayElement ? "purple" : "")">
+            <div @ref="menuContainer" class="array-element @(!IsArrayElement ? "fit-content" : "") @(!IsArrayElement && elemInfo.Expand ? "resizer-border" : "") @(IsArrayElement ? "in-array" : "") @(Depth % 3 == 1 && !elemInfo.Expand && IsArrayElement ? "gray" : "") @(Depth % 3 == 2 && !elemInfo.Expand && IsArrayElement ? "blue" : "") @(Depth % 3  == 0 && !elemInfo.Expand && IsArrayElement ? "purple" : "")">
                 @if (IsArrayElement)
                 {
                     <input class="active-toggle" type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
