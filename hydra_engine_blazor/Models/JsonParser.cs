@@ -104,6 +104,8 @@ public class JsonParser
                     elemInfo.type = keyValue.Value.ToString() switch
                     {
                         "string" => ElemType.String,
+                        "string-single-quoted"=>ElemType.String,
+                        "string-double-quoted"=>ElemType.String,
                         "double" => ElemType.Double,
                         "int" => ElemType.Int,
                         "datetime" => ElemType.DateTime,

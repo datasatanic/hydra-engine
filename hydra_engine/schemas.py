@@ -1,11 +1,12 @@
 import os
 import ruamel.yaml
 import maya
+from ruamel.yaml.scalarstring import PlainScalarString, SingleQuotedScalarString, DoubleQuotedScalarString
 from typing import List, Literal, Dict
 from pydantic import BaseModel, validator, Extra, root_validator, ValidationError
 
 import hydra_engine.filewatcher
-from hydra_engine.parser import write_file, HydraParametersInfo,WizardInfo, read_hydra_ignore
+from hydra_engine.parser import write_file, HydraParametersInfo, WizardInfo, read_hydra_ignore
 from hydra_engine.configs import config
 import logging
 import re
@@ -14,25 +15,33 @@ tree = HydraParametersInfo().tree
 wizard_tree = HydraParametersInfo().wizard_tree
 logger = logging.getLogger('common_logger')
 
-types = Literal["string", "int", "bool", "datetime", "dict", "array", "double"]
-sub_types = Literal["string", "int", "bool", "datetime", "dict", "composite", "double"]
+types = Literal[
+    "string", "string-single-quoted", "string-double-quoted", "int", "bool", "datetime", "dict", "array", "double"]
+sub_types = Literal["string", "string-single-quoted", "string-double-quoted", "int", "bool", "datetime", "dict", "composite", "double"]
 constraints = Literal[
     'maxlength', 'minlength', 'pattern', 'cols', 'rows', 'min', 'max', 'format', "size", "resize"]
 controls = Literal[
     "input_control", "textarea_control", "checkbox_control", "number_control", "datetime_control",
     "date_control", "time_control", "label_control"]
 
+
 class Arch(BaseModel):
-    arch_name:str
+    arch_name: str
     status: str
+
+
 class Site(BaseModel):
     site_name: str
     step_number: str
     status: str
+
+
 class WizardState(BaseModel):
     current_step: str
     arch: Arch
     sites: List[Site]
+
+
 class ConstraintItem(BaseModel):
     value: str
     type: constraints
@@ -163,13 +172,12 @@ class ElemInfo(BaseModel):
                     raise TypeError(
                         "Only parameters with dict type or arrays with composite type can have label_control")
             case "input_control":
-                if not (values["type"] == "string" and values["type"] != "array" or values["type"] == "array" and
-                        values["sub_type"] == "string"):
+                if not ("string" in values["type"] and values["type"] != "array" or values["type"] == "array" and
+                        "string" in values["sub_type"]):
                     raise TypeError("Only parameters with string type can have input_control")
             case "textarea_control":
-                if not (values["type"] == "string" and values["type"] != "array" or values["type"] == "array" and
-                        values[
-                            "sub_type"] == "string"):
+                if not ("string" in values["type"] and values["type"] != "array" or values["type"] == "array" and
+                        "string" in values["sub_type"]):
                     raise TypeError("Only parameters with string type can have textarea_control")
             case "number_control":
                 if not ((values["type"] == "int" or values["type"] == "double") and values["type"] != "array" or values[
@@ -527,15 +535,15 @@ def get_value(input_url: str, uid: str):
             return get_value_by_key(elements.values, input_url_list)
 
 
-def get_value_by_key(value, input_url_list,comment = None):
+def get_value_by_key(value, input_url_list, comment=None):
     if len(input_url_list) == 0:
-        return value,comment
+        return value, comment
     key = input_url_list[0]
     input_url_list.pop(0)
     if key in value:
-        if hasattr(value,"ca") and key in value.ca.items and value.ca.items[key][2]:
+        if hasattr(value, "ca") and key in value.ca.items and value.ca.items[key][2]:
             comment = value.ca.items[key][2].value.split("\n")[0]
-        return get_value_by_key(value[key], input_url_list,comment)
+        return get_value_by_key(value[key], input_url_list, comment)
     else:
         logger.error("Key not exist")
 
@@ -545,8 +553,9 @@ def set_value_in_dict(elements, value, input_url_list):
         elements = elements[input_url_list[0]]
         input_url_list.pop(0)
     elements[input_url_list[0]] = update_parameter_value(elements[input_url_list[0]], value)
-    update_comment(elements,input_url_list[0])
+    update_comment(elements, input_url_list[0])
     HydraParametersInfo().was_modified = True
+
 
 def get_comment_with_text(data):
     for el in data:
@@ -554,7 +563,9 @@ def get_comment_with_text(data):
             if "[ ] CHANGEME" in el.value.split("\n")[0]:
                 return el.value.split("\n")[0]
     return None
-def update_comment(element,key):
+
+
+def update_comment(element, key):
     if hasattr(element, "ca"):
         comment = element.ca.items.get(key, None)
         if comment is not None:
@@ -564,12 +575,13 @@ def update_comment(element,key):
                 modified_comment = comment_value[:start_index + 1] + 'X' + comment_value[start_index + 2:]
                 element.ca.items[key][2].value = modified_comment
 
+
 def update_parameter_value(element, value):
     if isinstance(element, dict):
         for key in element:
             element.update(
                 {key: update_parameter_value(element[key], value[key])})
-            update_comment(element,key)
+            update_comment(element, key)
         return element
     elif isinstance(element, list):
         element_len = len(element)
@@ -611,12 +623,12 @@ def get_element_info(input_url, uid: str):
                 element = item[input_url]
                 if len(element) == 0:
                     return None
-                value,comment = get_value(input_url, uid)
-                elem_info = generate_elem_info(value, element, uid, input_url, True,comment)
+                value, comment = get_value(input_url, uid)
+                elem_info = generate_elem_info(value, element, uid, input_url, True, comment)
                 return elem_info
 
 
-def generate_elem_info(value, element, uid, path, is_log, comment = None):
+def generate_elem_info(value, element, uid, path, is_log, comment=None):
     try:
         render_constraints = []
         render_dict = element.get('render')
@@ -629,15 +641,17 @@ def generate_elem_info(value, element, uid, path, is_log, comment = None):
                                                          message=constraint[key].get('message'))
                         render_constraints.append(constraint_item)
         autocomplete = None
-        if(comment is not None and "[ ] CHANGEME" in comment and element.get("type") != "array" and element.get("type") != "dict" and element.get("type") != "bool"):
+        if (comment is not None and "[ ] CHANGEME" in comment and element.get("type") != "array" and element.get(
+                "type") != "dict" and element.get("type") != "bool"):
             autocomplete = value
             value = None
-        elem_info = ElemInfo(value=value, placeholder=element.get('default_value'),autocomplete = autocomplete, type=element.get('type'),
+        elem_info = ElemInfo(value=value, placeholder=element.get('default_value'), autocomplete=autocomplete,
+                             type=element.get('type'),
                              description=element.get('description'),
                              sub_type=element.get('sub_type'),
                              sub_type_schema=None,
                              readOnly=element["readonly"] if "readonly" in element else False,
-                             additional = element.get('additional',False),
+                             additional=element.get('additional', False),
                              display_name=render_dict.get('display_name') if render_dict else None,
                              control=render_dict.get('control') if render_dict else None,
                              constraints=render_constraints,
@@ -656,8 +670,8 @@ def generate_elem_info(value, element, uid, path, is_log, comment = None):
                             comment = el.ca.items[key][2].value.split("\n")[0]
                         d.update({
                             key: generate_elem_info(
-                                el.get(key,None),
-                                metadata, uid, f"{path}/{key}", False,comment
+                                el.get(key, None),
+                                metadata, uid, f"{path}/{key}", False, comment
                             )
                         })
                     if is_element_none:
@@ -674,10 +688,11 @@ def generate_elem_info(value, element, uid, path, is_log, comment = None):
                     elem_info.sub_type_schema = {}
                     for key, metadata in sub_type_schema.items():
                         sub_comment = None
-                        if value is not None and hasattr(value,"ca") and key in value.ca.items:
+                        if value is not None and hasattr(value, "ca") and key in value.ca.items:
                             sub_comment = get_comment_with_text(value.ca.items[key])
                         elem_info.sub_type_schema.update(
-                            {key: generate_elem_info(value.get(key) if value is not None else None, metadata, uid, f"{path}/{key}", is_log,sub_comment if sub_comment else comment)}
+                            {key: generate_elem_info(value.get(key) if value is not None else None, metadata, uid,
+                                                     f"{path}/{key}", is_log, sub_comment if sub_comment else comment)}
                         )
                 else:
                     raise TypeError("Type of field sub_type_schema must be dict")
@@ -786,17 +801,17 @@ def update_wizard_meta(directory: str, arch_name):
                         if last_path not in wizard_data:
                             wizard_data.update(wizard_form)
                         last_id += 1
-                    last_path+= "/" + name.replace('.yml.meta', '')
+                    last_path += "/" + name.replace('.yml.meta', '')
                     wizard_group = {
                         last_path: {"display_name": name.replace('.yml.meta', '').title(),
-                               "description": "", "type": "form", "sub_type": "config",
-                               "id": last_id + 1, "action": "deploy" if name == files_in_directory[
-                                -1] and name != "global.yml.meta" else None,"site_name":last_dir}}
+                                    "description": "", "type": "form", "sub_type": "config",
+                                    "id": last_id + 1, "action": "deploy" if name == files_in_directory[
+                                -1] and name != "global.yml.meta" else None, "site_name": last_dir}}
                     if last_path not in wizard_data:
                         wizard_data.update(wizard_group)
     last_key, last_value = list(wizard_data.items())[-1]
     last_path = last_key + "/last_step"
-    last_id+=1
+    last_id += 1
     last_form = {
         last_path: {"display_name": "Final stage",
                     "description": "", "type": "form",
@@ -805,7 +820,7 @@ def update_wizard_meta(directory: str, arch_name):
         wizard_data.update(last_form)
     file.close()
     file = open(os.path.join(config.filespath, "wizard.meta"), 'w')
-    yaml.dump(wizard_data,file)
+    yaml.dump(wizard_data, file)
     file.close()
 
 
@@ -816,17 +831,18 @@ def check_validate_parameter(input_url, value, uid, node):
             parameter = el[input_url]
     if parameter:
         try:
-            check_sub_type_schema_validate(parameter, value, uid, input_url)
-            return True
+            value = check_sub_type_schema_validate(parameter, value, uid, input_url)
+            return True, value
         except ValidationError as e:
-            return str(e)
+            return False, str(e)
         except ValueError as e:
-            return str(e)
+            return False, str(e)
     else:
         for key in node.child:
-            if not check_validate_parameter(input_url, value, uid, node.child[key]):
-                return False
-        return True
+            returned_data = check_validate_parameter(input_url, value, uid, node.child[key]) is not None
+            if returned_data is not None:
+                return returned_data
+        return False, "Parameter not found"
 
 
 def check_sub_type_schema_validate(parameter, value, uid, input_url):
@@ -835,12 +851,18 @@ def check_sub_type_schema_validate(parameter, value, uid, input_url):
     else:
         if parameter.type != "array" and parameter.type != "dict" and str(value).strip() == '':
             raise ValueError(f"Empty value for parameter with path {input_url}")
+    if parameter.type == "string":
+        value = PlainScalarString(value)
+    elif parameter.type == "string-single-quoted":
+        value = SingleQuotedScalarString(value)
+    elif parameter.type == "string-double-quoted":
+        value = DoubleQuotedScalarString(value)
     elem_info = ElemInfo(value=value, type=parameter.type,
                          description=parameter.description,
                          sub_type=parameter.sub_type,
                          sub_type_schema=None,
                          readOnly=parameter.readOnly,
-                         additional = parameter.additional,
+                         additional=parameter.additional,
                          display_name=parameter.display_name,
                          control=parameter.control,
                          constraints=parameter.constraints,
@@ -849,9 +871,9 @@ def check_sub_type_schema_validate(parameter, value, uid, input_url):
         for key, metadata in parameter.sub_type_schema.items():
             if isinstance(value, dict):
                 if key in value:
-                    check_sub_type_schema_validate(metadata, value[key], uid, f"{input_url}/{key}")
+                    value[key] = check_sub_type_schema_validate(metadata, value[key], uid, f"{input_url}/{key}")
             elif isinstance(value, list):
                 for el in value:
                     if key in el:
-                        check_sub_type_schema_validate(metadata, el[key], uid, f"{input_url}/{key}")
-    return elem_info
+                        el[key] = check_sub_type_schema_validate(metadata, el[key], uid, f"{input_url}/{key}")
+    return elem_info.value

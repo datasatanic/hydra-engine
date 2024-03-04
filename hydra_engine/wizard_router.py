@@ -64,9 +64,9 @@ async def set_values(name: str, content: list[ParameterSaveInfo]):
         if wizard_form is None:
             return JSONResponse(content={"message": "Form not found"}, status_code=404)
         for item in content:
-            check = check_validate_parameter(item.input_url, item.value, item.file_id,
+            check,item.value = check_validate_parameter(item.input_url, item.value, item.file_id,
                                              wizard_form[next(iter(wizard_form.keys()))])
-            if check is not True:
+            if check is False:
                 return JSONResponse(content={"message": check}, status_code=400)
             set_value(item.input_url, item.file_id, item.value)
         return JSONResponse(content=jsonable_encoder(HydraParametersInfo().modify_time), status_code=200)
