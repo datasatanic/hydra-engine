@@ -74,14 +74,21 @@
                                     </div>
                                 </div>
                             </li>
-                            <div class="@($"multi-collapse{id}") collapse" id="@($"dict{id}")">
-                                <div class="nested-element">
-                                    @foreach (var (key,value) in elemInfo.sub_type_schema.Where(item => item.Value.type == ElemType.Dict))
-                                    {
-                                        <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" ExpandChanged="@((ElemInfo obj) => HandleExpandChanging(obj, key))" Depth="@(Depth + 1)" IsArrayElement="@IsArrayElement"></ElemComponent>
-                                    }
-                                </div>
-                            </div>
+                            @{
+                                var children = elemInfo.sub_type_schema.Where(item => item.Value.type == ElemType.Dict).
+                                    ToDictionary(x => x.Key,y=>y.Value);
+                                if (children.Any())
+                                {
+                                    <div class="@($"multi-collapse{id}") collapse" id="@($"dict{id}")">
+                                        <div class="nested-element">
+                                            @foreach (var (key,value) in children)
+                                            {
+                                                <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" ExpandChanged="@((ElemInfo obj) => HandleExpandChanging(obj, key))" Depth="@(Depth + 1)" IsArrayElement="@IsArrayElement"></ElemComponent>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
                         </ul>
                     }
                         break;
