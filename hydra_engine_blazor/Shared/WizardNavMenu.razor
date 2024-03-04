@@ -10,7 +10,7 @@
             {
                 <img class="@(!string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) && WizardContainer.WizardState.CurrentStep != Root && string.Join("/", WizardContainer.WizardState.CurrentStep.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root && Settings.SubType == "config" ? "success" : "")"/>
             }
-            <h4 class="@(!string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) && WizardContainer.WizardState.CurrentStep != Root && string.Join("/", WizardContainer.WizardState.CurrentStep.Split("/").Skip(0).Take(OutputUrlList.Length)) == Root ? "passed-step" : "") @(Settings.SubType == "config" && Settings.Name != "global" ? "font-weight-400" : "")">@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]
+            <h4 class="@(IsPassedStep() ? "passed-step" : "") @(Settings.SubType == "config" && Settings.Name != "global" ? "font-weight-400" : "")">@Settings.DisplayName[..1].ToUpper()@Settings.DisplayName[1..]
             </h4>
             @if (Settings.SubType == "site")
             {
@@ -72,7 +72,13 @@
         link_margin = $"margin-left:{(count - 1) * 20}px";
     }
 
-
+    private bool IsPassedStep()
+    {
+        if (string.IsNullOrEmpty(WizardContainer.WizardState.CurrentStep) || WizardContainer.WizardState.CurrentStep == Root || string.Join("/", WizardContainer.WizardState.CurrentStep.Split("/").Skip(0).Take(OutputUrlList.Length)) != Root) return false;
+        if (Settings.SubType != "site") return true;
+        var findSite = WizardContainer.WizardState.Sites.Find(item => item.SiteName == Settings.Name);
+        return findSite is {StatusEnum: ArchStatus.Completed };
+    }
     private void MoveToForm()
     {
         if (OutputUrlList.Length >= WizardContainer.WizardState.CurrentStep.Split("/").Length)
