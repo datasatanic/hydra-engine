@@ -10,10 +10,10 @@ from fastapi.templating import Jinja2Templates
 from starlette_prometheus import metrics, PrometheusMiddleware
 
 
-from hydra_engine import router, wizard_router, filewatcher
+from hydra_engine import router, wizard_router
 from hydra_engine.configs import config
 from hydra_engine.parser import parse_config_files
-from hydra_engine.schemas import add_node, HydraParametersInfo, add_additional_fields,Condition
+from hydra_engine.schemas import HydraParametersInfo, read_wizard_file,read_ui_file,generate_wizard_meta
 from hydra_engine.search.index_schema import HydraIndexScheme
 from hydra_engine.search.searcher import HydraSearcher
 
@@ -32,8 +32,6 @@ async def startup_event(app: FastAPI):
     HydraParametersInfo().set_modify_time()
     logger.debug("Directory has been parsed successfully")
     await HydraSearcher(index_name="HYDRA", schema=HydraIndexScheme()).reindex_hydra()
-    filewatcher.start_monitoring_files()
-    logger.info("Start filewatcher...")
     yield
 
 
@@ -62,87 +60,4 @@ async def stats():
     return {'service': 'hydra-engine', 'status': 'Serve'}
 
 
-#app_static.mount("/", StaticFiles(directory=os.path.join(base_dir, "wwwroot"), html=True), "client")
-
-
-def read_ui_file(directory):
-    """
-        Reads meta file of tree and creates structured tree
-    """
-    HydraParametersInfo().tree.clear()
-    for root, dirs, files in os.walk(directory):
-        for name in files:
-            if name == config.tree_filename:
-                with open(os.path.join(root, name), 'r') as stream:
-                    data_loaded = yaml.load(stream)
-                    for obj in data_loaded:
-                        path = obj.split("/")
-                        add_node(path, data_loaded[obj]["id"], data_loaded[obj]["type"])
-                        add_additional_fields(path, "display_name", data_loaded[obj]["display_name"])
-                        if "description" in data_loaded[obj]:
-                            add_additional_fields(path, "description", data_loaded[obj]["description"])
-
-
-def read_wizard_file(directory):
-    """
-        Reads meta file of wizard tree and creates structured tree
-    """
-    HydraParametersInfo().wizard_tree.clear()
-    last_id = 0
-    for root, dirs, files in os.walk(directory):
-        for name in files:
-            if name == config.wizard_filename:
-                with open(os.path.join(root, name), 'r') as stream:
-                    data_loaded = yaml.load(stream)
-                    for obj in data_loaded:
-                        path = obj.split("/")
-                        condition_list = []
-                        # if "condition" in data_loaded[obj]:
-                        #     condition_data = data_loaded[obj]["condition"]
-                        #     for condition in condition_data:
-                        #         for key in condition:
-                        #             condition_schema = Condition(key=key, allow=condition[key])
-                        #             condition_list.append(condition_schema)
-                        if last_id != data_loaded[obj]["id"]:
-                            last_id == data_loaded[obj]["id"]
-                        else:
-                            raise ValueError("In file wizard.meta id must be unique")
-                        add_node(path, data_loaded[obj]["id"], data_loaded[obj]["type"], condition=condition_list,
-                                 is_wizard=True)
-                        add_additional_fields(path, "display_name", data_loaded[obj]["display_name"], is_wizard=True)
-                        if "description" in data_loaded[obj]:
-                            add_additional_fields(path, "description", data_loaded[obj]["description"], is_wizard=True)
-                        if "action" in data_loaded[obj]:
-                            add_additional_fields(path, "action", data_loaded[obj]["action"], is_wizard=True)
-                        if "sub_type" in data_loaded[obj]:
-                            add_additional_fields(path, "sub_type", data_loaded[obj]["sub_type"], is_wizard=True)
-                        if "site_name" in data_loaded[obj]:
-                            add_additional_fields(path,"site_name",data_loaded[obj]["site_name"],is_wizard=True)
-
-
-def generate_wizard_meta(directory):
-    file = open(os.path.join(directory, "wizard.meta"), 'r')
-    wizard_data = yaml.load(file)
-    last_id = None
-    for root, dirs, files in os.walk(os.path.join(config.filespath, "_framework/arch")):
-        for name in files:
-            if name.endswith("meta"):
-                meta_file = open(os.path.join(root,name),'r')
-                meta_file_data = yaml.load(meta_file)
-                description = meta_file_data.get("FILE").get("description", "")
-                meta_file.close()
-                last_key, last_value = list(wizard_data.items())[-1]
-                if last_id is None:
-                    last_id = last_value["id"]
-                else:
-                    last_id += 1
-                wizard_form = {
-                    f"root/{name.replace('.yml.meta', '')}": {"display_name": name.replace('.yml.meta', '').title(),
-                                                              "description": description, "type": "group",
-                                                              "id": last_id + 1}}
-                if f"root/{name.replace('.yml.meta', '')}" not in wizard_data:
-                    wizard_data.update(wizard_form)
-    file.close()
-    file = open(os.path.join(directory, "wizard.meta"), 'w')
-    yaml.dump(wizard_data,file)
-    file.close()
+app_static.mount("/", StaticFiles(directory=os.path.join(base_dir, "wwwroot"), html=True), "client")

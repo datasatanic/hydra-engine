@@ -1,17 +1,14 @@
-import asyncio
 import copy
 import logging
 import subprocess
-import sys
 import time
-from typing import Optional
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
-import hydra_engine.filewatcher
 from hydra_engine.configs import config
+from hydra_engine.parser import parse_config_files
 from hydra_engine.schemas import find_form, Condition, update_wizard_meta, ParameterSaveInfo, \
-    set_value, check_validate_parameter, WizardInfo, HydraParametersInfo, WizardState, Arch, Site
+    set_value, check_validate_parameter, WizardInfo, HydraParametersInfo, WizardState, Arch, Site,read_ui_file,read_wizard_file
 
 logger = logging.getLogger("common_logger")
 router = APIRouter(prefix="/wizard", tags=["wizard"])
@@ -64,11 +61,12 @@ async def set_values(name: str, content: list[ParameterSaveInfo]):
         if wizard_form is None:
             return JSONResponse(content={"message": "Form not found"}, status_code=404)
         for item in content:
-            check,item.value = check_validate_parameter(item.input_url, item.value, item.file_id,
-                                             wizard_form[next(iter(wizard_form.keys()))])
+            check, item.value = check_validate_parameter(item.input_url, item.value, item.file_id,
+                                                         wizard_form[next(iter(wizard_form.keys()))])
             if check is False:
                 return JSONResponse(content={"message": check}, status_code=400)
             set_value(item.input_url, item.file_id, item.value)
+        read_wizard_file(config.filespath)
         return JSONResponse(content=jsonable_encoder(HydraParametersInfo().modify_time), status_code=200)
     except ValueError:
         return JSONResponse(content={"message": "Bad request"}, status_code=400)
@@ -76,27 +74,19 @@ async def set_values(name: str, content: list[ParameterSaveInfo]):
 
 @router.post("/init_arch")
 async def init_arch(name: str):
-    try:
-        WizardInfo().update_arch_status("in progress")
-        command = f"GIT_SERVER_ADDRESS=10.74.106.14:/srv/git CCFA_VERSION=0.1.0-pc ENVIRONMENT_DIR=. ./_framework/scripts/env/init.sh {name}"
-        init_process = subprocess.run(command, cwd=config.filespath, shell=True, check=True)
-        if init_process.returncode == 0:
-            update_wizard_meta(config.filespath, name)
-            from hydra_engine._app import read_ui_file, generate_wizard_meta, read_wizard_file
-            from hydra_engine.parser import parse_config_files
-            parse_config_files()
-            read_ui_file(config.filespath)
-            generate_wizard_meta(config.filespath)
-            read_wizard_file(config.filespath)
-            logger.info(f"init arch with name: {name}")
-            WizardInfo().update_arch_name(name)
-            WizardInfo().update_arch_status("completed")
-            return JSONResponse(content={"message": "OK"}, status_code=200)
-        else:
-            WizardInfo().update_arch_status("not completed")
-            WizardInfo().update_arch_name("")
-            return JSONResponse(content={"message": "Bad request"}, status_code=400)
-    except Exception as e:
+    WizardInfo().update_arch_status("in progress")
+    command = f"GIT_SERVER_ADDRESS=10.74.106.14:/srv/git CCFA_VERSION=0.1.0-pc ENVIRONMENT_DIR=. ./_framework/scripts/env/init.sh {name}"
+    init_process = subprocess.run(command, cwd=config.filespath, shell=True, check=True)
+    if init_process.returncode == 0:
+        update_wizard_meta(config.filespath, name)
+        parse_config_files()
+        read_ui_file(config.filespath)
+        read_wizard_file(config.filespath)
+        logger.info(f"init arch with name: {name}")
+        WizardInfo().update_arch_name(name)
+        WizardInfo().update_arch_status("completed")
+        return JSONResponse(content={"message": "OK"}, status_code=200)
+    else:
         WizardInfo().update_arch_status("not completed")
         WizardInfo().update_arch_name("")
         return JSONResponse(content={"message": "Bad request"}, status_code=400)

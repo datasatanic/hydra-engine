@@ -8,9 +8,10 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 
-import hydra_engine.filewatcher
+
 from hydra_engine.schemas import set_value, HydraParametersInfo, ParameterSaveInfo, filter_tree, find_form, \
-    check_validate_parameter
+    check_validate_parameter,read_ui_file
+from hydra_engine.configs import config
 from hydra_engine.search.searcher import HydraSearcher
 from datetime import datetime
 
@@ -46,12 +47,12 @@ async def set_values(name: str, content: list[ParameterSaveInfo]):
         if ui_form is None:
             return JSONResponse(content={"message": "Form not found"}, status_code=404)
         for item in content:
-            check = check_validate_parameter(item.input_url, item.value, item.file_id, ui_form[next(iter(ui_form.keys()))])
+            check, item.value = check_validate_parameter(item.input_url, item.value, item.file_id,
+                                                         ui_form[next(iter(ui_form.keys()))])
             if check is not True:
                 return JSONResponse(content={"message": check}, status_code=400)
             set_value(item.input_url, item.file_id, item.value)
-        if hydra_engine.filewatcher.file_event.is_set():
-            hydra_engine.filewatcher.file_event.wait()
+        read_ui_file(config.filespath)
         return JSONResponse(content=jsonable_encoder(HydraParametersInfo().modify_time), status_code=200)
     except ValueError:
         return JSONResponse(content={"message": "Bad request"}, status_code=400)
