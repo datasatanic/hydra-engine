@@ -47,6 +47,7 @@ fieldset>legend>h3{
     position: relative;
     display: inline-block;
     width: 18px;
+    min-width: 18px;
     height: 10px;
     margin: 0;
     vertical-align: top;
@@ -239,7 +240,10 @@ fieldset>.elements-container:last-child{
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: 100%;
+}
+.dict-param.border-size{
+    min-width: 950px;
+    max-width: 100%;
 }
 .param-background{
     background: var(--hydra-gray-30);
@@ -292,7 +296,6 @@ fieldset>.elements-container:last-child{
 }
 .array-element.in-array{
     padding: 10px;
-    margin-left: -10px;
 }
 .dict-param-data>div:first-child{
     display: flex;
@@ -453,8 +456,8 @@ img.purple:active,.trash-container.purple:active{
     max-width: calc(100% - 20px);
 }
 .not-dict-container.in-array{
-    margin-left: 20px;
+    margin-left: 10px;
 }
-.dict-param-data.in-array{
-    gap:10px;
+.not-dict-container.in-array ::deep .elem-container{
+    margin-left: 10px;
 }
