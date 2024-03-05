@@ -519,8 +519,8 @@ def get_elements(path_id):
     for elements, file_info in zip(elements_meta, elements_files_info):
         for item in elements:
             keys = list(item)
-            for key in keys:
-                if item[key]["id"] == path_id:
+            if file_info["id"] == path_id:
+                for key in keys:
                     uid = file_info["uid"]
                     elem_list.append({key: get_element_info(key, uid)})
     return elem_list
@@ -757,7 +757,6 @@ def update_wizard_meta(directory: str, arch_name):
     file = open(os.path.join(config.filespath, "wizard.meta"), 'r')
     ignore_dirs, ignore_extension = read_hydra_ignore()
     wizard_data = yaml.load(file)
-    last_id = None
     last_path = None
     last_dir = None
     for root, dirs, files in os.walk(directory):
@@ -770,21 +769,21 @@ def update_wizard_meta(directory: str, arch_name):
             if name.endswith(
                     "meta") and name != config.wizard_filename and name != config.tree_filename:
                 last_key, last_value = list(wizard_data.items())[-1]
+                meta_file = open(os.path.join(root, name), 'r')
+                meta_file_data = yaml.load(meta_file)
+                current_id = meta_file_data.get("FILE").get("id")
                 file_path = os.path.join(root, name)
                 directory_path = os.path.dirname(file_path)
                 files_in_directory = list(
                     filter(lambda filename: filename.endswith("meta"), os.listdir(directory_path)))
                 _dir = os.path.basename(os.path.dirname(os.path.dirname(file_path)))
-                if last_id is None:
-                    last_id = last_value["id"]
-                else:
-                    last_id += 1
+
                 if last_path is None:
                     last_path = f"root/{name.replace('.yml.meta', '')}"
                     wizard_form = {
                         last_path: {"display_name": name.replace('.yml.meta', '').title(),
                                     "description": "", "type": "form", "sub_type": "config",
-                                    "id": last_id + 1}}
+                                    "id": current_id}}
                     if last_path not in wizard_data:
                         wizard_data.update(wizard_form)
                 else:
@@ -794,25 +793,23 @@ def update_wizard_meta(directory: str, arch_name):
                         wizard_form = {
                             last_path: {"display_name": _dir.title(),
                                         "description": "", "type": "form", "sub_type": "site",
-                                        "id": last_id + 1}}
+                                        "id": current_id - 1}}
                         if last_path not in wizard_data:
                             wizard_data.update(wizard_form)
-                        last_id += 1
                     last_path += "/" + name.replace('.yml.meta', '')
                     wizard_group = {
                         last_path: {"display_name": name.replace('.yml.meta', '').title(),
                                     "description": "", "type": "form", "sub_type": "config",
-                                    "id": last_id + 1, "action": "deploy" if name == files_in_directory[
+                                    "id": current_id, "action": "deploy" if name == files_in_directory[
                                 -1] and name != "global.yml.meta" else None, "site_name": last_dir}}
                     if last_path not in wizard_data:
                         wizard_data.update(wizard_group)
     last_key, last_value = list(wizard_data.items())[-1]
     last_path = last_key + "/last_step"
-    last_id += 1
     last_form = {
         last_path: {"display_name": "Final stage",
                     "description": "", "type": "form",
-                    "id": last_id + 1}}
+                    "id": last_value["id"] + 1}}
     if last_path not in wizard_data:
         wizard_data.update(last_form)
     file.close()
@@ -933,23 +930,19 @@ def read_wizard_file(directory):
 def generate_wizard_meta(directory):
     file = open(os.path.join(directory, "wizard.meta"), 'r')
     wizard_data = yaml.load(file)
-    last_id = None
     for root, dirs, files in os.walk(os.path.join(config.filespath, "_framework/arch")):
         for name in files:
             if name.endswith("meta"):
                 meta_file = open(os.path.join(root,name),'r')
                 meta_file_data = yaml.load(meta_file)
                 description = meta_file_data.get("FILE").get("description", "")
+                current_id = meta_file_data.get("FILE").get("id")
                 meta_file.close()
                 last_key, last_value = list(wizard_data.items())[-1]
-                if last_id is None:
-                    last_id = last_value["id"]
-                else:
-                    last_id += 1
                 wizard_form = {
                     f"root/{name.replace('.yml.meta', '')}": {"display_name": name.replace('.yml.meta', '').title(),
                                                               "description": description, "type": "group",
-                                                              "id": last_id + 1}}
+                                                              "id": current_id}}
                 if f"root/{name.replace('.yml.meta', '')}" not in wizard_data:
                     wizard_data.update(wizard_form)
     file.close()

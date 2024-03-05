@@ -109,10 +109,6 @@ def parse_meta_params():
                         data_loaded = yaml.load(stream)
                         if data_loaded is not None and "PARAMS" in data_loaded:
                             _elements = data_loaded["PARAMS"]
-                            for el in _elements:
-                                for key in el:
-                                    if el[key]["id"] in ui_meta_data:
-                                        el[key]["output_url"] = ui_meta_data[el[key]["id"]]
                             elements_meta.append(_elements)
 
 
