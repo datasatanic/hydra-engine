@@ -158,6 +158,9 @@ main{
 .validation-message {
     color: red;
 }
+.tooltip-inner *{
+    color:white;
+}
 [tabindex]:focus {
     outline: none;
 }

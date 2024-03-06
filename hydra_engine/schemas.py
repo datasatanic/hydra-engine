@@ -1,6 +1,7 @@
 import os
 import ruamel.yaml
 import maya
+import markdown
 import hashlib
 from ruamel.yaml.scalarstring import PlainScalarString, SingleQuotedScalarString, DoubleQuotedScalarString
 from typing import List, Literal, Dict
@@ -645,7 +646,7 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
             value = None
         elem_info = ElemInfo(value=value, placeholder=element.get('default_value'), autocomplete=autocomplete,
                              type=element.get('type'),
-                             description=element.get('description'),
+                             description=markdown.markdown(element.get('description')) if element.get('description') is not None and element.get('description') != "" else element.get('description'),
                              sub_type=element.get('sub_type'),
                              sub_type_schema=None,
                              readOnly=element["readonly"] if "readonly" in element else False,
