@@ -141,6 +141,7 @@ main {
 }
 .search-container{
     position: relative;
+    margin-top: auto;
 }
 .search-container>img{
     content: url("icons/Search.svg");
@@ -153,6 +154,11 @@ main {
     width: 100%;
     margin: 0 20px;
     background-image: none !important;
+}
+.ccfa-title{
+    font-size: 12px;
+    color:var(--hydra-gray-500);
+    margin:0 auto;
 }
 .top-row {
     background-color: #f7f7f7;
