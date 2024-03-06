@@ -39,7 +39,8 @@
                                             {
                                                 <input class="active-toggle" type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
                                             }
-                                            <div class="@(!elemInfo.isValid ? "dot" : "") @(IsArrayElement ? "justify-dot" : "") param-name">@elemInfo.display_name</div>
+                                            <div class="@(!elemInfo.isValid ? "dot" : "") @(IsArrayElement ? "justify-dot" : "") param-name" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip" data-bs-html="true"
+                                                                                                                                                                             data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")">@elemInfo.display_name</div>
                                             @if (IsArrayElement)
                                             {
                                                 @switch (Depth % 3)
@@ -185,7 +186,7 @@
                 }
                 <fieldset>
                     <legend id="@(SettingsContainer.GetHash(Key))">
-                        <h3 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
+                        <h3 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip" data-bs-html="true"
                             data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")">@elemInfo.display_name</h3>
                         @if (!elemInfo.readOnly && elemInfo.IsActive)
                         {
