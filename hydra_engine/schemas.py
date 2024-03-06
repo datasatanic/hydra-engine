@@ -1,6 +1,7 @@
 import os
 import ruamel.yaml
 import maya
+import hashlib
 from ruamel.yaml.scalarstring import PlainScalarString, SingleQuotedScalarString, DoubleQuotedScalarString
 from typing import List, Literal, Dict
 from pydantic import BaseModel, validator, Extra, root_validator, ValidationError
@@ -519,7 +520,7 @@ def get_elements(path_id):
     for elements, file_info in zip(elements_meta, elements_files_info):
         for item in elements:
             keys = list(item)
-            if file_info["id"] == path_id:
+            if file_info["uid"] == path_id:
                 for key in keys:
                     uid = file_info["uid"]
                     elem_list.append({key: get_element_info(key, uid)})
@@ -771,7 +772,6 @@ def update_wizard_meta(directory: str, arch_name):
                 last_key, last_value = list(wizard_data.items())[-1]
                 meta_file = open(os.path.join(root, name), 'r')
                 meta_file_data = yaml.load(meta_file)
-                current_id = meta_file_data.get("FILE").get("id")
                 file_path = os.path.join(root, name)
                 directory_path = os.path.dirname(file_path)
                 files_in_directory = list(
@@ -783,7 +783,7 @@ def update_wizard_meta(directory: str, arch_name):
                     wizard_form = {
                         last_path: {"display_name": name.replace('.yml.meta', '').title(),
                                     "description": "", "type": "form", "sub_type": "config",
-                                    "id": current_id}}
+                                    "id": hashlib.sha256(os.path.join(root, name.replace('.meta', '')).encode('utf-8')).hexdigest()}}
                     if last_path not in wizard_data:
                         wizard_data.update(wizard_form)
                 else:
@@ -793,14 +793,14 @@ def update_wizard_meta(directory: str, arch_name):
                         wizard_form = {
                             last_path: {"display_name": _dir.title(),
                                         "description": "", "type": "form", "sub_type": "site",
-                                        "id": current_id - 1}}
+                                        "id": hashlib.sha256(os.path.join(root).encode('utf-8')).hexdigest()}}
                         if last_path not in wizard_data:
                             wizard_data.update(wizard_form)
                     last_path += "/" + name.replace('.yml.meta', '')
                     wizard_group = {
                         last_path: {"display_name": name.replace('.yml.meta', '').title(),
                                     "description": "", "type": "form", "sub_type": "config",
-                                    "id": current_id, "action": "deploy" if name == files_in_directory[
+                                    "id": hashlib.sha256(os.path.join(root, name.replace('.meta', '')).encode('utf-8')).hexdigest(), "action": "deploy" if name == files_in_directory[
                                 -1] and name != "global.yml.meta" else None, "site_name": last_dir}}
                     if last_path not in wizard_data:
                         wizard_data.update(wizard_group)
@@ -809,7 +809,7 @@ def update_wizard_meta(directory: str, arch_name):
     last_form = {
         last_path: {"display_name": "Final stage",
                     "description": "", "type": "form",
-                    "id": last_value["id"] + 1}}
+                    "id": "final_stage"}}
     if last_path not in wizard_data:
         wizard_data.update(last_form)
     file.close()
@@ -942,7 +942,7 @@ def generate_wizard_meta(directory):
                 wizard_form = {
                     f"root/{name.replace('.yml.meta', '')}": {"display_name": name.replace('.yml.meta', '').title(),
                                                               "description": description, "type": "group",
-                                                              "id": current_id}}
+                                                              "id": hashlib.sha256(os.path.join(root, name.replace('.meta', '')).encode('utf-8')).hexdigest()}}
                 if f"root/{name.replace('.yml.meta', '')}" not in wizard_data:
                     wizard_data.update(wizard_form)
     file.close()

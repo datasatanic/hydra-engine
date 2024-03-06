@@ -138,38 +138,20 @@ def parse_value_files():
     """
     elements_values.clear()
     for file in elements_files_info:
-        if not os.path.exists(os.path.join(config.filespath, file["path"])):
-            d = {}
-            with open(os.path.join(base_dir, file["path"]), 'w') as new_file:
-                elements = elements_meta[elements_files_info.index(file)]
-                for element in elements:
-                    for key in element:
-                        sub_d = d
-                        generate_config_structure(element, key, sub_d)
-                if file["type"] == "yaml":
-                    yaml.dump(d, new_file)
-                elif file["type"] == "json":
-                    json.dump(d, new_file, indent=2)
-                new_file.close()
+        if file["type"] == "json":
+            with open(os.path.join(config.filespath, file["path"]), 'r') as stream:
+                data_loaded = json.load(stream)
                 value_instance = ValuesInstance(file["type"], file["path"],
                                                 hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
-                                                d)
+                                                data_loaded)
                 elements_values.append(value_instance)
-        else:
-            if file["type"] == "json":
-                with open(os.path.join(config.filespath, file["path"]), 'r') as stream:
-                    data_loaded = json.load(stream)
-                    value_instance = ValuesInstance(file["type"], file["path"],
-                                                    hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
-                                                    data_loaded)
-                    elements_values.append(value_instance)
-            if file["type"] == "yaml":
-                with open(os.path.join(config.filespath, file["path"]), 'r') as stream:
-                    data_loaded = yaml.load(stream)
-                    value_instance = ValuesInstance(file["type"], file["path"],
-                                                    hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
-                                                    data_loaded)
-                    elements_values.append(value_instance)
+        if file["type"] == "yaml":
+            with open(os.path.join(config.filespath, file["path"]), 'r') as stream:
+                data_loaded = yaml.load(stream)
+                value_instance = ValuesInstance(file["type"], file["path"],
+                                                hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
+                                                data_loaded)
+                elements_values.append(value_instance)
         for element in elements_values:
             if element.path == file["path"]:
                 file["uid"] = element.uid
