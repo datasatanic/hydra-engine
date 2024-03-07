@@ -751,18 +751,18 @@
         var stringValue = value != null ? value.ToString() : string.Empty;
         return stringValue != null && constraintItem.type switch
         {
-            "maxlength" => int.Parse(constraintItem.value) > stringValue.Length,
-            "minlength" => int.Parse(constraintItem.value) < stringValue.Length,
+            "maxlength" => int.Parse(constraintItem.value) >= stringValue.Length,
+            "minlength" => int.Parse(constraintItem.value) <= stringValue.Length,
             "max" => control switch
             {
-                Control.Number or Control.Text or Control.Textarea => int.Parse(constraintItem.value) > int.Parse(stringValue),
-                Control.Datetime or Control.Date or Control.Time => DateTime.Parse(constraintItem.value) > DateTime.Parse(stringValue),
+                Control.Number or Control.Text or Control.Textarea => int.Parse(constraintItem.value) >= int.Parse(stringValue),
+                Control.Datetime or Control.Date or Control.Time => DateTime.Parse(constraintItem.value) >= DateTime.Parse(stringValue),
                 _ => true
                 },
             "min" => control switch
             {
-                Control.Number or Control.Text or Control.Textarea => int.Parse(constraintItem.value) < int.Parse(stringValue),
-                Control.Datetime or Control.Date or Control.Time => DateTime.Parse(constraintItem.value) < DateTime.Parse(stringValue),
+                Control.Number or Control.Text or Control.Textarea => int.Parse(constraintItem.value) <= int.Parse(stringValue),
+                Control.Datetime or Control.Date or Control.Time => DateTime.Parse(constraintItem.value) <= DateTime.Parse(stringValue),
                 _ => true
                 },
             "pattern" => Regex.IsMatch(stringValue, constraintItem.value, RegexOptions.IgnoreCase),
