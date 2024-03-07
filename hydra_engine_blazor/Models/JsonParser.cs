@@ -159,7 +159,6 @@ public class JsonParser
                         "datetime_control"=>Control.Datetime,
                         "time_control"=>Control.Time,
                         "date_control"=>Control.Date,
-                        "radio_control" => Control.Radio,
                         _ => elemInfo.control
                     };
                     break;

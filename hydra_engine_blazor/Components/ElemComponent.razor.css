@@ -111,7 +111,7 @@ input[type="checkbox"]:not(.active-toggle):checked{
     background: var(--hydra-blue-500-primary);
     border:1px solid var(--hydra-blue-500-primary);
 }
-input[type="text"],input[type="number"],input[type="datetime-local"],input[type="date"],input[type="time"],textarea{
+input[type="text"],input[type="password"],input[type="number"],input[type="datetime-local"],input[type="date"],input[type="time"],textarea{
     background: var(--hydra-background-white);
     min-width: 240px;
     height: 32px;
@@ -134,18 +134,18 @@ input[type="checkbox"]:not(.active-toggle):checked::before {
     border-left: 2px solid white;
     border-bottom: 2px solid white;
 }
-input[type="text"]:hover,input[type="number"]:hover,input[type="datetime-local"]:hover,input[type="date"]:hover,input[type="time"]:hover,textarea:hover{
+input[type="text"]:hover,input[type="password"]:hover,input[type="number"]:hover,input[type="datetime-local"]:hover,input[type="date"]:hover,input[type="time"]:hover,textarea:hover{
     border:1px solid var(--hydra-gray-500);
 }
-input[type="text"]:focus,input[type="number"]:focus,input[type="datetime-local"]:focus,input[type="date"]:focus,input[type="time"]:focus,textarea:focus{
+input[type="text"]:focus,input[type="password"]:focus,input[type="number"]:focus,input[type="datetime-local"]:focus,input[type="date"]:focus,input[type="time"]:focus,textarea:focus{
     border: 1px solid var(--hydra-blue-700)
 }
-input[type="text"]:disabled,input[type="number"]:disabled,input[type="datetime-local"]:disabled,input[type="date"]:disabled,input[type="time"]:disabled,textarea:disabled{
+input[type="text"]:disabled,input[type="password"]:disabled,input[type="number"]:disabled,input[type="datetime-local"]:disabled,input[type="date"]:disabled,input[type="time"]:disabled,textarea:disabled{
     border: 1px solid var(--hydra-gray-100);
     background: linear-gradient(0deg, var(--hydra-gray-20), var(--hydra-gray-20));
 
 }
-input[type="text"][validation-error],input[type="number"][validation-error],input[type="datetime-local"][validation-error],input[type="date"][validation-error],input[type="time"][validation-error],textarea[validation-error]{
+input[type="text"][validation-error],input[type="password"][validation-error],input[type="number"][validation-error],input[type="datetime-local"][validation-error],input[type="date"][validation-error],input[type="time"][validation-error],textarea[validation-error]{
     border:1px solid var(--hydra-error-500);
 }
 textarea{

@@ -24,7 +24,7 @@ constraints = Literal[
     'maxlength', 'minlength', 'pattern', 'cols', 'rows', 'min', 'max', 'format', "size", "resize"]
 controls = Literal[
     "input_control", "textarea_control", "checkbox_control", "number_control", "datetime_control",
-    "date_control", "time_control", "label_control"]
+    "date_control", "time_control", "label_control", "password_control"]
 
 
 class Arch(BaseModel):
@@ -190,6 +190,10 @@ class ElemInfo(BaseModel):
                 if not (values["type"] == "bool" and values["type"] != "array" or values["type"] == "array" and values[
                     "sub_type"] == "bool"):
                     raise TypeError("Only parameters with bool type can have checkbox_control")
+            case "password_control":
+                if not ("string" in values["type"] and values["type"] != "array" or values["type"] == "array" and
+                        "string" in values["sub_type"]):
+                    raise TypeError("Only parameters with string type can have password_control")
         return elem_control
 
     @validator("constraints", pre=True)

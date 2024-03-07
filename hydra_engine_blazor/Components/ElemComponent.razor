@@ -394,6 +394,7 @@
     private Dictionary<string, object>? ElementAttributes { get; set; } = new();
     private bool isShow;
     private bool showAutoComplete;
+    private string pattern = @"^[a-zA-Z0-9`~!@#$%^&*()-_=+\[\]{}\\|;:'"",<.>/? ]*$";
     ElementReference menuContainer;
     ElementReference resizeContainer;
     private JsonSerializerOptions options = new()
@@ -503,6 +504,7 @@
         }
         return type switch
         {
+            ElemType.String=>Regex.IsMatch(valueString,pattern),
             ElemType.Double => CultureInfo.CurrentCulture.TwoLetterISOLanguageName switch
             {
                 "en" => double.TryParse(valueString.Replace(",", "."), out _),
