@@ -93,17 +93,11 @@ def parse_meta_params():
     """
         Parse files with metadata and get info about meta info of different parameters
     """
-    ui_meta_data = {}
     elements_meta.clear()
     for root, dirs, files in os.walk(config.filespath):
+        files.sort()
         if "_framework" and "arch" in root or "_framework" not in root:
-            files.sort(key=lambda x: (x != config.tree_filename and x != config.wizard_filename, x))
             for filename in files:
-                if filename == "ui.meta":  # для связывания id и output_url
-                    with open(os.path.join(root, filename), 'r') as stream:
-                        data = yaml.load(stream)
-                        for key in data:
-                            ui_meta_data[data[key]["id"]] = key
                 if "meta" in filename and filename != config.tree_filename and filename != config.wizard_filename:
                     with open(os.path.join(root, filename), 'r') as stream:
                         data_loaded = yaml.load(stream)
@@ -118,6 +112,7 @@ def parse_elements_fileinfo():
     """
     elements_files_info.clear()
     for root, dirs, files in os.walk(config.filespath):
+        files.sort()
         if "_framework" and "arch" in root or "_framework" not in root:
             for filename in files:
                 if "meta" in filename and filename != config.tree_filename and filename != config.wizard_filename:
@@ -128,7 +123,7 @@ def parse_elements_fileinfo():
                                 if "FILE" in data_loaded:
                                     data_loaded["FILE"]["path"] = os.path.join(root, data_loaded["FILE"]["path"])
                                     _elements = data_loaded["FILE"]
-                                    _elements["meta_path"] = os.path.join(root, filename)
+                                    _elements["uid"] = hashlib.sha256(os.path.join(root, filename).encode('utf-8')).hexdigest()
                                     elements_files_info.append(_elements)
 
 
@@ -142,19 +137,16 @@ def parse_value_files():
             with open(os.path.join(config.filespath, file["path"]), 'r') as stream:
                 data_loaded = json.load(stream)
                 value_instance = ValuesInstance(file["type"], file["path"],
-                                                hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
+                                                file["uid"],
                                                 data_loaded)
                 elements_values.append(value_instance)
         if file["type"] == "yaml":
             with open(os.path.join(config.filespath, file["path"]), 'r') as stream:
                 data_loaded = yaml.load(stream)
                 value_instance = ValuesInstance(file["type"], file["path"],
-                                                hashlib.sha256(file["path"].encode('utf-8')).hexdigest(),
+                                                file["uid"],
                                                 data_loaded)
                 elements_values.append(value_instance)
-        for element in elements_values:
-            if element.path == file["path"]:
-                file["uid"] = element.uid
 
 
 def generate_config_structure(element, key, sub_d):

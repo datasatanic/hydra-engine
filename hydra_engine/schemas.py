@@ -18,7 +18,8 @@ logger = logging.getLogger('common_logger')
 
 types = Literal[
     "string", "string-single-quoted", "string-double-quoted", "int", "bool", "datetime", "dict", "array", "double"]
-sub_types = Literal["string", "string-single-quoted", "string-double-quoted", "int", "bool", "datetime", "dict", "composite", "double"]
+sub_types = Literal[
+    "string", "string-single-quoted", "string-double-quoted", "int", "bool", "datetime", "dict", "composite", "double"]
 constraints = Literal[
     'maxlength', 'minlength', 'pattern', 'cols', 'rows', 'min', 'max', 'format', "size", "resize"]
 controls = Literal[
@@ -519,12 +520,11 @@ def get_elements(path_id):
     elements_meta = HydraParametersInfo().get_elements_metadata()
     elements_files_info = HydraParametersInfo().get_elements_files_info()
     for elements, file_info in zip(elements_meta, elements_files_info):
-        for item in elements:
-            keys = list(item)
-            if file_info["uid"] == path_id:
+        if file_info["uid"] == path_id:
+            for item in elements:
+                keys = list(item)
                 for key in keys:
-                    uid = file_info["uid"]
-                    elem_list.append({key: get_element_info(key, uid)})
+                    elem_list.append({key: get_element_info(key, path_id)})
     return elem_list
 
 
@@ -617,14 +617,15 @@ def get_element_info(input_url, uid: str):
     elements_meta = HydraParametersInfo().get_elements_metadata()
     elements_files_info = HydraParametersInfo().get_elements_files_info()
     for elements, file_info in zip(elements_meta, elements_files_info):
-        for item in elements:
-            if input_url in item and file_info["uid"] == uid:
-                element = item[input_url]
-                if len(element) == 0:
-                    return None
-                value, comment = get_value(input_url, uid)
-                elem_info = generate_elem_info(value, element, uid, input_url, True, comment)
-                return elem_info
+        if file_info["uid"] == uid:
+            for item in elements:
+                if input_url in item:
+                    element = item[input_url]
+                    if len(element) == 0:
+                        return None
+                    value, comment = get_value(input_url, uid)
+                    elem_info = generate_elem_info(value, element, uid, input_url, True, comment)
+                    return elem_info
 
 
 def generate_elem_info(value, element, uid, path, is_log, comment=None):
@@ -646,7 +647,9 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
             value = None
         elem_info = ElemInfo(value=value, placeholder=element.get('default_value'), autocomplete=autocomplete,
                              type=element.get('type'),
-                             description=markdown.markdown(element.get('description')) if element.get('description') is not None and element.get('description') != "" else element.get('description'),
+                             description=markdown.markdown(element.get('description')) if element.get(
+                                 'description') is not None and element.get('description') != "" else element.get(
+                                 'description'),
                              sub_type=element.get('sub_type'),
                              sub_type_schema=None,
                              readOnly=element["readonly"] if "readonly" in element else False,
@@ -767,24 +770,23 @@ def update_wizard_meta(directory: str, arch_name):
         arch_file.close()
         dirs[:] = [d for d in dirs if d not in ignore_dirs]
         dirs.sort(key=lambda x: site_names.index(x) if x in site_names else float('inf'))
+        files.sort()
         for name in files:
             if name.endswith(
                     "meta") and name != config.wizard_filename and name != config.tree_filename:
-                last_key, last_value = list(wizard_data.items())[-1]
-                meta_file = open(os.path.join(root, name), 'r')
-                meta_file_data = yaml.load(meta_file)
                 file_path = os.path.join(root, name)
                 directory_path = os.path.dirname(file_path)
                 files_in_directory = list(
                     filter(lambda filename: filename.endswith("meta"), os.listdir(directory_path)))
+                files_in_directory.sort()
                 _dir = os.path.basename(os.path.dirname(os.path.dirname(file_path)))
-
                 if last_path is None:
                     last_path = f"root/{name.replace('.yml.meta', '')}"
                     wizard_form = {
                         last_path: {"display_name": name.replace('.yml.meta', '').title(),
                                     "description": "", "type": "form", "sub_type": "config",
-                                    "id": hashlib.sha256(os.path.join(root, name.replace('.meta', '')).encode('utf-8')).hexdigest()}}
+                                    "id": hashlib.sha256(
+                                        os.path.join(root, name).encode('utf-8')).hexdigest()}}
                     if last_path not in wizard_data:
                         wizard_data.update(wizard_form)
                 else:
@@ -801,8 +803,10 @@ def update_wizard_meta(directory: str, arch_name):
                     wizard_group = {
                         last_path: {"display_name": name.replace('.yml.meta', '').title(),
                                     "description": "", "type": "form", "sub_type": "config",
-                                    "id": hashlib.sha256(os.path.join(root, name.replace('.meta', '')).encode('utf-8')).hexdigest(), "action": "deploy" if name == files_in_directory[
-                                -1] and name != "global.yml.meta" else None, "site_name": last_dir}}
+                                    "id": hashlib.sha256(
+                                        os.path.join(root, name).encode('utf-8')).hexdigest(),
+                                    "action": "deploy" if name == files_in_directory[
+                                        -1] and name != "global.yml.meta" else None, "site_name": last_dir}}
                     if last_path not in wizard_data:
                         wizard_data.update(wizard_group)
     last_key, last_value = list(wizard_data.items())[-1]
@@ -873,6 +877,7 @@ def check_sub_type_schema_validate(parameter, value, uid, input_url):
                         el[key] = check_sub_type_schema_validate(metadata, el[key], uid, f"{input_url}/{key}")
     return elem_info.value
 
+
 def read_ui_file(directory):
     """
         Reads meta file of tree and creates structured tree
@@ -925,28 +930,29 @@ def read_wizard_file(directory):
                         if "sub_type" in data_loaded[obj]:
                             add_additional_fields(path, "sub_type", data_loaded[obj]["sub_type"], is_wizard=True)
                         if "site_name" in data_loaded[obj]:
-                            add_additional_fields(path,"site_name",data_loaded[obj]["site_name"],is_wizard=True)
+                            add_additional_fields(path, "site_name", data_loaded[obj]["site_name"], is_wizard=True)
 
 
 def generate_wizard_meta(directory):
     file = open(os.path.join(directory, "wizard.meta"), 'r')
     wizard_data = yaml.load(file)
     for root, dirs, files in os.walk(os.path.join(config.filespath, "_framework/arch")):
+        files.sort()
         for name in files:
             if name.endswith("meta"):
-                meta_file = open(os.path.join(root,name),'r')
+                meta_file = open(os.path.join(root, name), 'r')
                 meta_file_data = yaml.load(meta_file)
                 description = meta_file_data.get("FILE").get("description", "")
-                current_id = meta_file_data.get("FILE").get("id")
                 meta_file.close()
-                last_key, last_value = list(wizard_data.items())[-1]
                 wizard_form = {
                     f"root/{name.replace('.yml.meta', '')}": {"display_name": name.replace('.yml.meta', '').title(),
                                                               "description": description, "type": "group",
-                                                              "id": hashlib.sha256(os.path.join(root, name.replace('.meta', '')).encode('utf-8')).hexdigest()}}
+                                                              "id": hashlib.sha256(
+                                                                  os.path.join(root, name).encode(
+                                                                      'utf-8')).hexdigest()}}
                 if f"root/{name.replace('.yml.meta', '')}" not in wizard_data:
                     wizard_data.update(wizard_form)
     file.close()
     file = open(os.path.join(directory, "wizard.meta"), 'w')
-    yaml.dump(wizard_data,file)
+    yaml.dump(wizard_data, file)
     file.close()
