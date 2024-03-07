@@ -31,6 +31,8 @@ class WizardInfo(metaclass=SingletonMeta):
         self.wizard_state.arch.status = status
     def get_sites_info(self):
         return self.wizard_state.sites
+    def get_current_arch_name(self):
+        return self.wizard_state.arch.arch_name
     def add_site(self,site):
         self.wizard_state.sites.append(site)
     def remove_site(self, site):

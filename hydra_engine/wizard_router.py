@@ -97,8 +97,8 @@ def deploy_site(name: str, step_number: int):
     global deploy_process
     try:
         logger.info(f"deploy site with name: {name}")
-        command = f'python -c "from hydra_engine.wizard_router import use_deploy_script; use_deploy_script(\'{name}\')"'
-        deploy_process = subprocess.Popen(command, shell=True)
+        command = f"ENVIRONMENT_DIR=. ./_framework/scripts/env/deploy.sh {WizardInfo().get_current_arch_name()} {name} 10"
+        deploy_process = subprocess.Popen(command, cwd=config.filespath, shell=True)
         site = Site(site_name=name, status="in progress", step_number=step_number)
         for exist_site in WizardInfo().get_sites_info():
             if site.site_name == exist_site.site_name:
