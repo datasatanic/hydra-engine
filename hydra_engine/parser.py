@@ -124,6 +124,7 @@ def parse_elements_fileinfo():
                                     data_loaded["FILE"]["path"] = os.path.join(root, data_loaded["FILE"]["path"])
                                     _elements = data_loaded["FILE"]
                                     _elements["uid"] = hashlib.sha256(os.path.join(root, filename).encode('utf-8')).hexdigest()
+                                    _elements["meta_path"] = os.path.join(root, filename)
                                     elements_files_info.append(_elements)
 
 
