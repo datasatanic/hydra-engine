@@ -977,9 +977,10 @@ def find_array_element(values,input_url_list):
         values = values[input_url_list[0]]
         input_url_list.pop(0)
     comment = ""
+    values[int(input_url_list[0])].fa.set_block_style()
     for key in values[int(input_url_list[0])]:
         if comment == "":
             comment = f"- {key}: {values[int(input_url_list[0])][key]}"
         else:
             comment = f"  {key}: {values[int(input_url_list[0])][key]}"
-        values[int(input_url_list[0])].yaml_set_comment_before_after_key(None, before="# это мой комментарий")
+        values[int(input_url_list[0])].yaml_set_comment_before_after_key(key, before=comment)
