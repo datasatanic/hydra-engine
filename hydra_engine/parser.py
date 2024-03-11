@@ -1,5 +1,4 @@
 import copy
-
 import commentjson as json
 import hashlib
 import logging
@@ -171,14 +170,15 @@ def generate_config_structure(element, key, sub_d):
         sub_d.update({input_url_list[0]: element[key]["default_value"]})
 
 
-def write_file(data, file_path, file_type, key, value):
+def write_file(data, file_path, file_type, key, value = None):
     try:
         with open(os.path.join(config.filespath, file_path), 'w') as file:
             if file_type == "json":
                 json.dump(data, file, indent=2)
             if file_type == "yaml":
                 yaml.dump(data, file)
-        logger.info(f"File {file_path} was modified to value {value} in parameter {key}")
+        if value:
+            logger.info(f"File {file_path} was modified to value {value} in parameter {key}")
         file.close()
     except Exception as e:
         logger.error(f"Error in editing file {file_path} with {e}")

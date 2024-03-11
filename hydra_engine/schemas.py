@@ -4,6 +4,7 @@ import maya
 import markdown
 import hashlib
 from ruamel.yaml.scalarstring import PlainScalarString, SingleQuotedScalarString, DoubleQuotedScalarString
+from ruamel.yaml.comments import Comment
 from typing import List, Literal, Dict
 from pydantic import BaseModel, validator, Extra, root_validator, ValidationError
 
@@ -64,6 +65,7 @@ class ElemInfo(BaseModel):
     sub_type_schema: Dict[str, 'ElemInfo'] = None
     array_sub_type_schema: List['ElemInfo'] = None
     readOnly: bool | Dict[int, bool]
+    disable: bool = False
     additional: bool = False
     display_name: str
     control: controls
@@ -960,3 +962,24 @@ def generate_wizard_meta(directory):
     file = open(os.path.join(directory, "wizard.meta"), 'w')
     yaml.dump(wizard_data, file)
     file.close()
+
+def set_comment_out(input_url:str,file_id):
+    input_url_list = input_url.split("/")
+    key = input_url_list[0]
+    for elements in HydraParametersInfo().get_elements_values():
+        if key in elements.values and elements.uid == file_id:
+            find_array_element(elements.values,input_url_list)
+            write_file(elements.values, elements.path, elements.type, input_url)
+            break
+
+def find_array_element(values,input_url_list):
+    while(len(input_url_list) > 1):
+        values = values[input_url_list[0]]
+        input_url_list.pop(0)
+    comment = ""
+    for key in values[int(input_url_list[0])]:
+        if comment == "":
+            comment = f"- {key}: {values[int(input_url_list[0])][key]}"
+        else:
+            comment = f"  {key}: {values[int(input_url_list[0])][key]}"
+        values[int(input_url_list[0])].yaml_set_comment_before_after_key(None, before="# это мой комментарий")

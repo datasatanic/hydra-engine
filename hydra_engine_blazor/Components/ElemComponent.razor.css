@@ -406,6 +406,9 @@ img.purple:active,.trash-container.purple:active{
 .disable-image{
     content: url("icons/Disable.svg");
 }
+.enable-image{
+    content: url("icons/Enable.svg");
+}
 .array-trash-container{
     display: flex;
     flex-direction: row;

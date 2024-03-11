@@ -13,6 +13,7 @@
 @using Microsoft.VisualBasic
 @inject IJSRuntime JSRuntime
 @inject SettingsContainer SettingsContainer
+@inject WizardContainer WizardContainer
 @implements IAsyncDisposable
 @if (elemInfo != null)
 {
@@ -97,7 +98,7 @@
                         <div class="elem-container">
                             @if (IsArrayElement)
                             {
-                                <input class="active-toggle" type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly))" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
+                                <input class="active-toggle" type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly || elemInfo.disable))" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
                             }
                             <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip" data-bs-html="true"
                                                                      data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 2}em" : "")">@elemInfo.display_name</h4>
@@ -137,7 +138,7 @@
                         <div class="elem-container">
                             @if (IsArrayElement)
                             {
-                                <input class="active-toggle" type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
+                                <input class="active-toggle" type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly || elemInfo.disable)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
                             }
                             <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip" data-bs-html="true"
                                 data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 2}em" : "")">@elemInfo.display_name</h4>
@@ -245,9 +246,9 @@
                                                     <img class="copy-image"/>
                                                     <h4>Duplicate</h4>
                                                 </div>
-                                                <div class="trash-menu-element">
-                                                    <img class="disable-image"/>
-                                                    <h4>Disable</h4>
+                                                <div class="trash-menu-element" @onclick="@(()=>DisableElement(j))">
+                                                    <img class="@(subTypeSchema.Values.ToList()[j].disable ? "enable-image" : "disable-image")"/>
+                                                    <h4>@(subTypeSchema.Values.ToList()[j].disable ? "Enable" : "Disable")</h4>
                                                 </div>
                                                 <div class="trash-menu-element" @onclick="@(() => RemoveArrayItem(j))">
                                                     <img class="delete-image"/>
@@ -303,7 +304,7 @@
                                                                     <img class="copy-image"/>
                                                                     <h4>Duplicate</h4>
                                                                 </div>
-                                                                <div class="trash-menu-element">
+                                                                <div class="trash-menu-element" @onclick="@(()=>DisableElement(j))">
                                                                     <img class="disable-image"/>
                                                                     <h4>Disable</h4>
                                                                 </div>
@@ -349,7 +350,7 @@
                                                                     <img class="copy-image"/>
                                                                     <h4>Duplicate</h4>
                                                                 </div>
-                                                                <div class="trash-menu-element">
+                                                                <div class="trash-menu-element" @onclick="@(()=>DisableElement(j))">
                                                                     <img class="disable-image"/>
                                                                     <h4>Disable</h4>
                                                                 </div>
@@ -412,7 +413,7 @@
         {
             {"tabindex",1},
             {"placeholder",elemInfo.placeholder},
-            {"disabled",!elemInfo.IsActive || elemInfo.readOnly}
+            {"disabled",!elemInfo.IsActive || elemInfo.readOnly || elemInfo.disable}
         };
         AddElementAttributes(elemInfo);
     }
@@ -494,7 +495,7 @@
     private bool TryParseToType(object? value,ElemType? type)
     {
         var valueString = value != null ? value.ToString() : string.Empty;
-        if (elemInfo.additional && !elemInfo.IsActive)
+        if (elemInfo.additional && !elemInfo.IsActive || elemInfo.disable)
         {
             return true;
         }
@@ -906,7 +907,6 @@
     private void ChangeActiveStatus(ElemInfo el)
     {
         el.IsActive = !el.IsActive;
-        Console.WriteLine(Key);
         if (!el.IsActive)
         {
             el.isValid = true;
@@ -976,6 +976,29 @@
     {
         showAutoComplete = true;
         StateHasChanged();
+    }
+
+    private async Task DisableElement(int index)
+    {
+        if (elemInfo.array_sub_type_schema != null)
+        {
+            foreach (var keyValuePair in elemInfo.array_sub_type_schema[index])
+            {
+                keyValuePair.Value.disable = !keyValuePair.Value.disable;
+                if (keyValuePair.Value.disable)
+                {
+                    keyValuePair.Value.isValid = true;
+                }
+                else
+                {
+                    keyValuePair.Value.isValid = TryParseToType(keyValuePair.Value.value,keyValuePair.Value.type) && !keyValuePair.Value.constraints.Exists(item => !CheckConstraints(keyValuePair.Value.value, item, keyValuePair.Value.control));
+                }
+            }
+            var inputUrl = $"{Key}/{index}";
+            await WizardContainer.SetCommentOut(inputUrl, elemInfo.fileId);
+            elemInfo.isValid = !elemInfo.array_sub_type_schema.Any(item => item.Any(x => !x.Value.isValid));
+            await SendValue.InvokeAsync(elemInfo);
+        }
     }
 
 }

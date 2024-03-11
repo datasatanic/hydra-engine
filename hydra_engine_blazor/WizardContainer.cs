@@ -75,6 +75,11 @@ public class WizardContainer
 
     }
 
+    public async Task<HttpResponseMessage> SetCommentOut(string inputUrl, string fileId)
+    {
+        HttpContent content = new StringContent("", Encoding.UTF8, "application/json");
+        return await _client.PostAsync($"api/wizard/comment-out/{inputUrl}?file_id={fileId}",content);
+    }
     public async Task<HttpResponseMessage> InitArch(string archName)
     {
         HttpContent content = new StringContent("", Encoding.UTF8, "application/json");

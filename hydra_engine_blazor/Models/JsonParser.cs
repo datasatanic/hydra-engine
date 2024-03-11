@@ -141,6 +141,9 @@ public class JsonParser
                         if (readonlyDict != null) elemInfo.readOnly = readonlyDict.GetValueOrDefault(index + 1, false);
                     }
                     break;
+                case "disable":
+                    if (keyValue.Value != null) elemInfo.disable = (bool)keyValue.Value;
+                    break;
                 case "additional":
                     if (keyValue.Value != null) elemInfo.additional = bool.Parse(keyValue.Value.ToString());
                     if (elemInfo.additional && elemInfo.value == null) elemInfo.IsActive = false;
