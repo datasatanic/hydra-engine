@@ -238,6 +238,10 @@
         }
         if (saveResponse is null or {IsSuccessStatusCode:true})
         {
+            if (WizardContainer.CommentItems.Count > 0)
+            {
+                await WizardContainer.SetCommentsOut();
+            }
             if (WizardModel.ControlsMeta.Action == "deploy" && WizardModel.ControlsMeta.SiteName != null)
             {
                 var stepNumber = Output_URL.Split("/").Length;

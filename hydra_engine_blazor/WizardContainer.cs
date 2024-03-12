@@ -46,6 +46,18 @@ public class WizardContainer
             NotifyStateChanged();
         }
     }
+
+    private List<CommentItem> commentItems = new();
+
+    public List<CommentItem> CommentItems
+    {
+        get => commentItems;
+        set
+        {
+            commentItems = value;
+            NotifyStateChanged();
+        }
+    }
     private readonly HttpClient _client;
     private JsonSerializerOptions options = new()
     {
@@ -75,10 +87,16 @@ public class WizardContainer
 
     }
 
-    public async Task<HttpResponseMessage> SetCommentOut(string inputUrl, string fileId)
+    public async Task<HttpResponseMessage> SetCommentsOut()
     {
-        HttpContent content = new StringContent("", Encoding.UTF8, "application/json");
-        return await _client.PostAsync($"api/wizard/comment-out/{inputUrl}?file_id={fileId}",content);
+        var json = JsonSerializer.Serialize(commentItems);
+        HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await _client.PostAsync($"api/wizard/comment-out",content);
+        if (response.IsSuccessStatusCode)
+        {
+            commentItems.Clear();
+        }
+        return response;
     }
     public async Task<HttpResponseMessage> InitArch(string archName)
     {

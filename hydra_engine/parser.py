@@ -19,23 +19,32 @@ class SingletonMeta(type):
             cls._instances[cls] = super(SingletonMeta, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
+
 class WizardInfo(metaclass=SingletonMeta):
     def __init__(self):
-        self.wizard_state:WizardState = None
-    def update_current_step(self,url:str):
+        self.wizard_state: WizardState = None
+
+    def update_current_step(self, url: str):
         self.wizard_state.current_step = url
-    def update_arch_name(self,name:str):
+
+    def update_arch_name(self, name: str):
         self.wizard_state.arch.arch_name = name
-    def update_arch_status(self,status:str):
+
+    def update_arch_status(self, status: str):
         self.wizard_state.arch.status = status
+
     def get_sites_info(self):
         return self.wizard_state.sites
+
     def get_current_arch_name(self):
         return self.wizard_state.arch.arch_name
-    def add_site(self,site):
+
+    def add_site(self, site):
         self.wizard_state.sites.append(site)
+
     def remove_site(self, site):
         self.wizard_state.sites.remove(site)
+
 
 class HydraParametersInfo(metaclass=SingletonMeta):
     def __init__(self):
@@ -124,7 +133,8 @@ def parse_elements_fileinfo():
                                 if "FILE" in data_loaded:
                                     data_loaded["FILE"]["path"] = os.path.join(root, data_loaded["FILE"]["path"])
                                     _elements = data_loaded["FILE"]
-                                    _elements["uid"] = hashlib.sha256(os.path.join(root, filename).encode('utf-8')).hexdigest()
+                                    _elements["uid"] = hashlib.sha256(
+                                        os.path.join(root, filename).encode('utf-8')).hexdigest()
                                     _elements["meta_path"] = os.path.join(root, filename)
                                     elements_files_info.append(_elements)
 
@@ -170,7 +180,7 @@ def generate_config_structure(element, key, sub_d):
         sub_d.update({input_url_list[0]: element[key]["default_value"]})
 
 
-def write_file(data, file_path, file_type, key, value = None):
+def write_file(data, file_path, file_type, key, value=None):
     try:
         with open(os.path.join(config.filespath, file_path), 'w') as file:
             if file_type == "json":

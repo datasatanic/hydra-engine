@@ -28,6 +28,11 @@ controls = Literal[
     "date_control", "time_control", "label_control", "password_control"]
 
 
+class CommentItem(BaseModel):
+    url: str
+    file_id: str
+
+
 class Arch(BaseModel):
     arch_name: str
     status: str
@@ -963,24 +968,39 @@ def generate_wizard_meta(directory):
     yaml.dump(wizard_data, file)
     file.close()
 
-def set_comment_out(input_url:str,file_id):
-    input_url_list = input_url.split("/")
-    key = input_url_list[0]
-    for elements in HydraParametersInfo().get_elements_values():
-        if key in elements.values and elements.uid == file_id:
-            find_array_element(elements.values,input_url_list)
-            write_file(elements.values, elements.path, elements.type, input_url)
-            break
 
-def find_array_element(values,input_url_list):
-    while(len(input_url_list) > 1):
+def set_comment_out(content: list[CommentItem]):
+    for item in content:
+        input_url_list = item.url.split("/")
+        key = input_url_list[0]
+        for elements in HydraParametersInfo().get_elements_values():
+            if key in elements.values and elements.uid == item.file_id:
+                find_array_element(elements.values, input_url_list)
+                write_file(elements.values, elements.path, elements.type, item.url)
+                with open(os.path.join(config.filespath, elements.path), 'r') as file:
+                    lines = file.readlines()
+                    lines_to_keep = [line for line in lines if not line.strip() == "-"]
+                with open(os.path.join(config.filespath, elements.path), 'w') as file:
+                    file.writelines(lines_to_keep)
+                break
+
+
+def find_array_element(values, input_url_list):
+    while len(input_url_list) > 1:
         values = values[input_url_list[0]]
         input_url_list.pop(0)
     comment = ""
-    values[int(input_url_list[0])].fa.set_block_style()
-    for key in values[int(input_url_list[0])]:
+    comments = []
+    # values[int(input_url_list[0])].fa.set_block_style()
+    keys = list(values[int(input_url_list[0])].keys())
+    comments.append("head_comment")
+    for key in keys:
         if comment == "":
             comment = f"- {key}: {values[int(input_url_list[0])][key]}"
         else:
             comment = f"  {key}: {values[int(input_url_list[0])][key]}"
-        values[int(input_url_list[0])].yaml_set_comment_before_after_key(key, before=comment)
+        comments.append(comment)
+    comments.append("foot_comment")
+    for comm in comments:
+        values.yaml_set_comment_before_after_key(int(input_url_list[0]), before=comm)
+    values[int(input_url_list[0])] = None

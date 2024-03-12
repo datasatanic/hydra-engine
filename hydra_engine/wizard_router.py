@@ -8,7 +8,8 @@ from fastapi.encoders import jsonable_encoder
 from hydra_engine.configs import config
 from hydra_engine.parser import parse_config_files
 from hydra_engine.schemas import find_form, Condition, update_wizard_meta, ParameterSaveInfo, \
-    set_value, check_validate_parameter, WizardInfo, HydraParametersInfo, WizardState, Arch, Site,read_ui_file,read_wizard_file,set_comment_out
+    set_value, check_validate_parameter, WizardInfo, HydraParametersInfo, WizardState, Arch, Site, read_ui_file, \
+    read_wizard_file, set_comment_out,CommentItem
 
 logger = logging.getLogger("common_logger")
 router = APIRouter(prefix="/wizard", tags=["wizard"])
@@ -130,9 +131,14 @@ def check_deploy():
             WizardInfo().get_sites_info()[-1].status = "failed"
             return JSONResponse(jsonable_encoder(WizardInfo().get_sites_info()), status_code=200)
 
-@router.post("/comment-out/{input_url:path}")
-def comment_out(input_url:str, file_id:str):
-    set_comment_out(input_url,file_id)
+
+@router.post("/comment-out")
+def comment_out(content: list[CommentItem]):
+    set_comment_out(content)
+    parse_config_files()
+    read_ui_file(config.filespath)
+    read_wizard_file(config.filespath)
+
 def use_deploy_script(site_name):
     time.sleep(10)
     print(f"Deploy ending for {site_name}")

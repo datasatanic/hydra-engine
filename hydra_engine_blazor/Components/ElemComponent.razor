@@ -995,7 +995,7 @@
                 }
             }
             var inputUrl = $"{Key}/{index}";
-            await WizardContainer.SetCommentOut(inputUrl, elemInfo.fileId);
+            WizardContainer.CommentItems.Add(new CommentItem(){Url = inputUrl,FileId = elemInfo.fileId});
             elemInfo.isValid = !elemInfo.array_sub_type_schema.Any(item => item.Any(x => !x.Value.isValid));
             await SendValue.InvokeAsync(elemInfo);
         }
