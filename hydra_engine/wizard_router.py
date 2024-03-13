@@ -136,7 +136,6 @@ def check_deploy():
 def comment_out(content: list[CommentItem]):
     set_comment_out(content)
     parse_config_files()
-    read_ui_file(config.filespath)
     read_wizard_file(config.filespath)
 
 def use_deploy_script(site_name):

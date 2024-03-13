@@ -153,12 +153,14 @@ def parse_value_files():
                                                 data_loaded)
                 elements_values.append(value_instance)
         if file["type"] == "yaml":
+            uncomment_all_array_elements(file["path"])
             with open(os.path.join(config.filespath, file["path"]), 'r') as stream:
                 data_loaded = yaml.load(stream)
                 value_instance = ValuesInstance(file["type"], file["path"],
                                                 file["uid"],
                                                 data_loaded)
                 elements_values.append(value_instance)
+            comment_all_array_elements(file["path"])
 
 
 def generate_config_structure(element, key, sub_d):
@@ -213,3 +215,46 @@ def read_hydra_ignore():
             ignore_extension.append(current_line[2:])
     file.close()
     return ignore_dirs, ignore_extension
+
+def uncomment_all_array_elements(path):
+    with open(os.path.join(config.filespath, path), 'r') as file:
+        lines = file.readlines()
+        flag = False
+        lines_copy = []
+        for line in lines:
+            if line.strip() == "# head_comment":
+                flag = True
+                lines_copy.append(line)
+                continue
+            if flag and line.strip() != "# foot_comment":
+                line = line.replace("#", " ", 1)
+                lines_copy.append(line)
+                continue
+            if line.strip() == "# foot_comment":
+                flag = False
+                lines_copy.append(line)
+                continue
+            lines_copy.append(line)
+    with open(os.path.join(config.filespath, path), 'w') as file:
+        file.writelines(lines_copy)
+def comment_all_array_elements(path):
+    with open(os.path.join(config.filespath, path), 'r') as file:
+        lines = file.readlines()
+        flag = False
+        lines_copy = []
+        for line in lines:
+            if line.strip() == "# head_comment":
+                flag = True
+                lines_copy.append(line)
+                continue
+            if flag and line.strip() != "# foot_comment":
+                line = "#"+line.replace(" ","",1)
+                lines_copy.append(line)
+                continue
+            if line.strip() == "# foot_comment":
+                flag = False
+                lines_copy.append(line)
+                continue
+            lines_copy.append(line)
+    with open(os.path.join(config.filespath, path), 'w') as file:
+        file.writelines(lines_copy)

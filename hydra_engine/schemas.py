@@ -8,7 +8,7 @@ from ruamel.yaml.comments import Comment
 from typing import List, Literal, Dict
 from pydantic import BaseModel, validator, Extra, root_validator, ValidationError
 
-from hydra_engine.parser import write_file, HydraParametersInfo, WizardInfo, read_hydra_ignore
+from hydra_engine.parser import write_file, HydraParametersInfo, WizardInfo, read_hydra_ignore,uncomment_all_array_elements
 from hydra_engine.configs import config
 import logging
 import re
@@ -27,11 +27,10 @@ controls = Literal[
     "input_control", "textarea_control", "checkbox_control", "number_control", "datetime_control",
     "date_control", "time_control", "label_control", "password_control"]
 
-
 class CommentItem(BaseModel):
     url: str
     file_id: str
-
+    is_comment: bool
 
 class Arch(BaseModel):
     arch_name: str
@@ -641,6 +640,8 @@ def get_element_info(input_url, uid: str):
 
 def generate_elem_info(value, element, uid, path, is_log, comment=None):
     try:
+        import sys
+        sys.stdout = open('/dev/stdout', 'w')
         render_constraints = []
         render_dict = element.get('render')
         if render_dict:
@@ -665,6 +666,7 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
                              sub_type_schema=None,
                              readOnly=element["readonly"] if "readonly" in element else False,
                              additional=element.get('additional', False),
+                             disable = element.get("disable", False),
                              display_name=render_dict.get('display_name') if render_dict else None,
                              control=render_dict.get('control') if render_dict else None,
                              constraints=render_constraints,
@@ -677,8 +679,14 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
                 for index, el in enumerate(value):
                     is_element_none = el is None
                     d = {}
+                    is_disable = False
+                    if hasattr(el, "ca") and hasattr(el.ca, "items"):
+                        keys = list(el.ca.items.keys())
+                        if len(keys) > 0 and "# foot_comment" in el.ca.items[keys[0]][2].value:
+                            is_disable = True
                     for key, metadata in element["sub_type_schema"].items():
                         comment = None
+                        metadata["disable"] = is_disable
                         if el is not None and hasattr(el, "ca") and key in el.ca.items:
                             comment = el.ca.items[key][2].value.split("\n")[0]
                         d.update({
@@ -973,21 +981,30 @@ def set_comment_out(content: list[CommentItem]):
     for item in content:
         input_url_list = item.url.split("/")
         key = input_url_list[0]
-        for elements in HydraParametersInfo().get_elements_values():
-            if key in elements.values and elements.uid == item.file_id:
-                find_array_element(elements.values, input_url_list)
-                write_file(elements.values, elements.path, elements.type, item.url)
-                with open(os.path.join(config.filespath, elements.path), 'r') as file:
-                    lines = file.readlines()
-                    lines_to_keep = [line for line in lines if not line.strip() == "-"]
-                with open(os.path.join(config.filespath, elements.path), 'w') as file:
-                    file.writelines(lines_to_keep)
-                break
+        if item.is_comment:
+            for elements in HydraParametersInfo().get_elements_values():
+                if key in elements.values and elements.uid == item.file_id:
+                    add_comment_element(elements.values, input_url_list)
+                    write_file(elements.values, elements.path, elements.type, item.url)
+                    with open(os.path.join(config.filespath, elements.path), 'r') as file:
+                        lines = file.readlines()
+                        lines_to_keep = [line for line in lines if not line.strip() == "- delete_comment_element"]
+                    with open(os.path.join(config.filespath, elements.path), 'w') as file:
+                        file.writelines(lines_to_keep)
+                    break
+        else:
+            for elements in HydraParametersInfo().get_elements_values():
+                if key in elements.values and elements.uid == item.file_id:
+                    remove_comment_element(elements.values, input_url_list,elements.path)
+                    break
 
 
-def find_array_element(values, input_url_list):
+def add_comment_element(values, input_url_list):
     while len(input_url_list) > 1:
-        values = values[input_url_list[0]]
+        if isinstance(values,dict):
+            values = values[input_url_list[0]]
+        elif isinstance(values,list):
+            values = values[int(input_url_list[0])]
         input_url_list.pop(0)
     comment = ""
     comments = []
@@ -1003,4 +1020,37 @@ def find_array_element(values, input_url_list):
     comments.append("foot_comment")
     for comm in comments:
         values.yaml_set_comment_before_after_key(int(input_url_list[0]), before=comm)
-    values[int(input_url_list[0])] = None
+    value = values[int(input_url_list[0])]
+    # for key in value:
+    #     for item in values.ca.items[int(input_url_list[0])]:
+    #         if item is not None:
+    #             if isinstance(item,list):
+    #                 for el in item:
+    #                     logger.debug(el.value)
+    values[int(input_url_list[0])] = "delete_comment_element"
+def remove_comment_element(values,input_url_list, path):
+    while len(input_url_list) > 1:
+        values = values[input_url_list[0]]
+        input_url_list.pop(0)
+    keys = list(values[int(input_url_list[0])].keys())
+    start_comment_line = values[int(input_url_list[0])].lc.line
+    with open(os.path.join(config.filespath, path), 'r') as file:
+        lines = file.readlines()
+        lines_copy = []
+        line_number = 0
+        flag = False
+        for line in lines:
+            line_number += 1
+            if line.strip() == "# head_comment" and line_number == start_comment_line:
+                flag = True
+                continue
+            if flag and line.strip() != "# foot_comment":
+                line = line.replace("#", " ", 1)
+                lines_copy.append(line)
+                continue
+            if line.strip() == "# foot_comment":
+                flag = False
+                continue
+            lines_copy.append(line)
+    with open(os.path.join(config.filespath, path), 'w') as file:
+        file.writelines(lines_copy)

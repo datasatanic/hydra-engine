@@ -38,7 +38,7 @@
                                         <div>
                                             @if (IsArrayElement)
                                             {
-                                                <input class="active-toggle" type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
+                                                <input class="active-toggle" type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly || elemInfo.disable)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
                                             }
                                             <div class="@(!elemInfo.isValid ? "dot" : "") @(IsArrayElement ? "justify-dot" : "") param-name" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip" data-bs-html="true"
                                                                                                                                                                              data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")">@elemInfo.display_name</div>
@@ -247,8 +247,8 @@
                                                     <h4>Duplicate</h4>
                                                 </div>
                                                 <div class="trash-menu-element" @onclick="@(()=>DisableElement(j))">
-                                                    <img class="@(subTypeSchema.Values.ToList()[j].disable ? "enable-image" : "disable-image")"/>
-                                                    <h4>@(subTypeSchema.Values.ToList()[j].disable ? "Enable" : "Disable")</h4>
+                                                    <img class="@(subTypeSchema.Values.ToList().All(item=>item.disable) ? "enable-image" : "disable-image")"/>
+                                                    <h4>@(subTypeSchema.Values.ToList().All(item=>item.disable) ? "Enable" : "Disable")</h4>
                                                 </div>
                                                 <div class="trash-menu-element" @onclick="@(() => RemoveArrayItem(j))">
                                                     <img class="delete-image"/>
@@ -985,17 +985,18 @@
             foreach (var keyValuePair in elemInfo.array_sub_type_schema[index])
             {
                 keyValuePair.Value.disable = !keyValuePair.Value.disable;
-                if (keyValuePair.Value.disable)
-                {
-                    keyValuePair.Value.isValid = true;
-                }
-                else
-                {
-                    keyValuePair.Value.isValid = TryParseToType(keyValuePair.Value.value,keyValuePair.Value.type) && !keyValuePair.Value.constraints.Exists(item => !CheckConstraints(keyValuePair.Value.value, item, keyValuePair.Value.control));
-                }
             }
+            var isComment = elemInfo.array_sub_type_schema[index].Values.ToList().All(item=>item.disable);
             var inputUrl = $"{Key}/{index}";
-            WizardContainer.CommentItems.Add(new CommentItem(){Url = inputUrl,FileId = elemInfo.fileId});
+            var currentItem = WizardContainer.CommentItems.Find(item => item.Url == inputUrl && item.FileId == elemInfo.fileId && item.IsComment == isComment);
+            if (currentItem == null)
+            {
+                WizardContainer.CommentItems.Add(new CommentItem(){Url = inputUrl,FileId = elemInfo.fileId,IsComment = isComment});
+            }
+            else
+            {
+                WizardContainer.CommentItems.Remove(currentItem);
+            }
             elemInfo.isValid = !elemInfo.array_sub_type_schema.Any(item => item.Any(x => !x.Value.isValid));
             await SendValue.InvokeAsync(elemInfo);
         }

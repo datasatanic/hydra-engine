@@ -11,4 +11,7 @@ public class CommentItem
     [DataMember(Name = "file_id", EmitDefaultValue = false)]
     [JsonPropertyName("file_id")]
     public string FileId { get; set; }
+    [DataMember(Name = "is_comment", EmitDefaultValue = false)]
+    [JsonPropertyName("is_comment")]
+    public bool IsComment { get; set; }
 }
