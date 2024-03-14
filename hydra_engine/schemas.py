@@ -1038,8 +1038,7 @@ def remove_comment_element(values, input_url_list, path):
     while len(input_url_list) > 1:
         values = values[input_url_list[0]]
         input_url_list.pop(0)
-    keys = list(values[int(input_url_list[0])].keys())
-    start_comment_line = values[int(input_url_list[0])].lc.line
+    start_comment_line = values[int(input_url_list[0])].lc.line + 1
     with open(os.path.join(config.filespath, path), 'r') as file:
         lines = file.readlines()
         lines_copy = []
@@ -1049,7 +1048,7 @@ def remove_comment_element(values, input_url_list, path):
             line_number += 1
             if "# head_comment" in line.strip() and line_number == start_comment_line:
                 flag = True
-                line = line.replace("#", " ", 1).replace("# head_comment", "")
+                line = line.replace("# head_comment", "").replace("#", " ", 1)
                 lines_copy.append(line)
                 continue
             if flag and "# foot_comment" not in line.strip():
@@ -1058,7 +1057,7 @@ def remove_comment_element(values, input_url_list, path):
                 continue
             if flag and "# foot_comment" in line.strip():
                 flag = False
-                line = line.replace("#", " ", 1).replace("# foot_comment", "")
+                line = line.replace("# foot_comment", "").replace("#", " ", 1)
                 lines_copy.append(line)
                 continue
             lines_copy.append(line)
