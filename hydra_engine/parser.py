@@ -216,43 +216,50 @@ def read_hydra_ignore():
     file.close()
     return ignore_dirs, ignore_extension
 
+
 def uncomment_all_array_elements(path):
     with open(os.path.join(config.filespath, path), 'r') as file:
         lines = file.readlines()
         flag = False
         lines_copy = []
         for line in lines:
-            if line.strip() == "# head_comment":
+            if "# head_comment" in line.strip():
                 flag = True
-                lines_copy.append(line)
-                continue
-            if flag and line.strip() != "# foot_comment":
                 line = line.replace("#", " ", 1)
                 lines_copy.append(line)
                 continue
-            if line.strip() == "# foot_comment":
+            if flag and "# foot_comment" not in line.strip():
+                line = line.replace("#", " ", 1)
+                lines_copy.append(line)
+                continue
+            if flag and "# foot_comment" in line.strip():
                 flag = False
+                line = line.replace("#", " ", 1)
                 lines_copy.append(line)
                 continue
             lines_copy.append(line)
     with open(os.path.join(config.filespath, path), 'w') as file:
         file.writelines(lines_copy)
+
+
 def comment_all_array_elements(path):
     with open(os.path.join(config.filespath, path), 'r') as file:
         lines = file.readlines()
         flag = False
         lines_copy = []
         for line in lines:
-            if line.strip() == "# head_comment":
+            if "# head_comment" in line.strip():
                 flag = True
+                line = "#" + line.replace(" ", "", 1)
                 lines_copy.append(line)
                 continue
-            if flag and line.strip() != "# foot_comment":
-                line = "#"+line.replace(" ","",1)
+            if flag and "# foot_comment" not in line.strip():
+                line = "#" + line.replace(" ", "", 1)
                 lines_copy.append(line)
                 continue
-            if line.strip() == "# foot_comment":
+            if flag and "# foot_comment" in line.strip():
                 flag = False
+                line = "#" + line.replace(" ", "", 1)
                 lines_copy.append(line)
                 continue
             lines_copy.append(line)
