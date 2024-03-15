@@ -2,13 +2,11 @@ import copy
 import commentjson as json
 import hashlib
 import logging
-import ruamel.yaml
 import os
 from datetime import datetime
-from hydra_engine.configs import config
+from hydra_engine.configs import config,yaml_config
 
 logger = logging.getLogger("common_logger")
-yaml = ruamel.yaml.YAML(typ="rt")
 
 
 class SingletonMeta(type):
@@ -110,7 +108,7 @@ def parse_meta_params():
             for filename in files:
                 if "meta" in filename and filename != config.tree_filename and filename != config.wizard_filename:
                     with open(os.path.join(root, filename), 'r') as stream:
-                        data_loaded = yaml.load(stream)
+                        data_loaded = yaml_config.yaml.load(stream)
                         if data_loaded is not None and "PARAMS" in data_loaded:
                             _elements = data_loaded["PARAMS"]
                             elements_meta.append(_elements)
@@ -128,7 +126,7 @@ def parse_elements_fileinfo():
                 if "meta" in filename and filename != config.tree_filename and filename != config.wizard_filename:
                     if os.path.isfile(os.path.join(root, filename)):
                         with open(os.path.join(root, filename), 'r') as stream:
-                            data_loaded = yaml.load(stream)
+                            data_loaded = yaml_config.yaml.load(stream)
                             if data_loaded is not None:
                                 if "FILE" in data_loaded:
                                     data_loaded["FILE"]["path"] = os.path.join(root, data_loaded["FILE"]["path"])
@@ -155,7 +153,7 @@ def parse_value_files():
         if file["type"] == "yaml":
             uncomment_all_array_elements(file["path"])
             with open(os.path.join(config.filespath, file["path"]), 'r') as stream:
-                data_loaded = yaml.load(stream)
+                data_loaded = yaml_config.yaml.load(stream)
                 value_instance = ValuesInstance(file["type"], file["path"],
                                                 file["uid"],
                                                 data_loaded)
@@ -188,7 +186,7 @@ def write_file(data, file_path, file_type, key, value=None):
             if file_type == "json":
                 json.dump(data, file, indent=2)
             if file_type == "yaml":
-                yaml.dump(data, file)
+                yaml_config.yaml.dump(data, file)
         if value:
             logger.info(f"File {file_path} was modified to value {value} in parameter {key}")
         file.close()

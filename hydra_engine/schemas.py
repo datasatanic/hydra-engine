@@ -4,13 +4,12 @@ import maya
 import markdown
 import hashlib
 from ruamel.yaml.scalarstring import PlainScalarString, SingleQuotedScalarString, DoubleQuotedScalarString
-from ruamel.yaml.comments import Comment
 from typing import List, Literal, Dict
 from pydantic import BaseModel, validator, Extra, root_validator, ValidationError
 
 from hydra_engine.parser import write_file, HydraParametersInfo, WizardInfo, read_hydra_ignore, \
     uncomment_all_array_elements
-from hydra_engine.configs import config
+from hydra_engine.configs import config, yaml_config
 import logging
 import re
 
@@ -643,8 +642,6 @@ def get_element_info(input_url, uid: str):
 
 def generate_elem_info(value, element, uid, path, is_log, comment=None):
     try:
-        import sys
-        sys.stdout = open('/dev/stdout', 'w')
         render_constraints = []
         render_dict = element.get('render')
         if render_dict:
@@ -776,19 +773,18 @@ def find_form(path, all_tree, is_wizard=False):
             return {name: all_tree[name]}
 
 
-yaml = ruamel.yaml.YAML(typ="rt")
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 def update_wizard_meta(directory: str, arch_name):
     file = open(os.path.join(config.filespath, "wizard.meta"), 'r')
     ignore_dirs, ignore_extension = read_hydra_ignore()
-    wizard_data = yaml.load(file)
+    wizard_data = yaml_config.yaml.load(file)
     last_path = None
     last_dir = None
     for root, dirs, files in os.walk(directory):
         arch_file = open(os.path.join(config.filespath, f"_framework/arch/{arch_name}.yml"), 'r')
-        site_names = list(map(lambda x: x["name"], yaml.load(arch_file)["sites"]))
+        site_names = list(map(lambda x: x["name"], yaml_config.yaml.load(arch_file)["sites"]))
         arch_file.close()
         dirs[:] = [d for d in dirs if d not in ignore_dirs]
         dirs.sort(key=lambda x: site_names.index(x) if x in site_names else float('inf'))
@@ -841,7 +837,7 @@ def update_wizard_meta(directory: str, arch_name):
         wizard_data.update(last_form)
     file.close()
     file = open(os.path.join(config.filespath, "wizard.meta"), 'w')
-    yaml.dump(wizard_data, file)
+    yaml_config.yaml.dump(wizard_data, file)
     file.close()
 
 
@@ -909,7 +905,7 @@ def read_ui_file(directory):
         for name in files:
             if name == config.tree_filename:
                 with open(os.path.join(root, name), 'r') as stream:
-                    data_loaded = yaml.load(stream)
+                    data_loaded = yaml_config.yaml.load(stream)
                     for obj in data_loaded:
                         path = obj.split("/")
                         add_node(path, data_loaded[obj]["id"], data_loaded[obj]["type"])
@@ -928,7 +924,7 @@ def read_wizard_file(directory):
         for name in files:
             if name == config.wizard_filename:
                 with open(os.path.join(root, name), 'r') as stream:
-                    data_loaded = yaml.load(stream)
+                    data_loaded = yaml_config.yaml.load(stream)
                     for obj in data_loaded:
                         path = obj.split("/")
                         condition_list = []
@@ -957,13 +953,13 @@ def read_wizard_file(directory):
 
 def generate_wizard_meta(directory):
     file = open(os.path.join(directory, "wizard.meta"), 'r')
-    wizard_data = yaml.load(file)
+    wizard_data = yaml_config.yaml.load(file)
     for root, dirs, files in os.walk(os.path.join(config.filespath, "_framework/arch")):
         files.sort()
         for name in files:
             if name.endswith("meta"):
                 meta_file = open(os.path.join(root, name), 'r')
-                meta_file_data = yaml.load(meta_file)
+                meta_file_data = yaml_config.yaml.load(meta_file)
                 description = meta_file_data.get("FILE").get("description", "")
                 meta_file.close()
                 wizard_form = {
@@ -976,7 +972,7 @@ def generate_wizard_meta(directory):
                     wizard_data.update(wizard_form)
     file.close()
     file = open(os.path.join(directory, "wizard.meta"), 'w')
-    yaml.dump(wizard_data, file)
+    yaml_config.yaml.dump(wizard_data, file)
     file.close()
 
 
@@ -1024,13 +1020,13 @@ def formatted_comment(data, indent=0):
             if comment == "" and indent == 0:
                 comment = f"- {key}: {formatted_comment(data[key], indent + 2)} # head_comment"
             else:
-                comment = f"{' ' * (indent + 2)}{key}: {formatted_comment(data[key],indent + 2)}"
+                comment = f"{' ' * (indent + 2)}{key}: {formatted_comment(data[key], indent + 2)}"
             comments.append(comment)
         return "\n".join(comments)
     if isinstance(data, list):
         comments = []
         for el in data:
-            comments.append(f"\n{' ' * indent}- {formatted_comment(el,indent)}")
+            comments.append(f"\n{' ' * indent}- {formatted_comment(el, indent)}")
         return "\n".join(comments)
 
 
