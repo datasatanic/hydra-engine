@@ -146,7 +146,7 @@ class ElemInfo(BaseModel):
 
     @validator("sub_type_schema", pre=True)
     def check_sub_type_schema(cls, sub_type_schema, values, **kwargs):
-        if values.get('type') != "dict" or values.get('type') == "array" and values.get('sub_type') != "composite":
+        if values.get('type') != "dict" or values.get('type') != "array":
             if sub_type_schema is not None:
                 raise ValueError("Parameter with type dict or array with composite type can have sub_type_schema")
         return sub_type_schema
@@ -586,7 +586,10 @@ def update_comment(element, key):
             if comment_value is not None:
                 start_index = comment_value.index("[ ] CHANGEME")
                 modified_comment = comment_value[:start_index + 1] + 'X' + comment_value[start_index + 2:]
-                element.ca.items[key][2].value = modified_comment
+                for item in element.ca.items[key]:
+                    if item:
+                        item.value = modified_comment
+                        break
 
 
 def update_parameter_value(element, value):
@@ -609,6 +612,7 @@ def update_parameter_value(element, value):
                 element.append(val)
         for index, (el, val) in enumerate(zip(element, value)):
             element[index] = update_parameter_value(el, val)
+            update_comment(element, index)
         return element
     else:
         return value
@@ -717,6 +721,43 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
                         )
                 else:
                     raise TypeError("Type of field sub_type_schema must be dict")
+        elif elem_info.type == "array" and element.get("sub_type_schema") is None:
+            value = [] if value is None else value
+            sub_elem_info = ElemInfo(value=None, placeholder="", autocomplete=autocomplete,
+                                     type=element.get('sub_type'),
+                                     description="",
+                                     sub_type=None,
+                                     sub_type_schema=None,
+                                     readOnly=element["readonly"] if "readonly" in element else False,
+                                     additional=False,
+                                     disable=element.get("disable", False),
+                                     display_name="",
+                                     control=render_dict.get('control') if render_dict else None,
+                                     constraints=render_constraints,
+                                     file_id=uid)
+            elem_info.sub_type_schema = {"hydra_array_element": sub_elem_info}
+            elem_info.array_sub_type_schema = []
+            for index, el in enumerate(value):
+                el_auto_complete = None
+                if index in value.ca.items:
+                    for ca in value.ca.items[index]:
+                        if ca and "[ ] CHANGEME" in ca.value.split("\n")[0]:
+                            el_auto_complete = el
+                            el = None
+                            break
+                elem_info_el = ElemInfo(value=el, placeholder="", autocomplete=el_auto_complete,
+                                        type=element.get('sub_type'),
+                                        description="",
+                                        sub_type=None,
+                                        sub_type_schema=None,
+                                        readOnly=element["readonly"] if "readonly" in element else False,
+                                        additional=False,
+                                        disable=False,
+                                        display_name="",
+                                        control=render_dict.get('control') if render_dict else None,
+                                        constraints=render_constraints,
+                                        file_id=uid)
+                elem_info.array_sub_type_schema.append({"hydra_array_element": elem_info_el})
         return elem_info
     except ValidationError as e:
         if is_log:

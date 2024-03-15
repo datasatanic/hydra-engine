@@ -233,6 +233,10 @@ li>div>img[aria-expanded="true"]{
 fieldset>div>.array-trash-container:not(:last-child){
     border-bottom: 1px solid var(--hydra-gray-100);
 }
+fieldset>div>.array-trash-container.default{
+    border-bottom: 0;
+    padding: 10px 0 0 0;
+}
 fieldset>.elements-container:last-child{
     padding-bottom: 10px;
 }
@@ -461,6 +465,6 @@ img.purple:active,.trash-container.purple:active{
 .not-dict-container.in-array{
     margin-left: 10px;
 }
-.not-dict-container.in-array ::deep .elem-container{
+.not-dict-container.in-array ::deep .elem-container:not(.in-default-array){
     margin-left: 10px;
 }
