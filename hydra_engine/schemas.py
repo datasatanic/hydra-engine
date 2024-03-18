@@ -1096,7 +1096,7 @@ def add_comment_element(values, input_url_list):
     values.yaml_set_comment_before_after_key(int(input_url_list[0]), before=comment)
     values.yaml_set_comment_before_after_key(int(input_url_list[0]), before="foot_comment")
     if individual_comment is not None and individual_comment != '':
-        values.yaml_set_comment_before_after_key(int(input_url_list[0]),before=individual_comment)
+        values.yaml_set_comment_before_after_key(len(values) - 1,before=individual_comment)
     values[int(input_url_list[0])] = "delete_comment_element"
 
 
@@ -1151,10 +1151,11 @@ def formatted_comment(data, indent=0):
 '''
 Функция разкомментирования элемента массива
 '''
-def remove_comment_element(values, input_url_list, path):
+def remove_comment_element(values,input_url_list, path):
     while len(input_url_list) > 1:
         values = values[input_url_list[0]]
         input_url_list.pop(0)
+    keys = list(values[int(input_url_list[0])].keys())
     start_comment_line = values[int(input_url_list[0])].lc.line
     with open(os.path.join(config.filespath, path), 'r') as file:
         lines = file.readlines()
@@ -1163,19 +1164,15 @@ def remove_comment_element(values, input_url_list, path):
         flag = False
         for line in lines:
             line_number += 1
-            if "# head_comment" in line.strip() and line_number == start_comment_line:
+            if line.strip() == "# head_comment" and line_number == start_comment_line:
                 flag = True
-                line = line.replace("# head_comment", "").replace("#", " ", 1)
-                lines_copy.append(line)
                 continue
-            if flag and "# foot_comment" not in line.strip():
+            if flag and line.strip() != "# foot_comment":
                 line = line.replace("#", " ", 1)
                 lines_copy.append(line)
                 continue
-            if flag and "# foot_comment" in line.strip():
+            if line.strip() == "# foot_comment":
                 flag = False
-                line = line.replace("# foot_comment", "").replace("#", " ", 1)
-                lines_copy.append(line)
                 continue
             lines_copy.append(line)
     with open(os.path.join(config.filespath, path), 'w') as file:
