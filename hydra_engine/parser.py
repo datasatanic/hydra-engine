@@ -223,7 +223,6 @@ def uncomment_all_array_elements(path):
         for line in lines:
             if "# head_comment" in line.strip():
                 flag = True
-                line = line.replace("#", " ", 1)
                 lines_copy.append(line)
                 continue
             if flag and "# foot_comment" not in line.strip():
@@ -232,7 +231,6 @@ def uncomment_all_array_elements(path):
                 continue
             if flag and "# foot_comment" in line.strip():
                 flag = False
-                line = line.replace("#", " ", 1)
                 lines_copy.append(line)
                 continue
             lines_copy.append(line)
@@ -248,7 +246,6 @@ def comment_all_array_elements(path):
         for line in lines:
             if "# head_comment" in line.strip():
                 flag = True
-                line = "#" + line.replace(" ", "", 1)
                 lines_copy.append(line)
                 continue
             if flag and "# foot_comment" not in line.strip():
@@ -257,7 +254,6 @@ def comment_all_array_elements(path):
                 continue
             if flag and "# foot_comment" in line.strip():
                 flag = False
-                line = "#" + line.replace(" ", "", 1)
                 lines_copy.append(line)
                 continue
             lines_copy.append(line)

@@ -878,13 +878,13 @@
     {
         if (elemInfo.array_sub_type_schema != null)
         {
-            DisableChildren(elemInfo.array_sub_type_schema[index]);
             var isComment = elemInfo.array_sub_type_schema[index].Values.ToList().All(item=>item.disable);
+            DisableChildren(elemInfo.array_sub_type_schema[index]);
             var inputUrl = $"{Key}/{index}";
             var currentItem = WizardContainer.CommentItems.Find(item => item.Url == inputUrl && item.FileId == elemInfo.fileId && item.IsComment == isComment);
             if (currentItem == null)
             {
-                WizardContainer.CommentItems.Add(new CommentItem(){Url = inputUrl,FileId = elemInfo.fileId,IsComment = isComment});
+                WizardContainer.CommentItems.Add(new CommentItem(){Url = inputUrl,FileId = elemInfo.fileId,IsComment = !isComment});
             }
             else
             {
