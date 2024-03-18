@@ -1167,7 +1167,7 @@ def remove_comment_element(values,input_url_list, path):
             if line.strip() == "# head_comment" and line_number == start_comment_line:
                 flag = True
                 continue
-            if flag and line.strip() != "# foot_comment":
+            if flag and line.strip() != "# foot_comment" and line.lstrip().startswith("#"):
                 line = line.replace("#", " ", 1)
                 lines_copy.append(line)
                 continue
