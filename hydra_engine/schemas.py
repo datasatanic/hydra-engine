@@ -628,9 +628,12 @@ def set_value(input_url: str, uid: str, value: object):
             write_file(elements.values, elements.path, elements.type, input_url, value)
             break
 
+
 '''
 Функция для получения информации о параметре конфигурационного файла, в том числе метаданных
 '''
+
+
 def get_element_info(input_url, uid: str):
     elements_meta = HydraParametersInfo().get_elements_metadata()
     elements_files_info = HydraParametersInfo().get_elements_files_info()
@@ -645,9 +648,12 @@ def get_element_info(input_url, uid: str):
                     elem_info = generate_elem_info(value, element, uid, input_url, True, comment)
                     return elem_info
 
+
 '''
 Функция для создания объекта ElemInfo
 '''
+
+
 def generate_elem_info(value, element, uid, path, is_log, comment=None):
     try:
         '''
@@ -688,7 +694,8 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
                              control=render_dict.get('control') if render_dict else None,
                              constraints=render_constraints,
                              file_id=uid)
-        if element.get("sub_type_schema") is not None: # обработка дочерней схемы параметра(для словарей и массивов объектов)
+        if element.get(
+                "sub_type_schema") is not None:  # обработка дочерней схемы параметра(для словарей и массивов объектов)
             sub_type_schema = element.get("sub_type_schema")
             if element.get("type") == "array":
                 elem_info.array_sub_type_schema = []
@@ -697,11 +704,12 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
                     is_element_none = el is None
                     d = {}
                     is_disable = False
-                    if hasattr(el, "ca") and hasattr(el.ca, "items"): # закомментирован ли элемент массива
+                    if hasattr(el, "ca") and hasattr(el.ca, "items"):  # закомментирован ли элемент массива
                         keys = list(el.ca.items.keys())
                         if len(keys) > 0 and "# foot_comment" in el.ca.items[keys[-1]][2].value:
                             is_disable = True
-                    for key, metadata in element["sub_type_schema"].items(): # формирование объектов ElemInfo для элементов массива
+                    for key, metadata in element[
+                        "sub_type_schema"].items():  # формирование объектов ElemInfo для элементов массива
                         comment = None
                         metadata["disable"] = is_disable
                         if el is not None and hasattr(el, "ca") and key in el.ca.items:
@@ -724,7 +732,7 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
             else:
                 if isinstance(sub_type_schema, dict):
                     elem_info.sub_type_schema = {}
-                    for key, metadata in sub_type_schema.items(): # формирование объектов ElemInfo для вложенных элементов словаря
+                    for key, metadata in sub_type_schema.items():  # формирование объектов ElemInfo для вложенных элементов словаря
                         sub_comment = None
                         if value is not None and hasattr(value, "ca") and key in value.ca.items:
                             sub_comment = get_comment_with_text(value.ca.items[key])
@@ -734,12 +742,14 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
                         )
                 else:
                     raise TypeError("Type of field sub_type_schema must be dict")
-        elif elem_info.type == "array" and element.get("sub_type_schema") is None: # обработка данных для обычного массива
+        elif elem_info.type == "array" and element.get(
+                "sub_type_schema") is None:  # обработка данных для обычного массива
             value = [] if value is None else value
             '''
             Создание объектов ElemInfo для элементов массива
             '''
-            sub_elem_info = ElemInfo(value=None, placeholder="", autocomplete=autocomplete, # генерация шаблонного объекта ElemInfo
+            sub_elem_info = ElemInfo(value=None, placeholder="", autocomplete=autocomplete,
+                                     # генерация шаблонного объекта ElemInfo
                                      type=element.get('sub_type'),
                                      description="",
                                      sub_type=None,
@@ -755,9 +765,9 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
             elem_info.array_sub_type_schema = []
             for index, el in enumerate(value):
                 el_auto_complete = None
-                if hasattr(value,"ca") and index in value.ca.items:
+                if hasattr(value, "ca") and index in value.ca.items:
                     for ca in value.ca.items[index]:
-                        if ca and "[ ] CHANGEME" in ca.value.split("\n")[0]: # проверка комментария [ ] CHANGEME
+                        if ca and "[ ] CHANGEME" in ca.value.split("\n")[0]:  # проверка комментария [ ] CHANGEME
                             el_auto_complete = el
                             el = None
                             break
@@ -810,9 +820,12 @@ def filter_tree(all_tree):
             filter_tree(tree_filter[key].child)
     return tree_filter
 
+
 '''
 Функция для поиска формы в дереве по пути
 '''
+
+
 def find_form(path, all_tree, is_wizard=False):
     """
         Find child forms and groups of current form
@@ -838,6 +851,8 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 '''
 Функция для обновления файла wizard.meta после инициализации архитектуры
 '''
+
+
 def update_wizard_meta(directory: str, arch_name):
     file = open(os.path.join(config.filespath, "wizard.meta"), 'r')
     ignore_dirs, ignore_extension = read_hydra_ignore()
@@ -873,7 +888,7 @@ def update_wizard_meta(directory: str, arch_name):
                     if last_path not in wizard_data:
                         wizard_data.update(wizard_form)
                 else:
-                    if _dir != last_dir: # если перешли на новую площадку, то добавляем соответствуюший шаг визарда
+                    if _dir != last_dir:  # если перешли на новую площадку, то добавляем соответствуюший шаг визарда
                         last_dir = _dir
                         last_path += "/" + _dir
                         wizard_form = {
@@ -909,9 +924,12 @@ def update_wizard_meta(directory: str, arch_name):
     yaml_config.yaml.dump(wizard_data, file)
     file.close()
 
+
 '''
 Функция для проверки валидности значения параметра
 '''
+
+
 def check_validate_parameter(input_url, value, uid, node):
     parameter = None
     for el in node.elem:
@@ -932,9 +950,12 @@ def check_validate_parameter(input_url, value, uid, node):
                 return returned_data
         return False, "Parameter not found"
 
+
 '''
 Функция для проверки валидности JSON схемы у параметра
 '''
+
+
 def check_sub_type_schema_validate(parameter, value, uid, input_url):
     if value is None:
         raise ValueError(f"Empty value for parameter with path {input_url}")
@@ -968,9 +989,12 @@ def check_sub_type_schema_validate(parameter, value, uid, input_url):
                         el[key] = check_sub_type_schema_validate(metadata, el[key], uid, f"{input_url}/{key}")
     return elem_info.value
 
+
 '''
 Функция для формирования дерева форм (навигацинное меню)
 '''
+
+
 def read_ui_file(directory):
     """
         Reads meta file of tree and creates structured tree
@@ -988,9 +1012,12 @@ def read_ui_file(directory):
                         if "description" in data_loaded[obj]:
                             add_additional_fields(path, "description", data_loaded[obj]["description"])
 
+
 '''
 Функция для формирования дерева, описывающее шаги визарда
 '''
+
+
 def read_wizard_file(directory):
     """
         Reads meta file of wizard tree and creates structured tree
@@ -1015,7 +1042,8 @@ def read_wizard_file(directory):
                             last_id == data_loaded[obj]["id"]
                         else:
                             raise ValueError("In file wizard.meta id must be unique")
-                        add_node(path, data_loaded[obj]["id"], data_loaded[obj]["type"], condition=condition_list, # добавление узла дерева
+                        add_node(path, data_loaded[obj]["id"], data_loaded[obj]["type"], condition=condition_list,
+                                 # добавление узла дерева
                                  is_wizard=True)
                         '''
                         Добавление дополнительных полей шага визарда
@@ -1030,13 +1058,17 @@ def read_wizard_file(directory):
                         if "site_name" in data_loaded[obj]:
                             add_additional_fields(path, "site_name", data_loaded[obj]["site_name"], is_wizard=True)
 
+
 '''
 Функция генерации данных, описывающих различные архитектуры, и их запись в файл wizard.meta
 '''
+
+
 def generate_wizard_meta(directory):
     file = open(os.path.join(directory, "wizard.meta"), 'r')
     wizard_data = yaml_config.yaml.load(file)
-    for root, dirs, files in os.walk(os.path.join(config.filespath, "_framework/arch")): # проход все файлов *meta в папке _framework/arch
+    for root, dirs, files in os.walk(
+            os.path.join(config.filespath, "_framework/arch")):  # проход все файлов *meta в папке _framework/arch
         files.sort()
         for name in files:
             if name.endswith("meta"):
@@ -1049,7 +1081,7 @@ def generate_wizard_meta(directory):
                                                               "description": description, "type": "group",
                                                               "id": hashlib.sha256(
                                                                   os.path.join(root, name).encode(
-                                                                      'utf-8')).hexdigest()}} # формирование группы для формы root(Каждая группа описывает одну архитектуру)
+                                                                      'utf-8')).hexdigest()}}  # формирование группы для формы root(Каждая группа описывает одну архитектуру)
                 if f"root/{name.replace('.yml.meta', '')}" not in wizard_data:
                     wizard_data.update(wizard_form)
     file.close()
@@ -1057,9 +1089,12 @@ def generate_wizard_meta(directory):
     yaml_config.yaml.dump(wizard_data, file)
     file.close()
 
+
 '''
 Комментирование/Раскомментирование переданного списка элементов
 '''
+
+
 def set_comment_out(content: list[CommentItem]):
     for item in content:
         input_url_list = item.url.split("/")
@@ -1081,9 +1116,12 @@ def set_comment_out(content: list[CommentItem]):
                     remove_comment_element(elements.values, input_url_list, elements.path)
                     break
 
+
 '''
 Функция закомментирования элемента массива
 '''
+
+
 def add_comment_element(values, input_url_list):
     while len(input_url_list) > 1:
         if isinstance(values, dict):
@@ -1092,32 +1130,41 @@ def add_comment_element(values, input_url_list):
             values = values[int(input_url_list[0])]
         input_url_list.pop(0)
     values.yaml_set_comment_before_after_key(int(input_url_list[0]), before="head_comment")
-    comment,individual_comment = formatted_comment(values[int(input_url_list[0])])
+    comment, individual_comment = formatted_comment(values[int(input_url_list[0])])
     values.yaml_set_comment_before_after_key(int(input_url_list[0]), before=comment)
     values.yaml_set_comment_before_after_key(int(input_url_list[0]), before="foot_comment")
     if individual_comment is not None and individual_comment != '':
-        values.yaml_set_comment_before_after_key(len(values) - 1,before=individual_comment)
+        values.yaml_set_comment_before_after_key(len(values) - 1, before=individual_comment)
     values[int(input_url_list[0])] = "delete_comment_element"
 
 
 '''
 Функция для формиирования закомментированного элемента массива
 '''
+
+
 def formatted_comment(data, indent=0):
     if not (isinstance(data, dict) or isinstance(data, list)):
-        return data,''
+        if isinstance(data, DoubleQuotedScalarString):
+            return f"\"{data}\"", ''
+        elif isinstance(data, SingleQuotedScalarString):
+            return f"\'{data}\'", ''
+        return data, ''
     if isinstance(data, dict):
         comments = []
         comment = ""
-        individual_comments=[]
+        individual_comments = []
         for key in data:
             previous_comment = ''
             # Сохраняем существующий комментарий у объекта
-            if hasattr(data,"ca") and key in data.ca.items:
+            if hasattr(data, "ca") and key in data.ca.items:
                 for ca in data.ca.items[key]:
                     if ca:
-                        previous_comment += "\n".join([line for idx,line in enumerate(ca.value.split("\n")) if line.strip() and idx == 0])
-                        individual_comments.append("\n".join([line.replace("#","",1) for idx,line in enumerate(ca.value.split("\n")) if line.strip() and idx > 0]))
+                        previous_comment += "\n".join(
+                            [line for idx, line in enumerate(ca.value.split("\n")) if line.strip() and idx == 0])
+                        individual_comments.append("\n".join(
+                            [line.replace("#", "", 1) for idx, line in enumerate(ca.value.split("\n")) if
+                             line.strip() and idx > 0]))
             # Создаем комментарий копирующий структуру объекта
             formatted_data = formatted_comment(data[key], indent + 2)
             if comment == "" and indent == 0:
@@ -1127,35 +1174,38 @@ def formatted_comment(data, indent=0):
             comments.append(comment)
             if formatted_data[1].strip() and formatted_data[1].strip() != "" and formatted_data[1].strip() != "\n":
                 individual_comments.append(formatted_data[1])
-        return "\n".join(comments),"\n".join(individual_comments)
+        return "\n".join(comments), "\n".join(individual_comments)
     if isinstance(data, list):
         comments = []
         individual_comments = []
-        for index,el in enumerate(data):
+        for index, el in enumerate(data):
             previous_comment = ''
             # Сохраняем существующий комментарий у объекта
-            if hasattr(data,"ca") and index in data.ca.items:
+            if hasattr(data, "ca") and index in data.ca.items:
                 for ca in data.ca.items[index]:
                     if ca:
                         previous_comment += "\n".join(
                             [line for idx, line in enumerate(ca.value.split("\n")) if line.strip() and idx == 0])
                         individual_comments.append("\n".join(
-                            [line.replace("#","",1)  for idx, line in enumerate(ca.value.split("\n")) if line.strip() and idx > 0]))
+                            [line.replace("#", "", 1) for idx, line in enumerate(ca.value.split("\n")) if
+                             line.strip() and idx > 0]))
             # Создаем комментарий копирующий структуру объекта
             formatted_data = formatted_comment(el, indent)
             comments.append(f"\n{' ' * indent}- {formatted_data[0]} {previous_comment}")
             if formatted_data[1].strip() and formatted_data[1].strip() != "" and formatted_data[1].strip() != "\n":
                 individual_comments.append(formatted_data[1])
-        return "\n".join(comments),"\n".join(individual_comments)
+        return "\n".join(comments), "\n".join(individual_comments)
+
 
 '''
 Функция разкомментирования элемента массива
 '''
-def remove_comment_element(values,input_url_list, path):
+
+
+def remove_comment_element(values, input_url_list, path):
     while len(input_url_list) > 1:
         values = values[input_url_list[0]]
         input_url_list.pop(0)
-    keys = list(values[int(input_url_list[0])].keys())
     start_comment_line = values[int(input_url_list[0])].lc.line
     with open(os.path.join(config.filespath, path), 'r') as file:
         lines = file.readlines()

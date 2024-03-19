@@ -4,7 +4,7 @@ import hashlib
 import logging
 import os
 from datetime import datetime
-from hydra_engine.configs import config,yaml_config
+from hydra_engine.configs import config, yaml_config
 
 logger = logging.getLogger("common_logger")
 
@@ -236,6 +236,8 @@ def uncomment_all_array_elements(path):
             lines_copy.append(line)
     with open(os.path.join(config.filespath, path), 'w') as file:
         file.writelines(lines_copy)
+
+
 def comment_all_array_elements(path):
     with open(os.path.join(config.filespath, path), 'r') as file:
         lines = file.readlines()
@@ -246,8 +248,8 @@ def comment_all_array_elements(path):
                 flag = True
                 lines_copy.append(line)
                 continue
-            if flag and line.strip() != "# foot_comment":
-                line = "#"+line.replace(" ","",1)
+            if flag and line.strip() != "# foot_comment" and not line.lstrip().startswith("#"):
+                line = "#" + line.replace(" ", "", 1)
                 lines_copy.append(line)
                 continue
             if line.strip() == "# foot_comment":
