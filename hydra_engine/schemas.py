@@ -578,26 +578,34 @@ def get_comment_with_text(data):
     return None
 
 
-def update_comment(element, key):
+def update_comment(element, key, is_last_item=False):
     if hasattr(element, "ca"):
         comment = element.ca.items.get(key, None)
         if comment is not None:
             comment_value = get_comment_with_text(comment)
             if comment_value is not None:
+                logger.debug(comment_value)
                 start_index = comment_value.index("[ ] CHANGEME")
                 modified_comment = comment_value[:start_index + 1] + 'X' + comment_value[start_index + 2:]
                 for item in element.ca.items[key]:
                     if item:
                         item.value = modified_comment
                         break
+            if is_last_item:
+                for item in element.ca.items[key]:
+                    if item:
+                        item_array = [x for x in item.value.split("\n") if "head_comment" not in x.strip()]
+                        if "head_comment" in item.value and "foot_comment" not in item.value:
+                            item.value = "\n".join(item_array)
+                            break
 
 
-def update_parameter_value(element, value):
+def update_parameter_value(element, value, is_last_item=False):
     if isinstance(element, dict):
         for key in element:
             element.update(
-                {key: update_parameter_value(element[key], value[key])})
-            update_comment(element, key)
+                {key: update_parameter_value(element[key], value[key], is_last_item)})
+            update_comment(element, key, is_last_item)
         return element
     elif isinstance(element, list):
         element_len = len(element)
@@ -611,8 +619,8 @@ def update_parameter_value(element, value):
             for val in value[element_len:]:
                 element.append(val)
         for index, (el, val) in enumerate(zip(element, value)):
-            element[index] = update_parameter_value(el, val)
-            update_comment(element, index)
+            element[index] = update_parameter_value(el, val, index == len(element) - 1)
+            update_comment(element, index, index == len(element) - 1)
         return element
     else:
         return value
@@ -706,8 +714,9 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
                     is_disable = False
                     if hasattr(el, "ca") and hasattr(el.ca, "items"):  # закомментирован ли элемент массива
                         keys = list(el.ca.items.keys())
-                        if len(keys) > 0 and "# foot_comment" in el.ca.items[keys[-1]][2].value:
-                            is_disable = True
+                        for key in keys:
+                            if "# foot_comment" in el.ca.items[key][2].value:
+                                is_disable = True
                     for key, metadata in element[
                         "sub_type_schema"].items():  # формирование объектов ElemInfo для элементов массива
                         comment = None
@@ -1150,10 +1159,13 @@ def add_comment_element(values, input_url_list):
 def formatted_comment(data, indent=0, is_array_element=False):
     if not (isinstance(data, dict) or isinstance(data, list)):
         if isinstance(data, DoubleQuotedScalarString):
-            return f"\"{data}\"", ''
+            data = f"\"{data}\""
         elif isinstance(data, SingleQuotedScalarString):
-            return f"\'{data}\'", ''
-        return data, ''
+            data = f"\'{data}\'"
+        if is_array_element:
+            return f"{' ' * (indent - 2)}- {data}", ''
+        else:
+            return data, ''
     if isinstance(data, dict):
         comments = []
         comment = ""
@@ -1165,10 +1177,11 @@ def formatted_comment(data, indent=0, is_array_element=False):
                 for ca in data.ca.items[key]:
                     if ca:
                         previous_comment += "\n".join(
-                            [line for idx, line in enumerate(ca.value.split("\n")) if line.strip() and idx == 0])
+                            [line for idx, line in enumerate(ca.value.split("\n")) if
+                             line.strip() and idx == 0 and "head_comment" not in line and "foot_comment" not in line])
                         individual_comments.append("\n".join(
                             [line.replace("#", "", 1) for idx, line in enumerate(ca.value.split("\n")) if
-                             line.strip() and idx > 0]))
+                             line.strip() and idx > 0 and "head_comment" not in line and "foot_comment" not in line]))
             # Создаем комментарий копирующий структуру объекта
             formatted_data = formatted_comment(data[key], indent + 2)
             if comment == "" and is_array_element:
@@ -1189,13 +1202,14 @@ def formatted_comment(data, indent=0, is_array_element=False):
                 for ca in data.ca.items[index]:
                     if ca:
                         previous_comment += "\n".join(
-                            [line for idx, line in enumerate(ca.value.split("\n")) if line.strip() and idx == 0])
+                            [line for idx, line in enumerate(ca.value.split("\n")) if
+                             line.strip() and idx == 0 and "head_comment" not in line and "foot_comment" not in line])
                         individual_comments.append("\n".join(
                             [line.replace("#", "", 1) for idx, line in enumerate(ca.value.split("\n")) if
-                             line.strip() and idx > 0]))
+                             line.strip() and idx > 0 and "head_comment" not in line and "foot_comment" not in line]))
             # Создаем комментарий копирующий структуру объекта
             formatted_data = formatted_comment(el, indent, is_array_element=True)
-            comments.append(f"\n{' ' * indent}- {formatted_data[0]} {previous_comment}")
+            comments.append(f"\n{formatted_data[0]} {previous_comment}")
             if formatted_data[1].strip() and formatted_data[1].strip() != "" and formatted_data[1].strip() != "\n":
                 individual_comments.append(formatted_data[1])
         return "\n".join(comments), "\n".join(individual_comments)
@@ -1208,7 +1222,10 @@ def formatted_comment(data, indent=0, is_array_element=False):
 
 def remove_comment_element(values, input_url_list, path):
     while len(input_url_list) > 1:
-        values = values[input_url_list[0]]
+        if isinstance(values, dict):
+            values = values[input_url_list[0]]
+        elif isinstance(values, list):
+            values = values[int(input_url_list[0])]
         input_url_list.pop(0)
     start_comment_line = values[int(input_url_list[0])].lc.line
     with open(os.path.join(config.filespath, path), 'r') as file:
@@ -1225,7 +1242,7 @@ def remove_comment_element(values, input_url_list, path):
                 line = line.replace("#", " ", 1)
                 lines_copy.append(line)
                 continue
-            if line.strip() == "# foot_comment":
+            if flag and line.strip() == "# foot_comment":
                 flag = False
                 continue
             lines_copy.append(line)

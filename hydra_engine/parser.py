@@ -190,6 +190,7 @@ def write_file(data, file_path, file_type, key, value=None):
         if value:
             logger.info(f"File {file_path} was modified to value {value} in parameter {key}")
         file.close()
+        comment_all_array_elements(path=file_path)
     except Exception as e:
         logger.error(f"Error in editing file {file_path} with {e}")
 
@@ -229,7 +230,7 @@ def uncomment_all_array_elements(path):
                 line = line.replace("#", " ", 1)
                 lines_copy.append(line)
                 continue
-            if line.strip() == "# foot_comment":
+            if flag and line.strip() == "# foot_comment":
                 flag = False
                 lines_copy.append(line)
                 continue
@@ -252,7 +253,7 @@ def comment_all_array_elements(path):
                 line = "#" + line.replace(" ", "", 1)
                 lines_copy.append(line)
                 continue
-            if line.strip() == "# foot_comment":
+            if flag and line.strip() == "# foot_comment":
                 flag = False
                 lines_copy.append(line)
                 continue
