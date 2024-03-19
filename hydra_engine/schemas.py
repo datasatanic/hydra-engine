@@ -1123,14 +1123,18 @@ def set_comment_out(content: list[CommentItem]):
 
 
 def add_comment_element(values, input_url_list):
+    indent = 0  # отступ
     while len(input_url_list) > 1:
         if isinstance(values, dict):
             values = values[input_url_list[0]]
+            if isinstance(values, dict):
+                indent += 2
         elif isinstance(values, list):
             values = values[int(input_url_list[0])]
         input_url_list.pop(0)
     values.yaml_set_comment_before_after_key(int(input_url_list[0]), before="head_comment")
-    comment, individual_comment = formatted_comment(values[int(input_url_list[0])])
+    comment, individual_comment = formatted_comment(values[int(input_url_list[0])], indent=indent,
+                                                    is_array_element=True)
     values.yaml_set_comment_before_after_key(int(input_url_list[0]), before=comment)
     values.yaml_set_comment_before_after_key(int(input_url_list[0]), before="foot_comment")
     if individual_comment is not None and individual_comment != '':
@@ -1143,7 +1147,7 @@ def add_comment_element(values, input_url_list):
 '''
 
 
-def formatted_comment(data, indent=0):
+def formatted_comment(data, indent=0, is_array_element=False):
     if not (isinstance(data, dict) or isinstance(data, list)):
         if isinstance(data, DoubleQuotedScalarString):
             return f"\"{data}\"", ''
@@ -1167,10 +1171,10 @@ def formatted_comment(data, indent=0):
                              line.strip() and idx > 0]))
             # Создаем комментарий копирующий структуру объекта
             formatted_data = formatted_comment(data[key], indent + 2)
-            if comment == "" and indent == 0:
-                comment = f"- {key}: {formatted_data[0]} {previous_comment}"
+            if comment == "" and is_array_element:
+                comment = f"-{' ' * (indent - 1)}{key}: {formatted_data[0]} {previous_comment}"
             else:
-                comment = f"{' ' * (indent + 2)}{key}: {formatted_data[0]} {previous_comment}"
+                comment = f"{' ' * indent}{key}: {formatted_data[0]} {previous_comment}"
             comments.append(comment)
             if formatted_data[1].strip() and formatted_data[1].strip() != "" and formatted_data[1].strip() != "\n":
                 individual_comments.append(formatted_data[1])
@@ -1190,7 +1194,7 @@ def formatted_comment(data, indent=0):
                             [line.replace("#", "", 1) for idx, line in enumerate(ca.value.split("\n")) if
                              line.strip() and idx > 0]))
             # Создаем комментарий копирующий структуру объекта
-            formatted_data = formatted_comment(el, indent)
+            formatted_data = formatted_comment(el, indent, is_array_element=True)
             comments.append(f"\n{' ' * indent}- {formatted_data[0]} {previous_comment}")
             if formatted_data[1].strip() and formatted_data[1].strip() != "" and formatted_data[1].strip() != "\n":
                 individual_comments.append(formatted_data[1])
