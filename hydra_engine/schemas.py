@@ -578,7 +578,7 @@ def get_comment_with_text(data):
     return None
 
 
-def update_comment(element, key, is_last_item=False):
+def update_comment(element, key):
     if hasattr(element, "ca"):
         comment = element.ca.items.get(key, None)
         if comment is not None:
@@ -591,21 +591,14 @@ def update_comment(element, key, is_last_item=False):
                     if item:
                         item.value = modified_comment
                         break
-            if is_last_item:
-                for item in element.ca.items[key]:
-                    if item:
-                        item_array = [x for x in item.value.split("\n") if "head_comment" not in x.strip()]
-                        if "head_comment" in item.value and "foot_comment" not in item.value:
-                            item.value = "\n".join(item_array)
-                            break
 
 
-def update_parameter_value(element, value, is_last_item=False):
+def update_parameter_value(element, value):
     if isinstance(element, dict):
         for key in element:
             element.update(
-                {key: update_parameter_value(element[key], value[key], is_last_item)})
-            update_comment(element, key, is_last_item)
+                {key: update_parameter_value(element[key], value[key])})
+            update_comment(element, key)
         return element
     elif isinstance(element, list):
         element_len = len(element)
