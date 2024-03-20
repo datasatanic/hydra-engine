@@ -895,22 +895,22 @@
         }
     }
 
-    private void DisableChildren(Dictionary<string,ElemInfo> childElement)
+    private void DisableChildren(Dictionary<string,ElemInfo> childElement, bool? disable = null)
     {
         foreach (var keyValuePair in childElement)
         {
-            keyValuePair.Value.disable = !keyValuePair.Value.disable;
+            keyValuePair.Value.disable = disable ?? !keyValuePair.Value.disable;
             if (keyValuePair.Value.sub_type_schema != null)
             {
                 if (keyValuePair.Value.type == ElemType.Dict)
                 {
-                    DisableChildren(keyValuePair.Value.sub_type_schema);
+                    DisableChildren(keyValuePair.Value.sub_type_schema, keyValuePair.Value.disable);
                 }
                 else if (keyValuePair.Value.type == ElemType.Array)
                 {
                     foreach (var item in keyValuePair.Value.array_sub_type_schema)
                     {
-                        DisableChildren(item);
+                        DisableChildren(item, keyValuePair.Value.disable);
                     }
                 }
             }
