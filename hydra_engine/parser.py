@@ -222,20 +222,16 @@ def uncomment_all_array_elements(path):
         flag = False
         lines_copy = []
         for line in lines:
-            if "# head_comment" in line:
+            if "# head_comment" in line and "# foot_comment" in line:
+                line = line.replace("#", " ", 1)
+            elif "# head_comment" in line:
                 flag = True
                 line = line.replace("#", " ", 1)
-                lines_copy.append(line)
-                continue
-            if flag and "# foot_comment" not in line and line.lstrip().startswith("#"):
+            elif flag and "# foot_comment" not in line and line.lstrip().startswith("#"):
                 line = line.replace("#", " ", 1)
-                lines_copy.append(line)
-                continue
-            if flag and "# foot_comment" in line:
+            elif flag and "# foot_comment" in line:
                 flag = False
                 line = line.replace("#", " ", 1)
-                lines_copy.append(line)
-                continue
             lines_copy.append(line)
     with open(os.path.join(config.filespath, path), 'w') as file:
         file.writelines(lines_copy)
@@ -247,22 +243,19 @@ def comment_all_array_elements(path):
         flag = False
         lines_copy = []
         for line in lines:
-            if "# head_comment" in line:
+            if "# head_comment" in line and "# foot_comment" in line:
+                if not line.lstrip().startswith("#"):
+                    line = "#" + line.replace(" ", "", 1)
+            elif "# head_comment" in line:
                 flag = True
                 if not line.lstrip().startswith("#"):
                     line = "#" + line.replace(" ", "", 1)
-                lines_copy.append(line)
-                continue
-            if flag and "# foot_comment" not in line and not line.lstrip().startswith("#"):
+            elif flag and "# foot_comment" not in line and not line.lstrip().startswith("#"):
                 line = "#" + line.replace(" ", "", 1)
-                lines_copy.append(line)
-                continue
-            if flag and "# foot_comment" in line:
+            elif flag and "# foot_comment" in line:
                 flag = False
                 if not line.lstrip().startswith("#"):
                     line = "#" + line.replace(" ", "", 1)
-                lines_copy.append(line)
-                continue
             lines_copy.append(line)
     with open(os.path.join(config.filespath, path), 'w') as file:
         file.writelines(lines_copy)

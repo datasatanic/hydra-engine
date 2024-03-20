@@ -612,8 +612,8 @@ def update_parameter_value(element, value):
             for val in value[element_len:]:
                 element.append(val)
         for index, (el, val) in enumerate(zip(element, value)):
-            element[index] = update_parameter_value(el, val, index == len(element) - 1)
-            update_comment(element, index, index == len(element) - 1)
+            element[index] = update_parameter_value(el, val)
+            update_comment(element, index)
         return element
     else:
         return value
@@ -766,8 +766,11 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
             elem_info.array_sub_type_schema = []
             for index, el in enumerate(value):
                 el_auto_complete = None
+                is_disable = False
                 if hasattr(value, "ca") and index in value.ca.items:
                     for ca in value.ca.items[index]:
+                        if ca and "head_comment" in ca.value and "foot_comment" in ca.value: # проверка закоментирован ли элемент массива
+                            is_disable = True
                         if ca and "[ ] CHANGEME" in ca.value.split("\n")[0]:  # проверка комментария [ ] CHANGEME
                             el_auto_complete = el
                             el = None
@@ -780,7 +783,7 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
                                         sub_type_schema=None,
                                         readOnly=element["readonly"] if "readonly" in element else False,
                                         additional=False,
-                                        disable=False,
+                                        disable=is_disable,
                                         display_name="",
                                         control=render_dict.get('control') if render_dict else None,
                                         constraints=render_constraints,
@@ -1107,7 +1110,7 @@ def set_comment_out(content: list[CommentItem]):
                     write_file(elements.values, elements.path, elements.type, item.url)
                     with open(os.path.join(config.filespath, elements.path), 'r') as file:
                         lines = file.readlines()
-                        lines_to_keep = [line for line in lines if not line.strip() == "- delete_comment_element"]
+                        lines_to_keep = [line for line in lines if not "- delete_comment_element" in line]
                     with open(os.path.join(config.filespath, elements.path), 'w') as file:
                         file.writelines(lines_to_keep)
                     break
@@ -1153,7 +1156,10 @@ def formatted_comment(data, indent=0, is_array_element=False,first_occurence=Fal
         elif isinstance(data, SingleQuotedScalarString):
             data = f"\'{data}\'"
         if is_array_element:
-            return f"{' ' * (indent - 2)}- {data}", ''
+            if first_occurence:
+                return f"{' ' * (indent)}- {data} # head_comment", ''
+            else:
+                return f"{' ' * (indent - 2)}- {data}", ''
         else:
             return data, ''
     if isinstance(data, dict):
@@ -1167,11 +1173,11 @@ def formatted_comment(data, indent=0, is_array_element=False,first_occurence=Fal
                 for ca in data.ca.items[key]:
                     if ca:
                         previous_comment += "\n".join(
-                            [line for idx, line in enumerate(ca.value.split("\n")) if
-                             line.strip() and idx == 0 and "head_comment" not in line and "foot_comment" not in line])
+                            [line.replace("# head_comment","").replace("# foot_comment","").rstrip() for idx, line in enumerate(ca.value.split("\n")) if
+                             line.strip() and idx == 0])
                         individual_comments.append("\n".join(
                             [line.replace("#", "", 1) for idx, line in enumerate(ca.value.split("\n")) if
-                             line.strip() and idx > 0 and "head_comment" not in line and "foot_comment" not in line]))
+                             line.strip() and idx > 0]))
             # Создаем комментарий копирующий структуру объекта
             formatted_data = formatted_comment(data[key], indent + 2)
             if comment == "" and is_array_element:
@@ -1195,14 +1201,17 @@ def formatted_comment(data, indent=0, is_array_element=False,first_occurence=Fal
                 for ca in data.ca.items[index]:
                     if ca:
                         previous_comment += "\n".join(
-                            [line for idx, line in enumerate(ca.value.split("\n")) if
-                             line.strip() and idx == 0 and "head_comment" not in line and "foot_comment" not in line])
+                            [line.replace("# head_comment","").replace("# foot_comment","").rstrip() for idx, line in enumerate(ca.value.split("\n")) if
+                             line.strip() and idx == 0])
                         individual_comments.append("\n".join(
                             [line.replace("#", "", 1) for idx, line in enumerate(ca.value.split("\n")) if
-                             line.strip() and idx > 0 and "head_comment" not in line and "foot_comment" not in line]))
+                             line.strip() and idx > 0]))
             # Создаем комментарий копирующий структуру объекта
             formatted_data = formatted_comment(el, indent, is_array_element=True)
-            comments.append(f"\n{formatted_data[0]} {previous_comment}")
+            if first_occurence:
+                comments.append(f"\n{formatted_data[0]} {previous_comment} # head_comment")
+            else:
+                comments.append(f"\n{formatted_data[0]} {previous_comment}")
             if formatted_data[1].strip() and formatted_data[1].strip() != "" and formatted_data[1].strip() != "\n":
                 individual_comments.append(formatted_data[1])
         return "\n".join(comments), "\n".join(individual_comments)
@@ -1220,7 +1229,15 @@ def remove_comment_element(values, input_url_list, path):
         elif isinstance(values, list):
             values = values[int(input_url_list[0])]
         input_url_list.pop(0)
-    start_comment_line = values[int(input_url_list[0])].lc.line
+    start_comment_line = None
+    if hasattr(values[int(input_url_list[0])],"lc"): # если элемент имеет атрибут lc, иными словами если элемент массива сложный объект
+        start_comment_line = values[int(input_url_list[0])].lc.line + 1
+    else: # если элемент массива имеет дефолтный тип данных
+        ca_items = values.ca.items.get(int(input_url_list[0]))
+        for ca in ca_items:
+            if ca:
+                start_comment_line = ca.start_mark.line + 1
+                break
     with open(os.path.join(config.filespath, path), 'r') as file:
         lines = file.readlines()
         lines_copy = []
@@ -1228,20 +1245,16 @@ def remove_comment_element(values, input_url_list, path):
         flag = False
         for line in lines:
             line_number += 1
+            if "# head_comment" in line and "# foot_comment" in line and line_number == start_comment_line:
+                line = line.replace("#"," ",1).replace("# head_comment","").replace("# foot_comment","")
             if "# head_comment" in line and line_number == start_comment_line:
                 flag = True
                 line = line.replace("#"," ",1).replace("# head_comment","",1)
-                lines_copy.append(line)
-                continue
-            if flag and "# foot_comment" not in line and line.lstrip().startswith("#"):
+            elif flag and "# foot_comment" not in line and line.lstrip().startswith("#"):
                 line = line.replace("#", " ", 1)
-                lines_copy.append(line)
-                continue
-            if flag and "# foot_comment" in line:
+            elif flag and "# foot_comment" in line:
                 flag = False
                 line = line.replace("#", " ", 1).replace("# foot_comment","",1)
-                lines_copy.append(line)
-                continue
             lines_copy.append(line)
     with open(os.path.join(config.filespath, path), 'w') as file:
         file.writelines(lines_copy)
