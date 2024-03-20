@@ -222,16 +222,18 @@ def uncomment_all_array_elements(path):
         flag = False
         lines_copy = []
         for line in lines:
-            if line.strip() == "# head_comment":
+            if "# head_comment" in line:
                 flag = True
-                lines_copy.append(line)
-                continue
-            if flag and line.strip() != "# foot_comment" and line.lstrip().startswith("#"):
                 line = line.replace("#", " ", 1)
                 lines_copy.append(line)
                 continue
-            if flag and line.strip() == "# foot_comment":
+            if flag and "# foot_comment" not in line and line.lstrip().startswith("#"):
+                line = line.replace("#", " ", 1)
+                lines_copy.append(line)
+                continue
+            if flag and "# foot_comment" in line:
                 flag = False
+                line = line.replace("#", " ", 1)
                 lines_copy.append(line)
                 continue
             lines_copy.append(line)
@@ -245,16 +247,20 @@ def comment_all_array_elements(path):
         flag = False
         lines_copy = []
         for line in lines:
-            if line.strip() == "# head_comment":
+            if "# head_comment" in line:
                 flag = True
+                if not line.lstrip().startswith("#"):
+                    line = "#" + line.replace(" ", "", 1)
                 lines_copy.append(line)
                 continue
-            if flag and line.strip() != "# foot_comment" and not line.lstrip().startswith("#"):
+            if flag and "# foot_comment" not in line and not line.lstrip().startswith("#"):
                 line = "#" + line.replace(" ", "", 1)
                 lines_copy.append(line)
                 continue
-            if flag and line.strip() == "# foot_comment":
+            if flag and "# foot_comment" in line:
                 flag = False
+                if not line.lstrip().startswith("#"):
+                    line = "#" + line.replace(" ", "", 1)
                 lines_copy.append(line)
                 continue
             lines_copy.append(line)

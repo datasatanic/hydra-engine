@@ -714,9 +714,8 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
                     is_disable = False
                     if hasattr(el, "ca") and hasattr(el.ca, "items"):  # закомментирован ли элемент массива
                         keys = list(el.ca.items.keys())
-                        for key in keys:
-                            if "# foot_comment" in el.ca.items[key][2].value:
-                                is_disable = True
+                        if len(keys) > 0 and "# head_comment" in el.ca.items[keys[0]][2].value:
+                            is_disable = True
                     for key, metadata in element[
                         "sub_type_schema"].items():  # формирование объектов ElemInfo для элементов массива
                         comment = None
@@ -1141,11 +1140,9 @@ def add_comment_element(values, input_url_list):
         elif isinstance(values, list):
             values = values[int(input_url_list[0])]
         input_url_list.pop(0)
-    values.yaml_set_comment_before_after_key(int(input_url_list[0]), before="head_comment")
     comment, individual_comment = formatted_comment(values[int(input_url_list[0])], indent=indent,
-                                                    is_array_element=True)
-    values.yaml_set_comment_before_after_key(int(input_url_list[0]), before=comment)
-    values.yaml_set_comment_before_after_key(int(input_url_list[0]), before="foot_comment")
+                                                    is_array_element=True,first_occurence=True)
+    values.yaml_set_comment_before_after_key(int(input_url_list[0]), before=comment + ' # foot_comment')
     if individual_comment is not None and individual_comment != '':
         values.yaml_set_comment_before_after_key(len(values) - 1, before=individual_comment)
     values[int(input_url_list[0])] = "delete_comment_element"
@@ -1156,7 +1153,7 @@ def add_comment_element(values, input_url_list):
 '''
 
 
-def formatted_comment(data, indent=0, is_array_element=False):
+def formatted_comment(data, indent=0, is_array_element=False,first_occurence=False):
     if not (isinstance(data, dict) or isinstance(data, list)):
         if isinstance(data, DoubleQuotedScalarString):
             data = f"\"{data}\""
@@ -1185,7 +1182,10 @@ def formatted_comment(data, indent=0, is_array_element=False):
             # Создаем комментарий копирующий структуру объекта
             formatted_data = formatted_comment(data[key], indent + 2)
             if comment == "" and is_array_element:
-                comment = f"-{' ' * (indent - 1)}{key}: {formatted_data[0]} {previous_comment}"
+                if first_occurence:
+                    comment = f"-{' ' * (indent - 1)}{key}: {formatted_data[0]} {previous_comment} # head_comment"
+                else:
+                    comment = f"-{' ' * (indent - 1)}{key}: {formatted_data[0]} {previous_comment}"
             else:
                 comment = f"{' ' * indent}{key}: {formatted_data[0]} {previous_comment}"
             comments.append(comment)
@@ -1235,15 +1235,19 @@ def remove_comment_element(values, input_url_list, path):
         flag = False
         for line in lines:
             line_number += 1
-            if line.strip() == "# head_comment" and line_number == start_comment_line:
+            if "# head_comment" in line and line_number == start_comment_line:
                 flag = True
+                line = line.replace("#"," ",1).replace("# head_comment","",1)
+                lines_copy.append(line)
                 continue
-            if flag and line.strip() != "# foot_comment" and line.lstrip().startswith("#"):
+            if flag and "# foot_comment" not in line and line.lstrip().startswith("#"):
                 line = line.replace("#", " ", 1)
                 lines_copy.append(line)
                 continue
-            if flag and line.strip() == "# foot_comment":
+            if flag and "# foot_comment" in line:
                 flag = False
+                line = line.replace("#", " ", 1).replace("# foot_comment","",1)
+                lines_copy.append(line)
                 continue
             lines_copy.append(line)
     with open(os.path.join(config.filespath, path), 'w') as file:
