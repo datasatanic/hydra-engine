@@ -655,7 +655,7 @@ def get_element_info(input_url, uid: str):
 '''
 
 
-def generate_elem_info(value, element, uid, path, is_log, comment=None):
+def generate_elem_info(value, element, uid, path, is_log, comment=None, is_disable = False):
     try:
         '''
         Обработка данных об ограничених параметра
@@ -690,7 +690,7 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
                              sub_type_schema=None,
                              readOnly=element["readonly"] if "readonly" in element else False,
                              additional=element.get('additional', False),
-                             disable=element.get("disable", False),
+                             disable=is_disable,
                              display_name=render_dict.get('display_name') if render_dict else None,
                              control=render_dict.get('control') if render_dict else None,
                              constraints=render_constraints,
@@ -704,7 +704,6 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
                 for index, el in enumerate(value):
                     is_element_none = el is None
                     d = {}
-                    is_disable = False
                     if hasattr(el, "ca") and hasattr(el.ca, "items"):  # закомментирован ли элемент массива
                         keys = list(el.ca.items.keys())
                         if len(keys) > 0 and "# head_comment" in el.ca.items[keys[0]][2].value:
@@ -718,7 +717,7 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
                         d.update({
                             key: generate_elem_info(
                                 el.get(key, None),
-                                metadata, uid, f"{path}/{key}", False, comment
+                                metadata, uid, f"{path}/{key}", False, comment,is_disable=is_disable
                             )
                         })
                     if is_element_none:
@@ -739,7 +738,7 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
                             sub_comment = get_comment_with_text(value.ca.items[key])
                         elem_info.sub_type_schema.update(
                             {key: generate_elem_info(value.get(key) if value is not None else None, metadata, uid,
-                                                     f"{path}/{key}", is_log, sub_comment if sub_comment else comment)}
+                                                     f"{path}/{key}", is_log, sub_comment if sub_comment else comment,is_disable=is_disable)}
                         )
                 else:
                     raise TypeError("Type of field sub_type_schema must be dict")
@@ -757,7 +756,7 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
                                      sub_type_schema=None,
                                      readOnly=element["readonly"] if "readonly" in element else False,
                                      additional=False,
-                                     disable=element.get("disable", False),
+                                     disable=is_disable,
                                      display_name="",
                                      control=render_dict.get('control') if render_dict else None,
                                      constraints=render_constraints,
@@ -766,7 +765,6 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None):
             elem_info.array_sub_type_schema = []
             for index, el in enumerate(value):
                 el_auto_complete = None
-                is_disable = False
                 if hasattr(value, "ca") and index in value.ca.items:
                     for ca in value.ca.items[index]:
                         if ca and "head_comment" in ca.value and "foot_comment" in ca.value: # проверка закоментирован ли элемент массива
@@ -1157,7 +1155,7 @@ def formatted_comment(data, indent=0, is_array_element=False,first_occurence=Fal
             data = f"\'{data}\'"
         if is_array_element:
             if first_occurence:
-                return f"{' ' * (indent)}- {data} # head_comment", ''
+                return f"{' ' * indent}- {data} # head_comment", ''
             else:
                 return f"{' ' * (indent - 2)}- {data}", ''
         else:
@@ -1180,13 +1178,16 @@ def formatted_comment(data, indent=0, is_array_element=False,first_occurence=Fal
                              line.strip() and idx > 0]))
             # Создаем комментарий копирующий структуру объекта
             formatted_data = formatted_comment(data[key], indent + 2)
+            separator = ''
+            if isinstance(data[key],dict) or isinstance(data[key],list):
+                separator = '\n'
             if comment == "" and is_array_element:
                 if first_occurence:
-                    comment = f"-{' ' * (indent - 1)}{key}: {formatted_data[0]} {previous_comment} # head_comment"
+                    comment = f"{' ' * (indent - 2)}- {key}: {separator}{formatted_data[0]} {previous_comment} # head_comment"
                 else:
-                    comment = f"-{' ' * (indent - 1)}{key}: {formatted_data[0]} {previous_comment}"
+                    comment = f"{' ' * (indent - 2)}- {key}: {separator}{formatted_data[0]} {previous_comment}"
             else:
-                comment = f"{' ' * indent}{key}: {formatted_data[0]} {previous_comment}"
+                comment = f"{' ' * (indent - 2)}  {key}: {separator}{formatted_data[0]} {previous_comment}"
             comments.append(comment)
             if formatted_data[1].strip() and formatted_data[1].strip() != "" and formatted_data[1].strip() != "\n":
                 individual_comments.append(formatted_data[1])
