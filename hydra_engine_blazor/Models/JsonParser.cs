@@ -77,7 +77,7 @@ public class JsonParser
         }
     }
 
-    public static ElemInfo DeserializeElemInfo(string? json, int index = 0)
+    public static ElemInfo DeserializeElemInfo(string? json, int index = 0, bool isDisable = false)
     {
         var elemInfo = new ElemInfo();
         if (json == null) return elemInfo;
@@ -141,8 +141,9 @@ public class JsonParser
                         if (readonlyDict != null) elemInfo.readOnly = readonlyDict.GetValueOrDefault(index + 1, false);
                     }
                     break;
-                case "disable":
-                    if (keyValue.Value != null) elemInfo.disable = (bool)keyValue.Value;
+                case "commented":
+                    if (keyValue.Value != null) elemInfo.commented = (bool)keyValue.Value;
+                    elemInfo.disable = elemInfo.commented || isDisable;
                     break;
                 case "additional":
                     if (keyValue.Value != null) elemInfo.additional = bool.Parse(keyValue.Value.ToString());
@@ -178,7 +179,7 @@ public class JsonParser
                         var schema = new Dictionary<string, ElemInfo>();
                         foreach (var jsonObject in keyValue.Value.AsObject())
                         {
-                            schema.Add(jsonObject.Key,DeserializeElemInfo(jsonObject.Value?.ToString()));
+                            schema.Add(jsonObject.Key,DeserializeElemInfo(jsonObject.Value?.ToString(),isDisable:elemInfo.type != ElemType.Array && elemInfo.disable));
                         }
 
                         elemInfo.sub_type_schema = schema;
@@ -199,7 +200,7 @@ public class JsonParser
                             if (el != null)
                                 foreach (var jsonObject in el.AsObject())
                                 {
-                                    schema.Add(jsonObject.Key, DeserializeElemInfo(jsonObject.Value?.ToString(),jsonArray.IndexOf(el)));
+                                    schema.Add(jsonObject.Key, DeserializeElemInfo(jsonObject.Value?.ToString(),jsonArray.IndexOf(el),isDisable:elemInfo.disable));
                                 }
                             array_schema.Add(schema);
                         }

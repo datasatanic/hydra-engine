@@ -878,7 +878,7 @@
     {
         if (elemInfo.array_sub_type_schema != null)
         {
-            var isComment = elemInfo.array_sub_type_schema[index].Values.ToList().All(item=>item.disable);
+            var isComment = elemInfo.array_sub_type_schema[index].Values.ToList().All(item=>item.commented);
             DisableChildren(elemInfo.array_sub_type_schema[index]);
             var inputUrl = $"{Key}/{index}";
             var currentItem = WizardContainer.CommentItems.Find(item => item.Url == inputUrl && item.FileId == elemInfo.fileId && item.IsComment == isComment);
@@ -899,7 +899,15 @@
     {
         foreach (var keyValuePair in childElement)
         {
-            keyValuePair.Value.disable = disable ?? !keyValuePair.Value.disable;
+            if (disable is null)
+            {
+                keyValuePair.Value.commented = !keyValuePair.Value.commented;
+                keyValuePair.Value.disable = keyValuePair.Value.commented;
+            }
+            else
+            {
+                if (!keyValuePair.Value.commented) keyValuePair.Value.disable = (bool)disable;
+            }
             if (keyValuePair.Value.sub_type_schema != null)
             {
                 if (keyValuePair.Value.type == ElemType.Dict)

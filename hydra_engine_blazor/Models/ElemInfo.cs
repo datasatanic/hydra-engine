@@ -46,10 +46,10 @@ public class ElemInfo
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [JsonPropertyName("readOnly")] 
     public bool readOnly { get; set; }
-    [DataMember(Name = "disable", EmitDefaultValue = false)]
+    [DataMember(Name = "commented", EmitDefaultValue = false)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    [JsonPropertyName("disable")] 
-    public bool disable { get; set; }
+    [JsonPropertyName("commented")] 
+    public bool commented { get; set; }
     
     [DataMember(Name = "additional", EmitDefaultValue = false)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -88,6 +88,7 @@ public class ElemInfo
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public bool IsActive { get; set; } = true;
+    public bool disable { get; set; }
 
     public ElemInfo DeepCopy()
     {
@@ -105,6 +106,8 @@ public class ElemInfo
             control = control,
             readOnly = readOnly,
             additional = additional,
+            commented = commented,
+            disable = disable,
             isValid = isValid,
             IsActive = IsActive,
             sub_type_schema = sub_type_schema?.ToDictionary(

@@ -64,6 +64,7 @@ class ElemInfo(BaseModel):
     value: object
     placeholder: object
     autocomplete: object = None
+    commented: bool = False
     file_id: str
     type: types
     description: str = None
@@ -71,7 +72,6 @@ class ElemInfo(BaseModel):
     sub_type_schema: Dict[str, 'ElemInfo'] = None
     array_sub_type_schema: List['ElemInfo'] = None
     readOnly: bool | Dict[int, bool]
-    disable: bool = False
     additional: bool = False
     display_name: str
     control: controls
@@ -655,7 +655,7 @@ def get_element_info(input_url, uid: str):
 '''
 
 
-def generate_elem_info(value, element, uid, path, is_log, comment=None, is_disable = False):
+def generate_elem_info(value, element, uid, path, is_log, comment=None):
     try:
         '''
         Обработка данных об ограничених параметра
@@ -682,6 +682,7 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None, is_disab
         Инициализация объекта ElemInfo
         '''
         elem_info = ElemInfo(value=value, placeholder=element.get('default_value'), autocomplete=autocomplete,
+                             commented=element.get('commented', False),
                              type=element.get('type'),
                              description=markdown.markdown(element.get('description')) if element.get(
                                  'description') is not None and element.get('description') != "" else element.get(
@@ -690,7 +691,6 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None, is_disab
                              sub_type_schema=None,
                              readOnly=element["readonly"] if "readonly" in element else False,
                              additional=element.get('additional', False),
-                             disable=is_disable,
                              display_name=render_dict.get('display_name') if render_dict else None,
                              control=render_dict.get('control') if render_dict else None,
                              constraints=render_constraints,
@@ -704,20 +704,21 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None, is_disab
                 for index, el in enumerate(value):
                     is_element_none = el is None
                     d = {}
+                    commented = False
                     if hasattr(el, "ca") and hasattr(el.ca, "items"):  # закомментирован ли элемент массива
                         keys = list(el.ca.items.keys())
                         if len(keys) > 0 and "# head_comment" in el.ca.items[keys[0]][2].value:
-                            is_disable = True
+                            commented = True
                     for key, metadata in element[
                         "sub_type_schema"].items():  # формирование объектов ElemInfo для элементов массива
                         comment = None
-                        metadata["disable"] = is_disable
+                        metadata["commented"] = commented
                         if el is not None and hasattr(el, "ca") and key in el.ca.items:
                             comment = el.ca.items[key][2].value.split("\n")[0]
                         d.update({
                             key: generate_elem_info(
                                 el.get(key, None),
-                                metadata, uid, f"{path}/{key}", False, comment,is_disable=is_disable
+                                metadata, uid, f"{path}/{key}", False, comment
                             )
                         })
                     if is_element_none:
@@ -726,6 +727,7 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None, is_disab
                     elem_info.array_sub_type_schema.append(d)
                 elem_info.sub_type_schema = {}
                 for key, metadata in element["sub_type_schema"].items():
+                    metadata["commented"] = False
                     elem_info.sub_type_schema.update({
                         key: generate_elem_info(None, metadata, uid, f"{path}/{key}", is_log)
                     })
@@ -738,7 +740,7 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None, is_disab
                             sub_comment = get_comment_with_text(value.ca.items[key])
                         elem_info.sub_type_schema.update(
                             {key: generate_elem_info(value.get(key) if value is not None else None, metadata, uid,
-                                                     f"{path}/{key}", is_log, sub_comment if sub_comment else comment,is_disable=is_disable)}
+                                                     f"{path}/{key}", is_log, sub_comment if sub_comment else comment)}
                         )
                 else:
                     raise TypeError("Type of field sub_type_schema must be dict")
@@ -749,6 +751,7 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None, is_disab
             Создание объектов ElemInfo для элементов массива
             '''
             sub_elem_info = ElemInfo(value=None, placeholder="", autocomplete=autocomplete,
+                                     commented=False,
                                      # генерация шаблонного объекта ElemInfo
                                      type=element.get('sub_type'),
                                      description="",
@@ -756,7 +759,6 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None, is_disab
                                      sub_type_schema=None,
                                      readOnly=element["readonly"] if "readonly" in element else False,
                                      additional=False,
-                                     disable=is_disable,
                                      display_name="",
                                      control=render_dict.get('control') if render_dict else None,
                                      constraints=render_constraints,
@@ -765,23 +767,24 @@ def generate_elem_info(value, element, uid, path, is_log, comment=None, is_disab
             elem_info.array_sub_type_schema = []
             for index, el in enumerate(value):
                 el_auto_complete = None
+                commented = False
                 if hasattr(value, "ca") and index in value.ca.items:
                     for ca in value.ca.items[index]:
                         if ca and "head_comment" in ca.value and "foot_comment" in ca.value: # проверка закоментирован ли элемент массива
-                            is_disable = True
+                            commented = True
                         if ca and "[ ] CHANGEME" in ca.value.split("\n")[0]:  # проверка комментария [ ] CHANGEME
                             el_auto_complete = el
                             el = None
                             break
                 # Создание объекта ElemInfo с значением элемента массива для array_sub_type_schema
                 elem_info_el = ElemInfo(value=el, placeholder="", autocomplete=el_auto_complete,
+                                        commented=commented,
                                         type=element.get('sub_type'),
                                         description="",
                                         sub_type=None,
                                         sub_type_schema=None,
                                         readOnly=element["readonly"] if "readonly" in element else False,
                                         additional=False,
-                                        disable=is_disable,
                                         display_name="",
                                         control=render_dict.get('control') if render_dict else None,
                                         constraints=render_constraints,
@@ -972,6 +975,8 @@ def check_sub_type_schema_validate(parameter, value, uid, input_url):
         value = DoubleQuotedScalarString(value)
     elem_info = ElemInfo(value=value, type=parameter.type,
                          description=parameter.description,
+                         autocomplete=parameter.autocomplete,
+                         commented=parameter.commented,
                          sub_type=parameter.sub_type,
                          sub_type_schema=None,
                          readOnly=parameter.readOnly,
@@ -1171,7 +1176,7 @@ def formatted_comment(data, indent=0, is_array_element=False,first_occurence=Fal
                 for ca in data.ca.items[key]:
                     if ca:
                         previous_comment += "\n".join(
-                            [line.replace("# head_comment","").replace("# foot_comment","").rstrip() for idx, line in enumerate(ca.value.split("\n")) if
+                            [line for idx, line in enumerate(ca.value.split("\n")) if
                              line.strip() and idx == 0])
                         individual_comments.append("\n".join(
                             [line.replace("#", "", 1) for idx, line in enumerate(ca.value.split("\n")) if
@@ -1202,7 +1207,7 @@ def formatted_comment(data, indent=0, is_array_element=False,first_occurence=Fal
                 for ca in data.ca.items[index]:
                     if ca:
                         previous_comment += "\n".join(
-                            [line.replace("# head_comment","").replace("# foot_comment","").rstrip() for idx, line in enumerate(ca.value.split("\n")) if
+                            [line for idx, line in enumerate(ca.value.split("\n")) if
                              line.strip() and idx == 0])
                         individual_comments.append("\n".join(
                             [line.replace("#", "", 1) for idx, line in enumerate(ca.value.split("\n")) if
@@ -1210,16 +1215,16 @@ def formatted_comment(data, indent=0, is_array_element=False,first_occurence=Fal
             # Создаем комментарий копирующий структуру объекта
             formatted_data = formatted_comment(el, indent, is_array_element=True)
             if first_occurence:
-                comments.append(f"\n{formatted_data[0]} {previous_comment} # head_comment")
+                comments.append(f"{formatted_data[0]} {previous_comment} # head_comment")
             else:
-                comments.append(f"\n{formatted_data[0]} {previous_comment}")
+                comments.append(f"{formatted_data[0]} {previous_comment}")
             if formatted_data[1].strip() and formatted_data[1].strip() != "" and formatted_data[1].strip() != "\n":
                 individual_comments.append(formatted_data[1])
         return "\n".join(comments), "\n".join(individual_comments)
 
 
 '''
-Функция разкомментирования элемента массива
+Функция раcкомментирования элемента массива
 '''
 
 
@@ -1244,18 +1249,30 @@ def remove_comment_element(values, input_url_list, path):
         lines_copy = []
         line_number = 0
         flag = False
+        count = 0
         for line in lines:
             line_number += 1
-            if "# head_comment" in line and "# foot_comment" in line and line_number == start_comment_line:
-                line = line.replace("#"," ",1).replace("# head_comment","").replace("# foot_comment","")
-            if "# head_comment" in line and line_number == start_comment_line:
-                flag = True
-                line = line.replace("#"," ",1).replace("# head_comment","",1)
+            if "# head_comment" in line and "# foot_comment" in line:
+                if line_number == start_comment_line:
+                    line = line.replace("#"," ",1).replace("# head_comment","",1).replace("# foot_comment","",1)
+                elif line.count("# foot_comment") == 2:
+                    flag = False
+                    line = line.replace(" # foot_comment","",1)
+            elif "# head_comment" in line:
+                if line_number == start_comment_line:
+                    flag = True
+                    line = line.replace("#"," ",1).replace("# head_comment","",1)
+                elif flag:
+                    count += 1
             elif flag and "# foot_comment" not in line and line.lstrip().startswith("#"):
-                line = line.replace("#", " ", 1)
+                if count == 0:
+                    line = line.replace("#", " ", 1)
             elif flag and "# foot_comment" in line:
-                flag = False
-                line = line.replace("#", " ", 1).replace("# foot_comment","",1)
+                if count > 0:
+                    count -= 1
+                else:
+                    flag = False
+                    line = line.replace("#", " ", 1).replace("# foot_comment","",1)
             lines_copy.append(line)
     with open(os.path.join(config.filespath, path), 'w') as file:
         file.writelines(lines_copy)
