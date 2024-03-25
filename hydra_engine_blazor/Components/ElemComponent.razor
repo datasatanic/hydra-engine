@@ -28,7 +28,7 @@
                     {
                         var id = elemInfo.GetHashCode();
                         <ul class="dict-param @(Depth == 1 ? "border-size" : "")">
-                            <li class="param-background @(IsArrayElement ? "in-array" : "") @(!elemInfo.Expand && IsArrayElement ? "gray" : "")">
+                            <li class="param-background @(IsArrayElement ? "in-array" : "")">
                                 <div>
                                     @if (!IsArrayElement)
                                     {
@@ -38,7 +38,7 @@
                                         </div>
                                         
                                     }
-                                    <div class="dict-param-data @(IsArrayElement ? "in-array" : "") @(Depth % 3 == 1 && !elemInfo.Expand && IsArrayElement ? "gray" : "") @(Depth % 3 == 2 && !elemInfo.Expand && IsArrayElement ? "blue" : "") @(Depth % 3  == 0 && !elemInfo.Expand && IsArrayElement ? "purple" : "")">
+                                    <div class="dict-param-data @(IsArrayElement ? "in-array" : "") @(!elemInfo.Expand && IsArrayElement ? "gray" : "")">
                                         <div>
                                             @if (IsArrayElement)
                                             {
@@ -57,7 +57,10 @@
                                                 @{ var maxLength = elemInfo.sub_type_schema.Select(x => x.Value.display_name ?? string.Empty).Max(x => x.Length);}
                                                 @foreach (var(key,value) in elemInfo.sub_type_schema)
                                                 {
-                                                    <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" ExpandChanged="@((ElemInfo obj) => HandleExpandChanging(obj, key))" Depth="@(Depth + 1)" Length="@maxLength" IsArrayElement="@IsArrayElement"></ElemComponent>
+                                                    <div style="@(value.type == ElemType.Array ? "margin-left:-10px" : "")">
+                                                        <ElemComponent Key="@($"{Key}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleChanges(obj, key))" ExpandChanged="@((ElemInfo obj) => HandleExpandChanging(obj, key))" Depth="@(Depth + 1)" Length="@maxLength" IsArrayElement="@IsArrayElement"></ElemComponent>
+                                                    </div>
+                                                    
                                                 }
                                             </div>
                                         </div>
@@ -282,6 +285,10 @@
     {
         if (Depth == 1) elemInfo.Expand = true;
         isShow = elemInfo.Expand;
+        if (elemInfo.type == ElemType.Array)
+        {
+            elemInfo.array_sub_type_schema = elemInfo.array_sub_type_schema.Select(dict => dict.Where(kvp => !(kvp.Value.additional && !kvp.Value.IsActive && kvp.Value.readOnly)).ToDictionary(x => x.Key, y => y.Value)).ToList();
+        }
     }
 
     protected override async Task OnInitializedAsync()

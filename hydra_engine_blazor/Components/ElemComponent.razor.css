@@ -222,9 +222,7 @@ li>div>div>img[data-bs-toggle="collapse"]{
     display: flex;
     flex-direction: column;
     gap:10px;
-    flex: 1;
-    width: fit-content;
-    padding: 20px 10px 10px 10px;
+    padding: 10px 10px 10px 20px;
     border-radius: 8px;
     transition: background 0.3s ease;
     position: relative;
@@ -256,19 +254,15 @@ li>div>div>img[data-bs-toggle="collapse"]{
     background: var(--hydra-gray-50);
     transition-delay: 0.5s;
 }
-.default-array{
-    display: flex;
-    flex-direction: column;
-    gap:10px;
-    padding: 20px 0 0 0;
-    flex: 1;
+.array-trash-container.default .elements-container{
+    padding: 10px;
 }
 fieldset>div>.array-trash-container:not(:last-child){
     border-bottom: 1px solid var(--hydra-gray-100);
 }
 fieldset>div>.array-trash-container.default{
     border-bottom: 0;
-    padding: 10px 0 0 0;
+    padding: 0;
 }
 fieldset>.elements-container:last-child{
     padding-bottom: 10px;
@@ -297,8 +291,18 @@ fieldset>.elements-container:last-child{
     flex-direction: column;
     gap:20px;
     padding: 10px 10px 0 10px;
-    border-radius: 8px;
     max-width: 100%;
+}
+.dict-param-data.in-array{
+    width: 100%;
+    background: var(--hydra-background-white);
+    padding: 10px;
+}
+.dict-container.in-array .elem-container{
+    width: 100%;
+}
+.dict-param-data,.dict-param,.param-background{
+    border-radius: 8px;
 }
 .dot:after{
     content: "";
