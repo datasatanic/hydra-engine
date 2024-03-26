@@ -1138,6 +1138,8 @@ def add_comment_element(values, input_url_list):
                 indent += 2
         elif isinstance(values, list):
             values = values[int(input_url_list[0])]
+            if isinstance(values, dict):
+                indent += 2
         input_url_list.pop(0)
     comment, individual_comment = formatted_comment(values[int(input_url_list[0])], indent=indent,
                                                     is_array_element=True,first_occurence=True)
@@ -1160,7 +1162,7 @@ def formatted_comment(data, indent=0, is_array_element=False,first_occurence=Fal
             data = f"\'{data}\'"
         if is_array_element:
             if first_occurence:
-                return f"{' ' * indent}- {data} # head_comment", ''
+                return f"{' ' * (indent - 2)}- {data} # head_comment", ''
             else:
                 return f"{' ' * (indent - 2)}- {data}", ''
         else:
