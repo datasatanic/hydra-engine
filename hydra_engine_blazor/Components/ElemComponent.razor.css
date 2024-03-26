@@ -2,10 +2,14 @@ ul{
     margin: 0;
     padding: 0;
 }
-.elem-container>h4{
+.elem-container>.param-name-container>h4{
     margin: 0;
     color: var(--hydra-gray-500);
     white-space: nowrap;
+    width: fit-content;
+}
+.elem-container>.param-name-container{
+    max-width: 200px;
 }
 .elem-container{
     display: flex;
@@ -143,6 +147,7 @@ input[type="text"]:focus,input[type="password"]:focus,input[type="number"]:focus
 input[type="text"]:disabled,input[type="password"]:disabled,input[type="number"]:disabled,input[type="datetime-local"]:disabled,input[type="date"]:disabled,input[type="time"]:disabled,textarea:disabled{
     border: 1px solid var(--hydra-gray-100);
     background: linear-gradient(0deg, var(--hydra-gray-20), var(--hydra-gray-20));
+    color: var(--hydra-gray-400);
 
 }
 input[type="text"][validation-error],input[type="password"][validation-error],input[type="number"][validation-error],input[type="datetime-local"][validation-error],input[type="date"][validation-error],input[type="time"][validation-error],textarea[validation-error]{
@@ -251,7 +256,7 @@ li>div>div>img[data-bs-toggle="collapse"]{
     pointer-events: auto;
 }
 .elements-container.active{
-    background: var(--hydra-gray-50);
+    background: var(--hydra-gray-30);
     transition-delay: 0.5s;
 }
 .array-trash-container.default .elements-container{
@@ -378,9 +383,6 @@ img.gray:active,.trash-container.gray:active{
 .fit-content{
     width: fit-content;
 }
-.resizer-border{
-    border-right: 4px solid var(--hydra-gray-50);
-}
 .array-element{
     display: flex;
     flex-direction: row;
@@ -437,6 +439,12 @@ img.gray:active,.trash-container.gray:active{
 .delete-image{
     content:url("icons/Trash.svg");
     cursor: pointer;
+}
+.delete-image:hover{
+    stroke: var(--hydra-gray-50);
+}
+.delete-image:active{
+    stroke: var(--hydra-gray-200);
 }
 .copy-image{
     content:url("icons/Copy.svg")
@@ -508,18 +516,6 @@ img.gray:active,.trash-container.gray:active{
 .tree-border>div{
     height: 100%;
     width: 1px;
-    border-left: 1px solid var(--hydra-gray-50);
-    margin-right: 1px;
-}
-.arrow-down-container{
-    display: flex;
-    flex-direction: column;
-    gap:10px;
-    align-items: center;
-}
-.arrow-down-container>div{
-    width: 1px;
-    height: 100%;
     border-left: 1px solid var(--hydra-gray-50);
     margin-right: 1px;
 }

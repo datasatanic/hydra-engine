@@ -78,11 +78,14 @@
                             }
                             @if (!string.IsNullOrEmpty(elemInfo.display_name))
                             {
-                                <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip" data-bs-html="true"
-                                    data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 2}em" : "")">@elemInfo.display_name</h4>
+                                <div class="param-name-container" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 2}em" : "")">
+                                    <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip" data-bs-html="true"
+                                                                        data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")">@elemInfo.display_name</h4>
+                                </div>
+                                
                             }
                             <div class="@(Depth > 1 ? "flex-1":"") position-relative">
-                                <textarea @onfocus="FocusCallBack" @onblur="BlurCallback" class="textarea-elem @(IsArrayElement ? "w-100": "")" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" @onchange="@((e) => ChangeValue(e, elemInfo.type))">@elemInfo?.value</textarea>
+                                <textarea @onfocus="FocusCallBack" @onblur="BlurCallback" class="textarea-elem @(Depth > 1 ? "w-100": "")" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" @onchange="@((e) => ChangeValue(e, elemInfo.type))">@elemInfo?.value</textarea>
                                 @if (ShowAutoComplete())
                                 {
                                     <AutoCompleteComponent TContext="@object" Value="@elemInfo.autocomplete" AutoCompleteFilled="@((value)=>UpdateElemValue(value,elemInfo.type))"></AutoCompleteComponent>
@@ -121,11 +124,13 @@
                             }
                             @if (!string.IsNullOrEmpty(elemInfo.display_name))
                             {
-                                <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip" data-bs-html="true"
-                                    data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 2}em" : "")">@elemInfo.display_name</h4>
+                                <div class="param-name-container" style="@(Length > 0 ? $"width:{(Length + 1) / 2 + 2}em" : "")">
+                                    <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip" data-bs-html="true"
+                                        data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")">@elemInfo.display_name</h4>
+                                </div>
                             }
                             <div class="@(Depth > 1 && elemInfo.control != Control.Checkbox ? "flex-1":"") position-relative">
-                                <input @onfocus="FocusCallBack" @onblur="BlurCallback" class="input-elem @(IsArrayElement ? "w-100": "")" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" size="@(elemInfo?.value != null ? elemInfo.value.ToString().Length - 3: 0)" value="@(elemInfo.control == Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e) => ChangeValue(e, elemInfo.type))"/>
+                                <input @onfocus="FocusCallBack" @onblur="BlurCallback" class="input-elem @(Depth > 1 ? "w-100": "")" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" size="@(elemInfo?.value != null ? elemInfo.value.ToString().Length - 3: 0)" value="@(elemInfo.control == Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e) => ChangeValue(e, elemInfo.type))"/>
                                 @if (ShowAutoComplete())
                                 {
                                     <AutoCompleteComponent TContext="@object" Value="@elemInfo.autocomplete" AutoCompleteFilled="@((value)=>UpdateElemValue(value,elemInfo.type))"></AutoCompleteComponent>
@@ -161,19 +166,9 @@
         }
         else
         {
-            <div @ref="menuContainer" class="array-element @(!IsArrayElement ? "fit-content" : "") @(!IsArrayElement && elemInfo.Expand ? "resizer-border" : "") @(IsArrayElement ? "in-array" : "") @(!elemInfo.Expand && IsArrayElement ? "gray" : "")">
-                @if (!IsArrayElement)
-                {
-                    <div class="arrow-down-container">
-                        <img class="arrow-down-img gray" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
-                        @if (elemInfo.Expand)
-                        {
-                            <div></div>
-                        }
-                    </div>
-                }
+            <div class="array-element @(!IsArrayElement ? "fit-content" : "") @(IsArrayElement ? "in-array" : "") @(!elemInfo.Expand && IsArrayElement ? "gray" : "")">
                 <fieldset>
-                    <legend id="@(SettingsContainer.GetHash(Key))">
+                    <legend style="@(!IsArrayElement ? "margin-left:-10px" : "")" id="@(SettingsContainer.GetHash(Key))">
                         @if (IsArrayElement)
                         {
                             <input class="active-toggle" type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly || elemInfo.disable)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
@@ -184,10 +179,7 @@
                         {
                             <img class="add-item @(IsArrayElement ? "small" : "") gray" @onclick="AddItem"/>
                         }
-                        @if (IsArrayElement)
-                        {
-                            <img class="expand-all gray @(IsArrayElement ? "small" : "")" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
-                        }
+                        <img class="expand-all gray @(IsArrayElement ? "small" : "")" data-bs-toggle="collapse" data-bs-target="@($"#el{elemInfo.GetHashCode()}")" aria-controls="@($"el{elemInfo.GetHashCode()}")" aria-expanded="false" @onclick="ExpandCollapseElement"/>
                     </legend>
                     <div class="collapse" id="@($"el{elemInfo.GetHashCode()}")">
                         @if (elemInfo.array_sub_type_schema != null)
@@ -220,7 +212,6 @@
                         }
                     </div>
                 </fieldset>
-                <img class="resizer @(!elemInfo.Expand || IsArrayElement ? "collapse" : "collapse show")" @ref="resizeContainer"/>
             </div>
            
         }
@@ -247,8 +238,6 @@
     private bool showAutoComplete;
     private string pattern = @"^[a-zA-Z0-9`~!@#$%^&*()-_=+\[\]{}\\|;:'"",<.>/? ]*$";
     private int activeElem = -1;
-    ElementReference menuContainer;
-    ElementReference resizeContainer;
     private JsonSerializerOptions options = new()
     {
         Converters =
@@ -310,10 +299,6 @@
     {
         if (firstRender)
         {
-            if (elemInfo.type == ElemType.Array && !IsArrayElement)
-            {
-                await JSRuntime.InvokeVoidAsync("utils.addListenersResize", resizeContainer, menuContainer);
-            }
             _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/ElemComponent.razor.js");
             if (elemInfo is {Expand: true })
             {
@@ -703,10 +688,6 @@
 
     public async ValueTask DisposeAsync()
     {
-        if (elemInfo.type == ElemType.Array && !IsArrayElement)
-        {
-            await JSRuntime.InvokeVoidAsync("utils.clearListenersResize",resizeContainer);
-        }
         if (_module != null) await _module.DisposeAsync();
     }
 
