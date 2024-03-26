@@ -197,7 +197,7 @@
                                 var j = i;
                                 var subTypeSchema = elemInfo.array_sub_type_schema[j];
                                 <div class="array-trash-container @(subTypeSchema.ContainsKey("hydra_array_element") ? "default" : "")">
-                                    <div class="elements-container" id="@SettingsContainer.GetHash(Key + j)">
+                                    <div class="elements-container @(activeElem == j ? "active":"")" id="@SettingsContainer.GetHash(Key + j)" @onmouseover="@(()=>activeElem = j)" @onmouseout="@(()=>activeElem = -1)" @onmouseover:stopPropagation="true" @onmouseout:stopPropagation="true">
                                         @{ var maxLength = subTypeSchema.Select(x => x.Value.display_name ?? string.Empty).Max(x=>x.Length);}
                                         @foreach (var (key, value) in subTypeSchema)
                                         {
@@ -246,6 +246,7 @@
     private bool isShow;
     private bool showAutoComplete;
     private string pattern = @"^[a-zA-Z0-9`~!@#$%^&*()-_=+\[\]{}\\|;:'"",<.>/? ]*$";
+    private int activeElem = -1;
     ElementReference menuContainer;
     ElementReference resizeContainer;
     private JsonSerializerOptions options = new()

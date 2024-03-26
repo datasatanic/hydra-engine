@@ -9,7 +9,7 @@ from hydra_engine.configs import config
 from hydra_engine.parser import parse_config_files
 from hydra_engine.schemas import find_form, Condition, update_wizard_meta, ParameterSaveInfo, \
     set_value, check_validate_parameter, WizardInfo, HydraParametersInfo, WizardState, Arch, Site, read_ui_file, \
-    read_wizard_file, set_comment_out,CommentItem
+    read_wizard_file, set_comment_out,CommentItem,update_form_elements
 
 logger = logging.getLogger("common_logger")
 router = APIRouter(prefix="/wizard", tags=["wizard"])
@@ -58,7 +58,7 @@ def get_wizard_form(name: str, conditions: list[Condition]):
 @router.post("/elements/values")
 async def set_values(name: str, content: list[ParameterSaveInfo]):
     try:
-        wizard_form = find_form(name.split("/"), copy.deepcopy(HydraParametersInfo().get_wizard_tree_structure()), True)
+        wizard_form = find_form(name.split("/"), HydraParametersInfo().get_wizard_tree_structure(), True,clear_children=False)
         if wizard_form is None:
             return JSONResponse(content={"message": "Form not found"}, status_code=404)
         for item in content:
@@ -67,7 +67,8 @@ async def set_values(name: str, content: list[ParameterSaveInfo]):
             if check is False:
                 return JSONResponse(content={"message": check}, status_code=400)
             set_value(item.input_url, item.file_id, item.value)
-        read_wizard_file(config.filespath)
+        for uid in [item.file_id for item in content]:
+            update_form_elements(wizard_form,uid)
         return JSONResponse(content=jsonable_encoder(HydraParametersInfo().modify_time), status_code=200)
     except ValueError:
         return JSONResponse(content={"message": "Bad request"}, status_code=400)
@@ -133,10 +134,8 @@ def check_deploy():
 
 
 @router.post("/comment-out")
-def comment_out(content: list[CommentItem]):
-    set_comment_out(content)
-    parse_config_files()
-    read_wizard_file(config.filespath)
+def comment_out(form_path:str,content: list[CommentItem]):
+    set_comment_out(content,form_path)
 
 def use_deploy_script(site_name):
     time.sleep(10)

@@ -137,28 +137,39 @@ def parse_elements_fileinfo():
                                     elements_files_info.append(_elements)
 
 
-def parse_value_files():
+def parse_value_files(path = None):
     """
         Parse configuration files
     """
-    elements_values.clear()
-    for file in elements_files_info:
-        if file["type"] == "json":
-            with open(os.path.join(config.filespath, file["path"]), 'r') as stream:
-                data_loaded = json.load(stream)
-                value_instance = ValuesInstance(file["type"], file["path"],
-                                                file["uid"],
-                                                data_loaded)
-                elements_values.append(value_instance)
-        if file["type"] == "yaml":
-            uncomment_all_array_elements(file["path"])
-            with open(os.path.join(config.filespath, file["path"]), 'r') as stream:
-                data_loaded = yaml_config.yaml.load(stream)
-                value_instance = ValuesInstance(file["type"], file["path"],
-                                                file["uid"],
-                                                data_loaded)
-                elements_values.append(value_instance)
-            comment_all_array_elements(file["path"])
+    global elements_values
+    if not path:
+        elements_values.clear()
+        for file in elements_files_info:
+            if file["type"] == "json":
+                with open(os.path.join(config.filespath, file["path"]), 'r') as stream:
+                    data_loaded = json.load(stream)
+                    value_instance = ValuesInstance(file["type"], file["path"],
+                                                    file["uid"],
+                                                    data_loaded)
+                    elements_values.append(value_instance)
+            if file["type"] == "yaml":
+                uncomment_all_array_elements(file["path"])
+                with open(os.path.join(config.filespath, file["path"]), 'r') as stream:
+                    data_loaded = yaml_config.yaml.load(stream)
+                    value_instance = ValuesInstance(file["type"], file["path"],
+                                                    file["uid"],
+                                                    data_loaded)
+                    elements_values.append(value_instance)
+                comment_all_array_elements(file["path"])
+    else:
+        uncomment_all_array_elements(path)
+        with open(os.path.join(config.filespath, path), 'r') as stream:
+            data_loaded = yaml_config.yaml.load(stream)
+            for element_value in HydraParametersInfo().elements_values:
+                if element_value.path == path:
+                    element_value.values = data_loaded
+                    break
+        comment_all_array_elements(path)
 
 
 def generate_config_structure(element, key, sub_d):
@@ -190,7 +201,7 @@ def write_file(data, file_path, file_type, key, value=None):
         if value:
             logger.info(f"File {file_path} was modified to value {value} in parameter {key}")
         file.close()
-        comment_all_array_elements(path=file_path)
+        comment_all_array_elements(file_path)
     except Exception as e:
         logger.error(f"Error in editing file {file_path} with {e}")
 

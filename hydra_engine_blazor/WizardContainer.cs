@@ -87,11 +87,11 @@ public class WizardContainer
 
     }
 
-    public async Task<HttpResponseMessage> SetCommentsOut()
+    public async Task<HttpResponseMessage> SetCommentsOut(string path)
     {
         var json = JsonSerializer.Serialize(commentItems);
         HttpContent content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync($"api/wizard/comment-out",content);
+        var response = await _client.PostAsync($"api/wizard/comment-out?form_path={path}",content);
         if (response.IsSuccessStatusCode)
         {
             commentItems.Clear();

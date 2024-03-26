@@ -240,7 +240,7 @@
         {
             if (WizardContainer.CommentItems.Count > 0)
             {
-                await WizardContainer.SetCommentsOut();
+                await WizardContainer.SetCommentsOut(Output_URL);
             }
             if (WizardModel.ControlsMeta.Action == "deploy" && WizardModel.ControlsMeta.SiteName != null)
             {

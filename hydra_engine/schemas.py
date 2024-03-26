@@ -8,7 +8,7 @@ from typing import List, Literal, Dict
 from pydantic import BaseModel, validator, Extra, root_validator, ValidationError
 
 from hydra_engine.parser import write_file, HydraParametersInfo, WizardInfo, read_hydra_ignore, \
-    uncomment_all_array_elements
+    uncomment_all_array_elements,parse_value_files
 from hydra_engine.configs import config, yaml_config
 import logging
 import re
@@ -584,7 +584,6 @@ def update_comment(element, key):
         if comment is not None:
             comment_value = get_comment_with_text(comment)
             if comment_value is not None:
-                logger.debug(comment_value)
                 start_index = comment_value.index("[ ] CHANGEME")
                 modified_comment = comment_value[:start_index + 1] + 'X' + comment_value[start_index + 2:]
                 for item in element.ca.items[key]:
@@ -831,7 +830,7 @@ def filter_tree(all_tree):
 '''
 
 
-def find_form(path, all_tree, is_wizard=False):
+def find_form(path, all_tree, is_wizard=False, clear_children = True):
     """
         Find child forms and groups of current form
     """
@@ -839,15 +838,16 @@ def find_form(path, all_tree, is_wizard=False):
     if name in all_tree:
         if len(path) > 1:
             path.remove(name)
-            return find_form(path, all_tree[name].child)
+            return find_form(path, all_tree[name].child,is_wizard,clear_children)
         else:
-            for child_name in all_tree[name].child:
-                if all_tree[name].child[child_name].type == "form":
-                    all_tree[name].child[child_name].elem.clear()
-                    all_tree[name].child[child_name].child.clear()
-                    if is_wizard:
-                        condition = all_tree[name].child[child_name].condition
-                        [cond.allow.clear() for cond in condition]
+            if clear_children:
+                for child_name in all_tree[name].child:
+                    if all_tree[name].child[child_name].type == "form":
+                        all_tree[name].child[child_name].elem.clear()
+                        all_tree[name].child[child_name].child.clear()
+                        if is_wizard:
+                            condition = all_tree[name].child[child_name].condition
+                            [cond.allow.clear() for cond in condition]
             return {name: all_tree[name]}
 
 
@@ -857,7 +857,10 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 Функция для обновления файла wizard.meta после инициализации архитектуры
 '''
 
-
+def update_form_elements(node,path_id):
+    keys = list(node.keys())
+    form = node[keys[0]]
+    form.elem = get_elements(path_id)
 def update_wizard_meta(directory: str, arch_name):
     file = open(os.path.join(config.filespath, "wizard.meta"), 'r')
     ignore_dirs, ignore_extension = read_hydra_ignore()
@@ -1102,7 +1105,7 @@ def generate_wizard_meta(directory):
 '''
 
 
-def set_comment_out(content: list[CommentItem]):
+def set_comment_out(content: list[CommentItem],form_path):
     for item in content:
         input_url_list = item.url.split("/")
         key = input_url_list[0]
@@ -1116,11 +1119,18 @@ def set_comment_out(content: list[CommentItem]):
                         lines_to_keep = [line for line in lines if not "- delete_comment_element" in line]
                     with open(os.path.join(config.filespath, elements.path), 'w') as file:
                         file.writelines(lines_to_keep)
+                    parse_value_files(elements.path)
+                    node = find_form(form_path.split("/"),HydraParametersInfo().wizard_tree,is_wizard=True,clear_children=False)
+                    update_form_elements(node,elements.uid)
                     break
         else:
             for elements in HydraParametersInfo().get_elements_values():
                 if key in elements.values and elements.uid == item.file_id:
                     remove_comment_element(elements.values, input_url_list, elements.path)
+                    parse_value_files(elements.path)
+                    node = find_form(form_path.split("/"), HydraParametersInfo().wizard_tree, is_wizard=True,
+                                     clear_children=False)
+                    update_form_elements(node, elements.uid)
                     break
 
 
