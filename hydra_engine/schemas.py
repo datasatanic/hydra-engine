@@ -594,10 +594,14 @@ def update_comment(element, key):
 
 def update_parameter_value(element, value):
     if isinstance(element, dict):
-        for key in element:
-            element.update(
-                {key: update_parameter_value(element[key], value[key])})
-            update_comment(element, key)
+        keys = list(element.keys())
+        for key in keys:
+            if key in value:
+                element.update(
+                    {key: update_parameter_value(element[key], value[key])})
+                update_comment(element, key)
+            else:
+                element.pop(key)
         return element
     elif isinstance(element, list):
         element_len = len(element)
