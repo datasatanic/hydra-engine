@@ -84,11 +84,11 @@
                                 </div>
                                 
                             }
-                            <div class="@(Depth > 1 ? "flex-1":"") position-relative">
-                                <textarea @onfocus="FocusCallBack" @onblur="BlurCallback" class="textarea-elem @(Depth > 1 ? "w-100": "")" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" @onchange="@((e) => ChangeValue(e, elemInfo.type))">@elemInfo?.value</textarea>
+                            <div class="@(Depth > 1 ? "flex-1" : "") position-relative">
+                                <textarea @ref="textareaRef" @onfocus="FocusCallBack" @onblur="BlurCallback" class="textarea-elem @(Depth > 1 ? "w-100" : "")" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" @onchange="@((e) => ChangeValue(e, elemInfo.type))" @ondblclick="SetFullHeight">@elemInfo?.value</textarea>
                                 @if (ShowAutoComplete())
                                 {
-                                    <AutoCompleteComponent TContext="@object" Value="@elemInfo.autocomplete" AutoCompleteFilled="@((value)=>UpdateElemValue(value,elemInfo.type))"></AutoCompleteComponent>
+                                    <AutoCompleteComponent TContext="@object" Value="@elemInfo.autocomplete" AutoCompleteFilled="@((value) => UpdateElemValue(value, elemInfo.type))"></AutoCompleteComponent>
                                 }
                                 @if ((elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString())) && Depth == 1)
                                 {
@@ -98,7 +98,7 @@
                                 }
                                 else if (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo?.value.ToString()))
                                 {
-                                    if (!TryParseToType(elemInfo.value,elemInfo?.type))
+                                    if (!TryParseToType(elemInfo.value, elemInfo?.type))
                                     {
                                         <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
                                              data-bs-placement="top" data-bs-title="@($"Please input {elemInfo.type} type")"/>
@@ -129,24 +129,30 @@
                                         data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")">@elemInfo.display_name</h4>
                                 </div>
                             }
-                            <div class="@(Depth > 1 && elemInfo.control != Control.Checkbox ? "flex-1":"") position-relative">
-                                <input @onfocus="FocusCallBack" @onblur="BlurCallback" class="input-elem @(Depth > 1 ? "w-100": "")" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" size="@(elemInfo?.value != null ? elemInfo.value.ToString().Length - 3: 0)" value="@(elemInfo.control == Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e) => ChangeValue(e, elemInfo.type))"/>
+                            <div class="@(Depth > 1 && elemInfo.control != Control.Checkbox ? "flex-1" : "") position-relative">
+                                <div>
+                                    @if (elemInfo.control != Control.Checkbox && elemInfo.control != Control.Password)
+                                    {
+                                        <div class="size-helper">@elemInfo.value</div>
+                                    }
+                                    <input @onfocus="FocusCallBack" @onblur="BlurCallback" class="input-elem @(Depth > 1 ? "w-100" : "")" @attributes="ElementAttributes" validation-error="@(!elemInfo.isValid && (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo.value.ToString()) || Depth == 1))" value="@(elemInfo.control == Control.Checkbox ? "bool" : elemInfo.value)" @onchange="@((e) => ChangeValue(e, elemInfo.type))"/>
+                                </div>
                                 @if (ShowAutoComplete())
                                 {
-                                    <AutoCompleteComponent TContext="@object" Value="@elemInfo.autocomplete" AutoCompleteFilled="@((value)=>UpdateElemValue(value,elemInfo.type))"></AutoCompleteComponent>
+                                    <AutoCompleteComponent TContext="@object" Value="@elemInfo.autocomplete" AutoCompleteFilled="@((value) => UpdateElemValue(value, elemInfo.type))"></AutoCompleteComponent>
                                 }
                                 @if ((elemInfo.value == null || string.IsNullOrEmpty(elemInfo?.value.ToString())) && Depth == 1)
                                 {
                                     <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
                                          data-bs-placement="top" data-bs-title="Enter field"/>
-                               
+
                                 }
                                 else if (elemInfo.value != null && !string.IsNullOrEmpty(elemInfo?.value.ToString()))
                                 {
-                                    if (!TryParseToType(elemInfo.value,elemInfo?.type))
+                                    if (!TryParseToType(elemInfo.value, elemInfo?.type))
                                     {
                                         <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
-                                             data-bs-placement="top" data-bs-title="@($"Please input {elemInfo.type} type")"/>                                      
+                                             data-bs-placement="top" data-bs-title="@($"Please input {elemInfo.type} type")"/>
                                     }
                                     else
                                     {
@@ -154,7 +160,7 @@
                                         if (constraintItem != null)
                                         {
                                             <img class="error-icon" data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip"
-                                                 data-bs-placement="top" data-bs-title="@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")"/>   
+                                                 data-bs-placement="top" data-bs-title="@(constraintItem.message ?? $"{constraintItem.type}:{constraintItem.value}")"/>
                                         }
                                     }
                                 }
@@ -189,18 +195,28 @@
                                 var j = i;
                                 var subTypeSchema = elemInfo.array_sub_type_schema[j];
                                 <div class="array-trash-container @(subTypeSchema.ContainsKey("hydra_array_element") ? "default" : "")">
-                                    <div class="elements-container @(activeElem == j ? "active":"")" id="@SettingsContainer.GetHash(Key + j)" @onmouseover="@(()=>activeElem = j)" @onmouseout="@(()=>activeElem = -1)" @onmouseover:stopPropagation="true" @onmouseout:stopPropagation="true">
-                                        @{ var maxLength = subTypeSchema.Select(x => x.Value.display_name ?? string.Empty).Max(x=>x.Length);}
+                                    <div class="elements-container @(activeElem == j ? "active" : "") @(subTypeSchema.Values.All(item => !item.Expand) ? "gray" : "")" id="@SettingsContainer.GetHash(Key + j)" @onmouseover="@(() => activeElem = j)" @onmouseout="@(() => activeElem = -1)" @onmouseover:stopPropagation="true" @onmouseout:stopPropagation="true">
+                                        @{ var ids = new List<string>();}
+                                        @{ var maxLength = subTypeSchema.Select(x => x.Value.display_name ?? string.Empty).Max(x => x.Length);}
                                         @foreach (var (key, value) in subTypeSchema)
                                         {
-                                            <div style="@(value.type == ElemType.Array ? "margin-left:-10px" : "")">
+                                            {ids.Add($"el{value.GetHashCode()}");}
+                                            <div style="@(value.type == ElemType.Array ? "margin-left:-10px" : "")" class="collapse @(value.Expand ? "show" : "")">
                                                 <ElemComponent Key="@($"{Key}/{j}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key, j))" Depth="@(Depth + 1)" Length="@maxLength" IsArrayElement="@true"></ElemComponent>
                                             </div>
                                         }
+                                        <div class="collapsedHint @(subTypeSchema.Values.All(item => !item.Expand) ? "" : "collapse")">
+                                            @(subTypeSchema.Values.First().display_name + '\n')
+                                            ...
+                                        </div>
                                         @if (!elemInfo.readOnly && !elemInfo.disable)
                                         {
                                             <div class="element-action-container">
-                                                <img class="@(subTypeSchema.Values.ToList().All(item=>item.disable) ? "enable-image" : "disable-image")" @onclick="@(()=>DisableElement(j))"/>
+                                                <img class="@(subTypeSchema.Values.ToList().All(item => item.disable) ? "enable-image" : "disable-image")" @onclick="@(() => DisableElement(j))"/>
+                                                @if (elemInfo.sub_type == ElemType.Composite)
+                                                {
+                                                    <img class="collapse-white" @onclick="@(()=>ExpandArrayElement(subTypeSchema))" aria-expanded="@(subTypeSchema.Values.All(item=>item.Expand) ? "true" : "false")"/>
+                                                }
                                                 <img class="copy-image" @onclick="@(() => CopyElement(j))"/>
                                                 <img class="delete-image" @onclick="@(() => RemoveArrayItem(j))"/>
                                             </div>
@@ -232,6 +248,7 @@
     [Parameter]
     public bool IsArrayElement { get; set; }
 
+    private ElementReference textareaRef;
     private string filePath => elemInfo.fileId;
     private Dictionary<string, object>? ElementAttributes { get; set; } = new();
     private bool isShow;
@@ -260,7 +277,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (elemInfo != null && isShow != elemInfo.Expand)
+        if (elemInfo is {sub_type_schema: { } } && isShow != elemInfo.Expand)
         {
             isShow = elemInfo.Expand;
             await ShowExpand();
@@ -273,7 +290,7 @@
     }
     protected override void OnInitialized()
     {
-        if (Depth == 1) elemInfo.Expand = true;
+        if (Depth == 1 || elemInfo.sub_type_schema == null) elemInfo.Expand = true;
         isShow = elemInfo.Expand;
         if (elemInfo.type == ElemType.Array)
         {
@@ -854,4 +871,18 @@
             }
         }
     }
+
+    private void ExpandArrayElement(Dictionary<string,ElemInfo> subTypeSchema)
+    {
+        foreach (var (_, value) in subTypeSchema)
+        {
+            value.Expand = !value.Expand;
+        }
+    }
+
+    private async Task SetFullHeight()
+    {
+        await _module.InvokeVoidAsync("setFullHeight", textareaRef);
+    }
+
 }

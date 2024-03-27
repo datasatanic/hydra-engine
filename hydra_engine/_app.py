@@ -60,4 +60,4 @@ async def stats():
     return {'service': 'hydra-engine', 'status': 'Serve'}
 
 
-app_static.mount("/", StaticFiles(directory=os.path.join(base_dir, "wwwroot"), html=True), "client")
+#app_static.mount("/", StaticFiles(directory=os.path.join(base_dir, "wwwroot"), html=True), "client")

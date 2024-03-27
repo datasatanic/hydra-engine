@@ -127,6 +127,7 @@ public class JsonParser
                         "datetime" => ElemType.DateTime,
                         "bool"=>ElemType.Bool,
                         "dict"=>ElemType.Dict,
+                        "composite"=>ElemType.Composite,
                         _ => elemInfo.type
                     };
                     break;

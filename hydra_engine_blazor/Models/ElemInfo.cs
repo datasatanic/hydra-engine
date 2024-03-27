@@ -109,6 +109,7 @@ public class ElemInfo
             commented = commented,
             disable = disable,
             isValid = isValid,
+            Expand = Expand,
             IsActive = IsActive,
             sub_type_schema = sub_type_schema?.ToDictionary(
                 kvp => kvp.Key,

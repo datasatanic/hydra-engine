@@ -7,3 +7,12 @@
         });
     }
 }
+export function setFullHeight(textareaElement){
+    if (textareaElement){
+        console.log(textareaElement.scrollHeight)
+        if(textareaElement.scrollHeight > textareaElement.offsetHeight){
+            textareaElement.style.height = textareaElement.scrollHeight + 2 + "px";
+        }
+        
+    }
+}

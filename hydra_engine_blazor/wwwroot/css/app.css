@@ -114,6 +114,11 @@ h1,h2,h3,h4,div,p,input,textarea{
 }
 input{
     outline: 0;
+    font-size: 14px;
+}
+textarea{
+    font-size: 14px;
+    outline: 0;
 }
 h1:focus {
     outline: none;
