@@ -201,7 +201,7 @@
                                         @foreach (var (key, value) in subTypeSchema)
                                         {
                                             {ids.Add($"el{value.GetHashCode()}");}
-                                            <div style="@(value.type == ElemType.Array ? "margin-left:-10px" : "")" class="collapse @(value.Expand ? "show" : "")">
+                                            <div style="@(value.type == ElemType.Array ? "margin-left:-10px" : "")" class="@(value.sub_type_schema is null ? "collapse" : "") @(value.Expand ? "show" : "")">
                                                 <ElemComponent Key="@($"{Key}/{j}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key, j))" Depth="@(Depth + 1)" Length="@maxLength" IsArrayElement="@true"></ElemComponent>
                                             </div>
                                         }
