@@ -34,7 +34,7 @@
                                     {
                                         <div class="tree-border">
                                             <img @onclick="ExpandCallback" class="arrow-down-img" data-bs-toggle="collapse" data-bs-target="@($"#el{id}")" type="button" aria-controls="@($"el{id}")" aria-expanded="false"/>
-                                            <div></div>
+                                            <div class="@(elemInfo.Expand ? "tree-border-line" : "")"></div>
                                         </div>
                                         
                                     }
