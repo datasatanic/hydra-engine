@@ -174,13 +174,13 @@
         {
             <div class="array-element @(!IsArrayElement ? "fit-content" : "") @(IsArrayElement ? "in-array" : "") @(!elemInfo.Expand && IsArrayElement ? "gray" : "")">
                 <fieldset>
-                    <legend style="@(!IsArrayElement ? "margin-left:-10px" : "")" id="@(SettingsContainer.GetHash(Key))">
+                    <legend id="@(SettingsContainer.GetHash(Key))">
                         @if (IsArrayElement)
                         {
                             <input class="active-toggle" type="checkbox" disabled="@(!elemInfo.additional || elemInfo.readOnly || elemInfo.disable)" checked="@elemInfo.IsActive" @onclick="ExcludeField"/>
                         }
-                        <h3 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip" data-bs-html="true"
-                            data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")">@elemInfo.display_name</h3>
+                        <h4 data-bs-toggle="tooltip" data-bs-custom-class="hydra-tooltip" data-bs-html="true"
+                            data-bs-placement="bottom" data-bs-title="@(!string.IsNullOrEmpty(elemInfo.description) ? elemInfo.description : "No description")">@elemInfo.display_name</h4>
                         @if (!elemInfo.readOnly && elemInfo.IsActive && !elemInfo.disable)
                         {
                             <img class="add-item @(IsArrayElement ? "small" : "") gray" @onclick="AddItem"/>
@@ -193,33 +193,34 @@
                             for (var i = 0; i < elemInfo.array_sub_type_schema.Count; i++)
                             {
                                 var j = i;
-                                var subTypeSchema = elemInfo.array_sub_type_schema[j];
-                                <div class="array-trash-container @(subTypeSchema.ContainsKey("hydra_array_element") ? "default" : "")">
-                                    <div class="elements-container @(activeElem == j ? "active" : "") @(subTypeSchema.Values.All(item => !item.Expand) ? "gray" : "")" id="@SettingsContainer.GetHash(Key + j)" @onmouseover="@(() => activeElem = j)" @onmouseout="@(() => activeElem = -1)" @onmouseover:stopPropagation="true" @onmouseout:stopPropagation="true">
-                                        @{ var ids = new List<string>();}
-                                        @{ var maxLength = subTypeSchema.Select(x => x.Value.display_name ?? string.Empty).Max(x => x.Length);}
-                                        @foreach (var (key, value) in subTypeSchema)
-                                        {
-                                            {ids.Add($"el{value.GetHashCode()}");}
-                                            <div style="@(value.type == ElemType.Array ? "margin-left:-10px" : "")" class="@(value.sub_type_schema is null ? "collapse" : "") @(value.Expand ? "show" : "")">
-                                                <ElemComponent Key="@($"{Key}/{j}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key, j))" Depth="@(Depth + 1)" Length="@maxLength" IsArrayElement="@true"></ElemComponent>
-                                            </div>
-                                        }
-                                        <div class="collapsedHint @(subTypeSchema.Values.All(item => !item.Expand) ? "" : "collapse")">
-                                            @(subTypeSchema.Values.First().display_name + '\n')
-                                            ...
+                                var arrayElement = elemInfo.array_sub_type_schema[j];
+                                <div class="array-trash-container @(activeElem == j ? "active" : "") @(arrayElement.Elements.ContainsKey("hydra_array_element") ? "default" : "")" @onmouseover="@(() => activeElem = j)" @onmouseout="@(() => activeElem = -1)" @onmouseover:stopPropagation="true" @onmouseout:stopPropagation="true">
+                                    <div class="collapse @(arrayElement.Expand ? "show" : "")">
+                                        <div class="elements-container @(!arrayElement.Expand ? "gray" : "")" id="@SettingsContainer.GetHash(Key + j)" @key="arrayElement">
+                                            @{ var maxLength = arrayElement.Elements.Select(x => x.Value.display_name ?? string.Empty).Max(x => x.Length);}
+                                            @foreach (var (key, value) in arrayElement.Elements)
+                                            {
+                                                <div style="@(value.type == ElemType.Array ? "margin-left:-10px" : "")">
+                                                    <ElemComponent Key="@($"{Key}/{j}/{key}")" elemInfo="@value" SendValue="@((ElemInfo obj) => HandleArrayChanges(obj, key, j))" Depth="@(Depth + 1)" Length="@maxLength" IsArrayElement="@true"></ElemComponent>
+                                                </div>
+                                        
+                                            }
                                         </div>
+                                    </div>
+                                    <div class="collapsedHint collapse @(!arrayElement.Expand ? "show" : "")">
+                                        @(arrayElement.Elements.Values.First().display_name + '\n')
+                                        ...
+                                    </div>
+                                    <div class="element-action-container">
+                                        @if (elemInfo.sub_type == ElemType.Composite)
+                                        {
+                                            <img class="collapse-white" @onclick="@(()=>ExpandArrayElement(elemInfo.array_sub_type_schema[j]))" aria-expanded="@(arrayElement.Expand ? "true" : "false")"/>
+                                        }
                                         @if (!elemInfo.readOnly && !elemInfo.disable)
                                         {
-                                            <div class="element-action-container">
-                                                <img class="@(subTypeSchema.Values.ToList().All(item => item.disable) ? "enable-image" : "disable-image")" @onclick="@(() => DisableElement(j))"/>
-                                                @if (elemInfo.sub_type == ElemType.Composite)
-                                                {
-                                                    <img class="collapse-white" @onclick="@(()=>ExpandArrayElement(subTypeSchema))" aria-expanded="@(subTypeSchema.Values.All(item=>item.Expand) ? "true" : "false")"/>
-                                                }
-                                                <img class="copy-image" @onclick="@(() => CopyElement(j))"/>
-                                                <img class="delete-image" @onclick="@(() => RemoveArrayItem(j))"/>
-                                            </div>
+                                            <img class="@(arrayElement.Elements.Values.ToList().All(item => item.disable) ? "enable-image" : "disable-image")" @onclick="@(() => DisableElement(j))"/>
+                                            <img class="copy-image" @onclick="@(() => CopyElement(j))"/>
+                                            <img class="delete-image" @onclick="@(() => RemoveArrayItem(j))"/>
                                         }
                                     </div>
                                 </div>
@@ -294,7 +295,7 @@
         isShow = elemInfo.Expand;
         if (elemInfo.type == ElemType.Array)
         {
-            elemInfo.array_sub_type_schema = elemInfo.array_sub_type_schema.Select(dict => dict.Where(kvp => !(kvp.Value.additional && !kvp.Value.IsActive && kvp.Value.readOnly)).ToDictionary(x => x.Key, y => y.Value)).ToList();
+            elemInfo.array_sub_type_schema = elemInfo.array_sub_type_schema.Select(dict => new ArrayElement(){Elements = dict.Elements.Where(kvp => !(kvp.Value.additional && !kvp.Value.IsActive && kvp.Value.readOnly)).ToDictionary(x => x.Key, y => y.Value),Expand = dict.Expand}).ToList();
         }
     }
 
@@ -507,7 +508,7 @@
             elemInfo.array_sub_type_schema.RemoveAt(pos);
             foreach (var item in elemInfo.array_sub_type_schema)
             {
-                CheckValidation(item);
+                CheckValidation(item.Elements);
             }
         }
         await SendValue.InvokeAsync(elemInfo);
@@ -562,7 +563,7 @@
         {
             var subTypeSchema = ChangeReadonly(elemInfo.sub_type_schema);
             CheckValidation(subTypeSchema);
-            elemInfo?.array_sub_type_schema?.Add(subTypeSchema);
+            elemInfo?.array_sub_type_schema?.Add(new ArrayElement(){Elements = subTypeSchema,Expand = true});
             if (elemInfo.sub_type_schema.Count == 1 && elemInfo.sub_type_schema.ContainsKey("hydra_array_element"))
             {
                 arrayItems?.Add(string.Empty);
@@ -680,10 +681,10 @@
             {
                 arr[index] = obj.value;
             }
-            elemInfo.array_sub_type_schema[index][key] = obj;
+            elemInfo.array_sub_type_schema[index].Elements[key] = obj;
             foreach (var item in elemInfo.array_sub_type_schema)
             {
-                CheckValidation(item);
+                CheckValidation(item.Elements);
             }
             await SendValue.InvokeAsync(elemInfo);
         }
@@ -755,7 +756,7 @@
         }
         if (el.array_sub_type_schema != null)
         {
-            foreach (var keyValuePair in el.array_sub_type_schema.SelectMany(elemInfos => elemInfos))
+            foreach (var keyValuePair in el.array_sub_type_schema.SelectMany(elemInfos => elemInfos.Elements))
             {
                 ChangeActiveStatus(keyValuePair.Value);
             }
@@ -774,8 +775,8 @@
         var arrayItems = elemInfo?.value as List<object>;
         if (elemInfo.array_sub_type_schema != null)
         {
-            var subTypeSchema = elemInfo.array_sub_type_schema[index].ToDictionary(x => x.Key, y => y.Value.DeepCopy());
-            elemInfo.array_sub_type_schema.Insert(index,subTypeSchema);
+            var subTypeSchema = elemInfo.array_sub_type_schema[index].Elements.ToDictionary(x => x.Key, y => y.Value.DeepCopy());
+            elemInfo.array_sub_type_schema.Insert(index,new ArrayElement(){Elements = subTypeSchema,Expand = true});
             if (elemInfo.sub_type_schema.Count == 1 && elemInfo.sub_type_schema.ContainsKey("hydra_array_element"))
             {
                 var copyValue = arrayItems?[index];
@@ -825,8 +826,8 @@
     {
         if (elemInfo.array_sub_type_schema != null)
         {
-            var isComment = elemInfo.array_sub_type_schema[index].Values.ToList().All(item=>item.commented);
-            DisableChildren(elemInfo.array_sub_type_schema[index]);
+            var isComment = elemInfo.array_sub_type_schema[index].Elements.Values.ToList().All(item=>item.commented);
+            DisableChildren(elemInfo.array_sub_type_schema[index].Elements);
             var inputUrl = $"{Key}/{index}";
             var currentItem = WizardContainer.CommentItems.Find(item => item.Url == inputUrl && item.FileId == elemInfo.fileId && item.IsComment == isComment);
             if (currentItem == null)
@@ -837,7 +838,7 @@
             {
                 WizardContainer.CommentItems.Remove(currentItem);
             }
-            elemInfo.isValid = !elemInfo.array_sub_type_schema.Any(item => item.Any(x => !x.Value.isValid));
+            elemInfo.isValid = !elemInfo.array_sub_type_schema.Any(item => item.Elements.Any(x => !x.Value.isValid));
             await SendValue.InvokeAsync(elemInfo);
         }
     }
@@ -865,19 +866,16 @@
                 {
                     foreach (var item in keyValuePair.Value.array_sub_type_schema)
                     {
-                        DisableChildren(item, keyValuePair.Value.disable);
+                        DisableChildren(item.Elements, keyValuePair.Value.disable);
                     }
                 }
             }
         }
     }
 
-    private void ExpandArrayElement(Dictionary<string,ElemInfo> subTypeSchema)
+    private void ExpandArrayElement(ArrayElement element)
     {
-        foreach (var (_, value) in subTypeSchema)
-        {
-            value.Expand = !value.Expand;
-        }
+        element.Expand = !element.Expand;
     }
 
     private async Task SetFullHeight()

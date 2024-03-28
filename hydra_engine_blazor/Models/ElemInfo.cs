@@ -10,7 +10,7 @@ public class ElemInfo
     [DataMember(Name = "value", EmitDefaultValue = false)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [JsonPropertyName("value")]
-    public object value;
+    public object value { get; set; }
     
     [DataMember(Name = "placeholder", EmitDefaultValue = false)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -78,7 +78,7 @@ public class ElemInfo
     [DataMember(Name = "array_sub_type_schema", EmitDefaultValue = false)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [JsonPropertyName("array_sub_type_schema")]
-    public List<Dictionary<string,ElemInfo>>? array_sub_type_schema { get; set; }
+    public List<ArrayElement>? array_sub_type_schema { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
     public bool isValid { get; set; } = true;
@@ -116,7 +116,7 @@ public class ElemInfo
                 kvp => kvp.Value.DeepCopy()
             ),
             array_sub_type_schema = array_sub_type_schema?.Select(item =>
-                item.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.DeepCopy())).ToList()
+                item.DeepCopy()).ToList()
         };
 
         return clonedElemInfo;
@@ -205,4 +205,20 @@ public class ConstraintItem
     public string type { get; set; }
     public string? message { get; set; }
 
+}
+
+public class ArrayElement
+{
+    public Dictionary<string, ElemInfo> Elements { get; set; }
+    public bool Expand { get; set; }
+
+    public ArrayElement DeepCopy()
+    {
+        var clonedElement = new ArrayElement()
+        {
+            Elements = Elements.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.DeepCopy()),
+            Expand = Expand
+        };
+        return clonedElement;
+    }
 }

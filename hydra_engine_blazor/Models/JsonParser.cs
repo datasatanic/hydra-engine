@@ -193,7 +193,7 @@ public class JsonParser
                 case "array_sub_type_schema":
                     if (!string.IsNullOrEmpty(keyValue.Value?.ToString()))
                     {
-                        var array_schema = new List<Dictionary<string, ElemInfo>>();
+                        var array_schema = new List<ArrayElement>();
                         var jsonArray = keyValue.Value.AsArray();
                         foreach (var el in jsonArray)
                         {
@@ -203,7 +203,7 @@ public class JsonParser
                                 {
                                     schema.Add(jsonObject.Key, DeserializeElemInfo(jsonObject.Value?.ToString(),jsonArray.IndexOf(el),isDisable:elemInfo.disable));
                                 }
-                            array_schema.Add(schema);
+                            array_schema.Add(new ArrayElement(){Elements = schema,Expand = true});
                         }
 
                         elemInfo.array_sub_type_schema = array_schema;
